@@ -3,7 +3,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, contador, ocupado, horaHHMM, TIPOS } = Banca;
+  const { api, alerta, limpiar, el, contador, ocupado, TIPOS } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -45,7 +45,7 @@
         el("div", { class: "fw-semibold", text: c.nickname_contraparte }),
         el("div", { class: "small text-body-secondary", text: `${TIPOS[c.tipo_publicacion]} · ${c.titulo_publicacion}` })),
       el("div", { class: "text-end" },
-        el("div", { class: "small text-body-secondary", text: horaHHMM(c.ultimo_mensaje_en) }),
+        el("div", { class: "small text-body-secondary", text: c.hora_ultimo_mensaje }),
         c.no_leidos ? el("span", { class: "badge text-bg-primary", text: "Nuevo" }) : null));  // RF-CHT-21
     const cargar = async (automatica = false) => {
       try {
@@ -76,7 +76,7 @@
         ? el("img", { src: m.imagen_url, alt: `Imagen de ${m.nickname_emisor}`, loading: "lazy" })
         : el("div", { class: "contenido-libre", text: m.texto });
       return el("div", { class: `burbuja ${m.es_propio ? "propia" : "ajena"}` }, contenido,
-        el("div", { class: "hora", text: horaHHMM(m.fecha_envio) }));
+        el("div", { class: "hora", text: m.hora })  // HH:MM en America/Lima, calculada en el servidor (RN-34));
     }
 
     function agregar(lista) {

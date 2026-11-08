@@ -28,6 +28,7 @@ class ChatResumenResponse(BaseModel):
     titulo_publicacion: str
     nickname_contraparte: str
     ultimo_mensaje_en: datetime
+    hora_ultimo_mensaje: str  # HH:MM en America/Lima (RF-CHT-18, RN-34)
     fecha_expiracion: datetime
     no_leidos: bool  # RF-CHT-21
 
@@ -44,6 +45,7 @@ class MensajeResponse(BaseModel):
     texto: str | None = None
     imagen_url: str | None = None
     fecha_envio: datetime
+    hora: str  # HH:MM en America/Lima (RF-CHT-11, RN-34)
 
 
 class ChatDetalleResponse(BaseModel):

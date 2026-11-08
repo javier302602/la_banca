@@ -5,6 +5,7 @@ Solo los participantes de un chat vigente pueden enviar. Cada mensaje reinicia e
 inactividad: nueva expiración = hora del mensaje + 24 h (RF-CHT-12). El chat se verifica de forma
 atómica al registrar el mensaje, por si expira entre la lectura y la escritura.
 """
+from app.shared.clock import hora_hhmm
 from app.shared.domain.contracts import IChatRepository, IClock, ImageStorage
 from app.shared.domain.entities import INACTIVIDAD_CHAT, ImagenAdjunta, Mensaje
 from app.shared.domain.errors import NoDisponible, NoEncontrado
@@ -51,4 +52,4 @@ class EnviarMensajeHandler:
             raise NoDisponible(MSG_EXPIRADO, codigo="chat_expirado")
         return MensajeResponse(id=mensaje_id, es_propio=True, nickname_emisor=nickname, texto=body.texto,
                                imagen_url=url_imagen(chat.id, mensaje_id) if imagen else None,
-                               fecha_envio=ahora, fecha_expiracion_chat=expiracion)
+                               fecha_envio=ahora, hora=hora_hhmm(ahora), fecha_expiracion_chat=expiracion)

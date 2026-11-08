@@ -29,6 +29,7 @@ def test_mensaje_reinicia_expiracion():
     reloj.avanzar(hours=23)
     r = _enviar(h, cid)
     assert r.es_propio and r.texto == "respuesta" and r.imagen_url is None
+    assert r.hora == "08:00"  # 13:00 UTC del día siguiente → 08:00 en America/Lima (RN-34)
     assert chats.chats[cid].fecha_expiracion == reloj.ahora() + timedelta(hours=24)  # RF-CHT-12
     reloj.avanzar(hours=23)
     _enviar(h, cid, usuario="lector")  # sigue vigente gracias al reinicio

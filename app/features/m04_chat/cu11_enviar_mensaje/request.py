@@ -29,4 +29,5 @@ class MensajeResponse(BaseModel):
     texto: str | None = None
     imagen_url: str | None = None
     fecha_envio: datetime
+    hora: str  # HH:MM en America/Lima (RF-CHT-11, RN-34)
     fecha_expiracion_chat: datetime

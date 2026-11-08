@@ -55,11 +55,6 @@ const Banca = (() => {
     return h > 0 ? `${h} h ${m} min` : `${m} min`;
   }
 
-  function horaHHMM(fechaIso) {  // RF-CHT-11: HH:MM de 24 horas
-    const d = new Date(fechaIso);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-
   function el(etiqueta, atributos = {}, ...hijos) {
     const nodo = document.createElement(etiqueta);
     for (const [clave, valor] of Object.entries(atributos)) {
@@ -146,6 +141,6 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, sincronizar, ahora, restante, horaHHMM, el, alerta, limpiar, contador,
+  return { api, ErrorApi, TIPOS, sincronizar, ahora, restante, el, alerta, limpiar, contador,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };
 })();

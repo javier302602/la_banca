@@ -33,6 +33,8 @@ def test_lista_por_ultimo_mensaje_con_no_leidos():
     lista = asyncio.run(h.handle("autor"))
     assert [c.id for c in lista.items] == [nuevo, viejo]  # RF-CHT-18
     assert lista.items[0].nickname_contraparte == "nick_otro" and lista.items[0].no_leidos
+    # RF-CHT-18 / RN-34: 14:05 UTC → 09:05 en America/Lima, calculado en el servidor
+    assert [c.hora_ultimo_mensaje for c in lista.items] == ["09:05", "09:00"]
     asyncio.run(h.abrir("autor", nuevo))
     assert not asyncio.run(h.handle("autor")).items[0].no_leidos  # RF-CHT-21
     assert [c.id for c in asyncio.run(h.handle("lector")).items] == [viejo]
@@ -46,6 +48,7 @@ def test_abrir_no_reinicia_expiracion_y_marca_propios():
     assert d.segundos_restantes == 23 * 3600  # RF-CHT-12: leer no reinicia
     assert d.nickname_contraparte == "nick_lector" and d.titulo_publicacion == "t"
     assert [m.es_propio for m in d.mensajes] == [False]
+    assert [m.hora for m in d.mensajes] == ["09:00"]  # RF-CHT-11: 14:00 UTC → 09:00 en Lima
     assert "correo" not in d.model_dump_json()
 
 
