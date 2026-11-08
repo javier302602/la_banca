@@ -192,6 +192,12 @@ class FakeAccountRepository(IAccountRepository):
                 n += 1
         return n
 
+    async def eliminar_sesiones_vencidas(self, vencidas_antes_de):
+        borrar = [i for i, s in self.sesiones.items() if s.fecha_expiracion <= vencidas_antes_de]
+        for i in borrar:
+            del self.sesiones[i]
+        return len(borrar)
+
 
 class FakePublicationRepository(IPublicationRepository):
     def __init__(self) -> None:

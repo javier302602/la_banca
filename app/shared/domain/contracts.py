@@ -123,6 +123,9 @@ class IAccountRepository(ABC):
     async def registrar_interaccion(self, sesion_id: str, ahora: datetime, expira_en: datetime) -> None: raise NotImplementedError
     async def finalizar_sesion(self, sesion_id: str, estado: EstadoSesion, ahora: datetime) -> None: raise NotImplementedError
     async def cerrar_sesiones_de(self, estudiante_id: str, ahora: datetime) -> int: raise NotImplementedError
+    async def eliminar_sesiones_vencidas(self, vencidas_antes_de: datetime) -> int:
+        """Borra las sesiones (activas vencidas, cerradas o expiradas) con vencimiento anterior al corte."""
+        raise NotImplementedError
 
 
 class IPublicationRepository(ABC):
