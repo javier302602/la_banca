@@ -1,0 +1,1 @@
+"""Automatismos programados (Vercel Cron)."""
