@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/index.py": { "includeFiles": "{app,web}/**" }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
+  ],
+  "crons": [
+    { "path": "/jobs/ea03-limpiar-chats-expirados", "schedule": "0 4 * * *" },
+    { "path": "/jobs/ea05-depurar-contenido-reportado", "schedule": "15 4 * * *" },
+    { "path": "/jobs/ea07-eliminar-cuentas-no-activadas", "schedule": "30 4 * * *" }
+  ]
+}
