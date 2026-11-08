@@ -159,6 +159,7 @@ VALIDADOR_LOGIN_ATTEMPTS = {"$jsonSchema": {
         "firstFailedAt": {"bsonType": "date"},
         "lastFailedAt": {"bsonType": "date"},
         "lockedUntil": {"bsonType": ["date", "null"]},
+        "failedAt": {"bsonType": "array", "maxItems": 5, "items": {"bsonType": "date"}},  # ventana móvil (RN-39)
     },
 }}
 
