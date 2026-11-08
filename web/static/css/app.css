@@ -14,3 +14,10 @@
 .aviso-expiracion { animation: latido 2s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { .aviso-expiracion { animation: none; } }
+
+/* RNF-USA-04: contraste ≥ 4,5:1 también sobre los fondos grises de la barra y las cabeceras (#f8f9fa).
+ * Los colores por defecto de Bootstrap dan 4,44:1 (secundario) y 4,26:1 (peligro). */
+.btn-outline-secondary { --bs-btn-color: #565e64; --bs-btn-border-color: #565e64; --bs-btn-hover-bg: #565e64;
+                         --bs-btn-hover-border-color: #565e64; --bs-btn-active-bg: #565e64; }
+.btn-outline-danger { --bs-btn-color: #b02a37; --bs-btn-border-color: #b02a37; --bs-btn-hover-bg: #b02a37;
+                      --bs-btn-hover-border-color: #b02a37; --bs-btn-active-bg: #b02a37; }
