@@ -1,5 +1,4 @@
 """CU-13 — Reportar una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
-
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -24,12 +23,11 @@ def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ReportarPub
     )
 
 
-@router.post("/publicaciones/{publicacion_id}/reportes", response_model=ReporteResponse, status_code=201)
+@router.post("/api/publicaciones/{publicacion_id}/reportes", response_model=ReporteResponse, status_code=201)
 async def reportar_publicacion(
     publicacion_id: str,
     body: ReporteRequest,
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: ReportarPublicacionHandler = Depends(get_handler),
 ) -> ReporteResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.handle(sesion.estudiante_id, publicacion_id, body)

@@ -1,5 +1,4 @@
 """CU-14 — Reportar un chat. Controlador MVC (APIRouter), sin lógica de negocio."""
-
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -26,12 +25,11 @@ def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ReportarCha
     )
 
 
-@router.post("/chats/{chat_id}/reportes", response_model=ReporteResponse, status_code=201)
+@router.post("/api/chats/{chat_id}/reportes", response_model=ReporteResponse, status_code=201)
 async def reportar_chat(
     chat_id: str,
     body: ReporteRequest,
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: ReportarChatHandler = Depends(get_handler),
 ) -> ReporteResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.handle(sesion.estudiante_id, chat_id, body)
