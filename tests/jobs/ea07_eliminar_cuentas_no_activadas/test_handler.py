@@ -47,3 +47,16 @@ def test_vercel_json_programa_los_tres_crons():
     assert rutas == {"/jobs/ea03-limpiar-chats-expirados", "/jobs/ea05-depurar-contenido-reportado",
                      "/jobs/ea07-eliminar-cuentas-no-activadas"}
     assert config["rewrites"] == [{"source": "/(.*)", "destination": "/api/index"}]
+
+
+def test_workflow_de_github_cada_hora():
+    from pathlib import Path
+
+    texto = (Path(__file__).resolve().parents[3] / ".github" / "workflows" / "jobs.yml").read_text(encoding="utf-8")
+    assert 'cron: "0 * * * *"' in texto
+    for job in ("ea03-limpiar-chats-expirados", "ea05-depurar-contenido-reportado",
+                "ea07-eliminar-cuentas-no-activadas"):
+        assert f"- {job}" in texto
+    assert "secrets.CRON_SECRET" in texto and "secrets.APP_BASE_URL" in texto
+    assert 'Authorization: Bearer ${CRON_SECRET}' in texto
+    assert "${{ secrets" not in texto.split("run: |")[1]  # los secrets llegan por env, no interpolados en el script

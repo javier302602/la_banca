@@ -1,0 +1,41 @@
+# Automatismos programados (EA-03, EA-05, EA-07) cada hora.
+# Los crons diarios de vercel.json quedan como respaldo; los jobs son idempotentes.
+# Secrets requeridos en el repositorio: APP_BASE_URL (p. ej. https://la-banca.vercel.app) y CRON_SECRET.
+name: Jobs programados
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: jobs-programados
+  cancel-in-progress: false
+
+jobs:
+  ejecutar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - ea03-limpiar-chats-expirados
+          - ea05-depurar-contenido-reportado
+          - ea07-eliminar-cuentas-no-activadas
+    steps:
+      - name: Llamar a /jobs/${{ matrix.job }}
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          JOB: ${{ matrix.job }}
+        run: |
+          if [ -z "$APP_BASE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Faltan los secrets APP_BASE_URL o CRON_SECRET"
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --retry 3 --retry-all-errors --max-time 60 \
+            --header "Authorization: Bearer ${CRON_SECRET}" \
+            "${APP_BASE_URL%/}/jobs/${JOB}"
