@@ -1,5 +1,4 @@
 """CU-04 — Editar nickname. Controlador MVC (APIRouter), sin lógica de negocio."""
-
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -15,17 +14,13 @@ router = APIRouter(tags=["M01 Acceso"])
 
 
 def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> EditarNicknameHandler:
-    return EditarNicknameHandler(
-        cuentas=MongoEditarNicknameRepository(db),
-        clock=get_clock(),
-    )
+    return EditarNicknameHandler(cuentas=MongoEditarNicknameRepository(db), clock=get_clock())
 
 
-@router.patch("/cuentas/me/nickname", response_model=NicknameResponse, status_code=200)
+@router.patch("/api/cuentas/me/nickname", response_model=NicknameResponse, status_code=200)
 async def editar_nickname(
     body: EditarNicknameRequest,
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: EditarNicknameHandler = Depends(get_handler),
 ) -> NicknameResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.handle(sesion.estudiante_id, body)

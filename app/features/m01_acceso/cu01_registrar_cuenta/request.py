@@ -4,28 +4,42 @@ Los DTOs de respuesta nunca exponen el correo institucional, solo el nickname.
 """
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.shared.domain.entities import LONGITUD_CONTRASENA, LONGITUD_NICKNAME, PATRON_NICKNAME
+from app.shared.domain.reglas import normalizar_correo, validar_confirmacion, validar_contrasena, validar_nickname
+
 
 class RegistrarCuentaRequest(BaseModel):
-    """Datos de registro (RF-AUT-01–07, RF-AUT-14–17). El dominio se valida en el handler (CFG)."""
+    """RF-AUT-01, RF-AUT-04–07, RF-AUT-14–16. El dominio se valida en el handler (depende de CFG)."""
 
-    correo: str = Field(..., max_length=254, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-    contrasena: str = Field(..., min_length=LONGITUD_CONTRASENA[0], max_length=LONGITUD_CONTRASENA[1])
-    confirmacion: str
-    nickname: str = Field(..., min_length=LONGITUD_NICKNAME[0], max_length=LONGITUD_NICKNAME[1],
-                          pattern=PATRON_NICKNAME)
-    acepta_terminos: bool
+    correo: str = Field(..., max_length=254)
+    contrasena: str = Field(..., max_length=256)
+    confirmacion: str = Field(..., max_length=256)
+    nickname: str = Field(..., max_length=64)
+    acepta_terminos: bool = False
+
+    @field_validator("correo")
+    @classmethod
+    def _correo(cls, v: str) -> str:
+        v = normalizar_correo(v)
+        if not v:
+            raise ValueError("El correo institucional es obligatorio")
+        return v
+
+    @field_validator("nickname")
+    @classmethod
+    def _nickname(cls, v: str) -> str:
+        return validar_nickname(v)
 
     @field_validator("contrasena")
     @classmethod
-    def _politica_contrasena(cls, v: str) -> str:
-        """RN-30: al menos una letra y un dígito."""
-        raise NotImplementedError
+    def _contrasena(cls, v: str) -> str:
+        return validar_contrasena(v)
 
     @model_validator(mode="after")
     def _confirmacion_y_terminos(self) -> "RegistrarCuentaRequest":
-        """La confirmación coincide y se aceptan términos y política (RF-AUT-16, RF-AUT-17)."""
-        raise NotImplementedError
+        validar_confirmacion(self.contrasena, self.confirmacion)
+        if not self.acepta_terminos:
+            raise ValueError("Debes aceptar los términos de uso y la política de privacidad")  # RF-AUT-16
+        return self
 
 
 class MensajeResponse(BaseModel):

@@ -13,7 +13,7 @@ from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorClientSession, AsyncIOMotorDatabase
 from pymongo import ASCENDING, DESCENDING
 from pymongo.collation import Collation
-from pymongo.errors import CollectionInvalid, PyMongoError
+from pymongo.errors import CollectionInvalid, DuplicateKeyError, PyMongoError
 
 from app.shared.config.provider import variable
 
@@ -48,6 +48,12 @@ def oid(valor: str | None) -> ObjectId | None:
         return ObjectId(valor) if valor else None
     except (InvalidId, TypeError):
         return None
+
+
+def campo_duplicado(error: DuplicateKeyError) -> str:
+    """Nombre del campo que violó un índice único ('email', 'nickname', …)."""
+    patron = (error.details or {}).get("keyPattern") or {}
+    return next(iter(patron), "")
 
 
 async def en_transaccion(db: AsyncIOMotorDatabase,

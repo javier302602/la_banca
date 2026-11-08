@@ -1,6 +1,4 @@
 """CU-03 — Cerrar sesión manualmente. DTOs Pydantic.
 
-Los DTOs de respuesta nunca exponen el correo institucional, solo el nickname.
+CU-03 no recibe cuerpo: la sesión se identifica por la cookie. No hay DTO de respuesta (204).
 """
-
-# CU-03 no recibe cuerpo: la sesión se toma de la cookie validada por EA-01.
