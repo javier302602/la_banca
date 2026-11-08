@@ -6,7 +6,7 @@ automatismo programado en `app/jobs/eaXX_*/`.
 
 ## Ejecutar en local
 
-Requisitos: Python 3.14 y un MongoDB **replica set** (las operaciones atómicas usan transacciones).
+Requisitos: Python 3.14 (fijado en `.python-version`; Vercel soporta 3.12, 3.13 y 3.14) y un MongoDB **replica set** (las operaciones atómicas usan transacciones).
 
 ```bash
 # 1. MongoDB local como replica set (Docker)
