@@ -40,6 +40,7 @@ def test_imagen_con_url_protegida():
     r = _enviar(h, cid, imagen=imagen("WEBP"))
     assert r.imagen_url == f"/api/chats/{cid}/mensajes/{r.id}/imagen"
     assert chats.mensajes[r.id].imagen.referencia in imgs.objetos
+    assert chats.mensajes[r.id].imagen.bucket == imgs.bucket == "memoria"  # storageBucket
 
 
 def test_chat_expirado_no_admite_mensajes():

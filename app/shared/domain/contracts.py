@@ -74,6 +74,8 @@ class IEmailSender(ABC):
 
 
 class ImageStorage(ABC):
+    bucket: str = ""  # nombre del bucket, se guarda en messages.imageAttachment.storageBucket
+
     async def guardar(self, imagen: bytes, mime_type: str) -> str:
         """Almacena la imagen sin metadatos EXIF (RNF-PRI-04) y devuelve su referencia (objectKey)."""
         raise NotImplementedError

@@ -33,7 +33,9 @@ def test_registra_reporte_con_copia_y_plazo():
     assert r.codigo_motivo is CodigoMotivo.SPAM and r.observacion == "repetido"
     assert r.fecha_reporte == reloj.ahora() and r.fecha_retencion_fin == reloj.ahora() + timedelta(days=7)
     assert r.contenido.usuario_reportado_id == "autor"  # RF-REP-07
-    assert r.contenido.snapshot_textos["descripcion"] == "Barato"  # RF-REP-06
+    assert r.contenido.datos_publicacion["description"] == "Barato"  # RF-REP-06 (publicationData)
+    assert r.contenido.datos_publicacion["title"] == "Vendo" and r.contenido.datos_publicacion["type"] == "OFREZCO"
+    assert r.contenido.capturado_en == reloj.ahora() and r.contenido.mensajes == []
     assert pubs.publicaciones[pid].estado is EstadoPublicacion.ACTIVE  # RF-REP-10
 
 

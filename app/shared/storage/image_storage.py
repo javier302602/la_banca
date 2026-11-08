@@ -62,6 +62,8 @@ def _mime_de_clave(clave: str) -> str:
 
 
 class MemoryImageStorage(ImageStorage):
+    bucket = "memoria"
+
     def __init__(self) -> None:
         self.objetos: dict[str, bytes] = {}
 
@@ -89,7 +91,7 @@ class S3ImageStorage(ImageStorage):
                  region: str | None = None) -> None:
         import boto3
 
-        self._bucket = bucket
+        self._bucket = self.bucket = bucket
         self._s3 = boto3.client("s3", endpoint_url=endpoint, aws_access_key_id=access_key,
                                 aws_secret_access_key=secret_key, region_name=region)
 

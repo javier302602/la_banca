@@ -309,3 +309,65 @@ def test_la_app_no_inicia_en_produccion_con_memoria():
                              timeout=60)
     assert proceso.returncode != 0
     assert "Configuración inválida para ENTORNO=produccion" in proceso.stderr and "usa IMAGE_STORAGE=s3" in proceso.stderr
+
+
+# --- mapeo de reports y messages (Entregable 2 §5.3) -------------------------------------
+def test_snapshot_de_reporte_con_captured_at_y_publication_data():
+    from datetime import datetime, timezone
+
+    from bson import ObjectId
+
+    from app.shared.db.mapeo import doc_a_reporte, reporte_a_doc
+    from app.shared.domain.entities import CodigoMotivo, ContenidoReportado, Reporte, TipoObjetoReportado
+
+    ahora = datetime(2026, 10, 2, 15, 25, tzinfo=timezone.utc)
+    reportado, chat = str(ObjectId()), str(ObjectId())
+    mensaje = {"messageId": "m1", "senderId": reportado, "senderNickname": "x", "text": "hola", "imageKey": None,
+               "sentAt": ahora}
+    reporte = Reporte("", str(ObjectId()), TipoObjetoReportado.CHAT, chat, CodigoMotivo.SPAM, ahora,
+                      ahora + timedelta(days=7),
+                      ContenidoReportado(reportado, [mensaje], [], {"publicationId": "p1", "title": "t"}, ahora))
+    doc = reporte_a_doc(reporte)
+    snap = doc["reportedContentSnapshot"]
+    assert set(snap) == {"offenderUserId", "capturedAt", "publicationData", "messagesSnapshot", "retainedImageKeys"}
+    assert snap["capturedAt"] == ahora and snap["publicationData"] == {"publicationId": "p1", "title": "t"}
+    assert snap["messagesSnapshot"] == [mensaje]
+    leido = doc_a_reporte({**doc, "_id": ObjectId()}).contenido
+    assert (leido.mensajes, leido.datos_publicacion, leido.capturado_en) == ([mensaje], {"publicationId": "p1",
+                                                                                         "title": "t"}, ahora)
+
+
+def test_snapshot_con_el_formato_anterior_se_sigue_leyendo():
+    from datetime import datetime, timezone
+
+    from bson import ObjectId
+
+    from app.shared.db.mapeo import doc_a_reporte
+
+    ahora = datetime(2026, 10, 2, tzinfo=timezone.utc)
+    base = {"_id": ObjectId(), "reporterId": ObjectId(), "targetId": ObjectId(), "reasonCode": "SPAM",
+            "reportedAt": ahora, "retentionEndsAt": ahora + timedelta(days=7)}
+    chat = doc_a_reporte({**base, "targetType": "CHAT", "reportedContentSnapshot": {
+        "offenderUserId": ObjectId(), "messagesSnapshot": {"publicacionId": "p1", "mensajes": [{"texto": "a"}]}}})
+    assert chat.contenido.mensajes == [{"texto": "a"}] and chat.contenido.datos_publicacion == {"publicacionId": "p1"}
+    assert chat.contenido.capturado_en == ahora
+    pub = doc_a_reporte({**base, "targetType": "PUBLICATION", "reportedContentSnapshot": {
+        "offenderUserId": ObjectId(), "messagesSnapshot": {"titulo": "Vendo"}}})
+    assert pub.contenido.mensajes == [] and pub.contenido.datos_publicacion == {"titulo": "Vendo"}
+
+
+def test_mensaje_guarda_storage_bucket():
+    from datetime import datetime, timezone
+
+    from bson import ObjectId
+
+    from app.shared.db.mapeo import doc_a_mensaje, mensaje_a_doc
+    from app.shared.domain.entities import ImagenAdjunta, Mensaje
+
+    m = Mensaje("", str(ObjectId()), str(ObjectId()), "ana", datetime(2026, 10, 2, tzinfo=timezone.utc),
+                imagen=ImagenAdjunta("chats/a.png", "image/png", 9, "la-banca-media-prod"))
+    doc = mensaje_a_doc(m)
+    assert doc["imageAttachment"] == {"objectKey": "chats/a.png", "mimeType": "image/png", "sizeBytes": 9,
+                                      "storageBucket": "la-banca-media-prod"}
+    assert doc_a_mensaje({**doc, "_id": ObjectId()}).imagen.bucket == "la-banca-media-prod"
+    assert MemoryImageStorage.bucket == "memoria"

@@ -132,6 +132,7 @@ class ImagenAdjunta:
     referencia: str    # objectKey en el bucket
     mime_type: str     # FORMATOS_IMAGEN
     tamano_bytes: int  # 1 .. TAMANO_MAX_IMAGEN
+    bucket: str | None = None  # storageBucket (Entregable 2 §5.3)
 
 
 # --- Entidades (10) -----------------------------------------------------------
@@ -292,11 +293,18 @@ MOTIVOS_REPORTE: dict[CodigoMotivo, MotivoReporte] = {
 
 @dataclass
 class ContenidoReportado:
-    """9. CONTENIDO_REPORTADO — instantánea inmutable 1:1 con REPORTE (subdocumento reportedContentSnapshot)."""
+    """9. CONTENIDO_REPORTADO — instantánea inmutable 1:1 con REPORTE (subdocumento reportedContentSnapshot).
+
+    `mensajes` usa las claves del Entregable 2 (messageId, senderId, senderNickname, text, imageKey, sentAt).
+    `datos_publicacion` es la copia de la publicación reportada (RF-REP-06) o, en un chat, el contexto de su
+    publicación de origen.
+    """
 
     usuario_reportado_id: str
-    snapshot_textos: dict | list
+    mensajes: list[dict] = field(default_factory=list)
     snapshot_imagenes: list[str] = field(default_factory=list)  # claves protegidas en ImageStorage
+    datos_publicacion: dict | None = None
+    capturado_en: datetime | None = None
 
 
 @dataclass

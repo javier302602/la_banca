@@ -11,7 +11,7 @@ def _reporte(reportes, imgs, reloj, dias):
     ahora = reloj.ahora()
     retenida = asyncio.run(imgs.copiar_a_retencion(asyncio.run(imgs.guardar(imagen(), "image/png"))))
     asyncio.run(reportes.crear(Reporte("", "u1", TipoObjetoReportado.CHAT, "c1", CodigoMotivo.SPAM, ahora,
-                                       ahora + timedelta(days=dias), ContenidoReportado("u2", {}, [retenida]))))
+                                       ahora + timedelta(days=dias), ContenidoReportado("u2", [], [retenida]))))
     return retenida
 
 

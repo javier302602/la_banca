@@ -159,7 +159,7 @@ def mensaje_a_doc(m: Mensaje) -> dict:
            "text": m.texto, "imageAttachment": None, "sentAt": m.fecha_envio}
     if m.imagen:
         doc["imageAttachment"] = {"objectKey": m.imagen.referencia, "mimeType": m.imagen.mime_type,
-                                  "sizeBytes": m.imagen.tamano_bytes}
+                                  "sizeBytes": m.imagen.tamano_bytes, "storageBucket": m.imagen.bucket}
     return doc
 
 
@@ -167,7 +167,8 @@ def doc_a_mensaje(doc: dict) -> Mensaje:
     adj = doc.get("imageAttachment")
     return Mensaje(id=_s(doc["_id"]), chat_id=_s(doc["chatId"]), emisor_id=_s(doc["senderId"]),
                    nickname_emisor=doc.get("senderNickname", ""), fecha_envio=doc["sentAt"], texto=doc.get("text"),
-                   imagen=ImagenAdjunta(adj["objectKey"], adj["mimeType"], adj["sizeBytes"]) if adj else None)
+                   imagen=ImagenAdjunta(adj["objectKey"], adj["mimeType"], adj["sizeBytes"], adj.get("storageBucket"))
+                   if adj else None)
 
 
 # --- reports ---------------------------------------------------------------------------
@@ -178,10 +179,21 @@ def reporte_a_doc(r: Reporte) -> dict:
         "reportedAt": r.fecha_reporte, "retentionEndsAt": r.fecha_retencion_fin,
         "reportedContentSnapshot": {
             "offenderUserId": ObjectId(r.contenido.usuario_reportado_id),
-            "messagesSnapshot": r.contenido.snapshot_textos,
+            "capturedAt": r.contenido.capturado_en or r.fecha_reporte,
+            "publicationData": r.contenido.datos_publicacion,
+            "messagesSnapshot": list(r.contenido.mensajes),
             "retainedImageKeys": list(r.contenido.snapshot_imagenes),
         },
     }
+
+
+def _doc_a_contenido(snap: dict, reportado_en: datetime) -> ContenidoReportado:
+    mensajes, datos = snap.get("messagesSnapshot") or [], snap.get("publicationData")
+    if isinstance(mensajes, dict):  # formato anterior: un objeto con los datos y, en chats, la lista «mensajes»
+        datos = datos or {k: v for k, v in mensajes.items() if k != "mensajes"} or None
+        mensajes = mensajes.get("mensajes") or []
+    return ContenidoReportado(_s(snap.get("offenderUserId")), list(mensajes), list(snap.get("retainedImageKeys") or []),
+                              datos, snap.get("capturedAt") or reportado_en)
 
 
 def doc_a_reporte(doc: dict) -> Reporte:
@@ -190,8 +202,7 @@ def doc_a_reporte(doc: dict) -> Reporte:
         id=_s(doc["_id"]), reportante_id=_s(doc["reporterId"]), tipo_objeto=TipoObjetoReportado(doc["targetType"]),
         objeto_id=_s(doc["targetId"]), codigo_motivo=CodigoMotivo(doc["reasonCode"]),
         fecha_reporte=doc["reportedAt"], fecha_retencion_fin=doc["retentionEndsAt"],
-        contenido=ContenidoReportado(_s(snap.get("offenderUserId")), snap.get("messagesSnapshot") or {},
-                                     list(snap.get("retainedImageKeys") or [])),
+        contenido=_doc_a_contenido(snap, doc["reportedAt"]),
         observacion=doc.get("observation"),
     )
 

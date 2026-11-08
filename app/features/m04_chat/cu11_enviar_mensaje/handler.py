@@ -36,7 +36,7 @@ class EnviarMensajeHandler:
         imagen = None
         if body.imagen is not None:
             referencia = await self._imagenes.guardar(body.imagen, body.imagen_mime)
-            imagen = ImagenAdjunta(referencia, body.imagen_mime, len(body.imagen))
+            imagen = ImagenAdjunta(referencia, body.imagen_mime, len(body.imagen), self._imagenes.bucket)
         mensaje = Mensaje(id="", chat_id=chat.id, emisor_id=estudiante_id, nickname_emisor=nickname,
                           fecha_envio=ahora, texto=body.texto, imagen=imagen)
         expiracion = ahora + INACTIVIDAD_CHAT
