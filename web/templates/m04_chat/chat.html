@@ -1,8 +1,38 @@
 {% extends "base.html" %}
-{# CU-11, CU-12 — Chat #}
+{# CU-11 — Enviar mensaje · CU-12 — Abrir chat (+ EA-04 aviso de expiración) #}
 
 {% block title %}Chat{% endblock %}
+{% block pagina %}chat{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Chat</h1>
+<div class="mx-auto" style="max-width: 48rem">
+  <p><a href="/chats">← Mis chats</a></p>
+  <div id="mensajes" aria-live="polite"></div>
+  <section class="card d-none" id="chat">
+    <header class="card-header d-flex justify-content-between align-items-start gap-2">
+      <div>
+        <div class="fw-semibold" id="contraparte"></div>
+        <div class="small text-body-secondary"><span id="tipo"></span> · <span id="titulo"></span></div>
+      </div>
+      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar">Reportar</a>
+    </header>
+    <div class="alert alert-warning rounded-0 mb-0 d-none aviso-expiracion" id="aviso" role="status"></div>
+    <div class="card-body chat-mensajes" id="historial" aria-live="polite"></div>
+    <footer class="card-footer">
+      <form id="form-mensaje" class="d-flex flex-column gap-2" novalidate>
+        <label class="visually-hidden" for="texto">Mensaje</label>
+        <textarea class="form-control" id="texto" rows="2" maxlength="500" placeholder="Escribe un mensaje"></textarea>
+        <div class="d-flex gap-2 align-items-center">
+          <label class="visually-hidden" for="imagen">Imagen</label>
+          <input class="form-control form-control-sm" type="file" id="imagen" accept="image/jpeg,image/png,image/webp">
+          <span class="small text-body-secondary text-nowrap" id="contador-texto"></span>
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </div>
+      </form>
+    </footer>
+  </section>
+</div>
+<span id="chat-id" data-id="{{ chat_id }}" hidden></span>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/chat.js"></script>{% endblock %}

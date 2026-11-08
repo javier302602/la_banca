@@ -1,8 +1,28 @@
 {% extends "base.html" %}
-{# CU-10 — Responder publicación #}
+{# CU-10 — Responder a una publicación #}
 
-{% block title %}Responder publicación{% endblock %}
+{% block title %}Responder{% endblock %}
+{% block pagina %}responder{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Responder publicación</h1>
+<div class="mx-auto" style="max-width: 40rem">
+  <p><a href="/publicaciones/{{ publicacion_id }}">← Volver a la publicación</a></p>
+  <h1 class="h4 mb-3">Responder</h1>
+  <div id="mensajes" aria-live="polite"></div>
+  <form id="form-mensaje" novalidate>
+    <div class="mb-3">
+      <label class="form-label" for="texto">Primer mensaje</label>
+      <textarea class="form-control" id="texto" name="texto" rows="3" maxlength="500"></textarea>
+      <div class="form-text"><span id="contador-texto"></span> · o adjunta una imagen (no ambos)</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="imagen">Imagen (JPG, PNG o WebP, hasta 5 MB)</label>
+      <input class="form-control" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp">
+    </div>
+    <button class="btn btn-primary" type="submit">Enviar y abrir chat</button>
+  </form>
+</div>
+<span id="publicacion" data-id="{{ publicacion_id }}" hidden></span>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/chat.js"></script>{% endblock %}

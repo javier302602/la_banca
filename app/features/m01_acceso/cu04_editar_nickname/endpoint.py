@@ -1,10 +1,11 @@
 """CU-04 — Editar nickname. Controlador MVC (APIRouter), sin lógica de negocio."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
-from app.shared.security.session import SesionActual, get_sesion_actual
+from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
+from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import EditarNicknameHandler
 from .repository import MongoEditarNicknameRepository
@@ -24,3 +25,10 @@ async def editar_nickname(
     handler: EditarNicknameHandler = Depends(get_handler),
 ) -> NicknameResponse:
     return await handler.handle(sesion.estudiante_id, body)
+
+
+@router.get("/perfil", include_in_schema=False)
+async def pagina_perfil(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
+    if sesion is None:
+        return redirigir_a_login(request)
+    return render(request, "m01_acceso/editar_nickname.html", sesion)

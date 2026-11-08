@@ -8,9 +8,10 @@
 import logging
 import os
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import datetime
 
-from app.shared.domain.contracts import IConfigurationProvider
+from app.shared.clock import get_clock
+from app.shared.domain.contracts import IClock, IConfigurationProvider
 from app.shared.domain.entities import ClaveParametro, ParametroSistema
 from app.shared.domain.reglas import CATALOGO_PARAMETROS, validar_parametro
 
@@ -22,8 +23,9 @@ class ConfiguracionFaltante(RuntimeError):
 
 
 class EnvConfigurationProvider(IConfigurationProvider):
-    def __init__(self, entorno: Mapping[str, str] | None = None) -> None:
+    def __init__(self, entorno: Mapping[str, str] | None = None, clock: IClock | None = None) -> None:
         self._entorno = entorno if entorno is not None else os.environ
+        self._clock = clock or get_clock()
         self._ultimo_valido: dict[ClaveParametro, tuple[str | int, datetime]] = {}
 
     def obtener(self, clave: ClaveParametro) -> ParametroSistema:
@@ -37,12 +39,12 @@ class EnvConfigurationProvider(IConfigurationProvider):
                 log.error("Parámetro rechazado, se conserva el último valor válido: %s", error)
         if valor is not None:
             previo = self._ultimo_valido.get(clave)
-            fecha = previo[1] if previo and previo[0] == valor else datetime.now(timezone.utc)
+            fecha = previo[1] if previo and previo[0] == valor else self._clock.ahora()
             self._ultimo_valido[clave] = (valor, fecha)
         elif clave in self._ultimo_valido:
             valor, fecha = self._ultimo_valido[clave]
         elif definicion.valor_inicial is not None:
-            valor, fecha = definicion.valor_inicial, datetime.now(timezone.utc)
+            valor, fecha = definicion.valor_inicial, self._clock.ahora()
         else:
             raise ConfiguracionFaltante(f"Falta configurar {clave.value} (RF-CFG-01)")
         return ParametroSistema(clave=clave, valor=valor, tipo_dato=definicion.tipo,
