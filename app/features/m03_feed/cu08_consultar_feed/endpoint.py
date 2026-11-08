@@ -1,4 +1,8 @@
-"""CU-08 — Consultar el feed «Ahora». Controlador MVC (APIRouter), sin lógica de negocio."""
+"""CU-08 — Consultar el feed «Ahora». Controlador MVC (APIRouter), sin lógica de negocio.
+
+Las actualizaciones automáticas del feed envían `X-Actualizacion-Automatica: 1` y no reinician la
+inactividad de la sesión (RF-AUT-25).
+"""
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -16,17 +20,13 @@ router = APIRouter(tags=["M03 Feed"])
 
 
 def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ConsultarFeedHandler:
-    return ConsultarFeedHandler(
-        publicaciones=MongoConsultarFeedRepository(db),
-        clock=get_clock(),
-    )
+    return ConsultarFeedHandler(publicaciones=MongoConsultarFeedRepository(db), clock=get_clock())
 
 
-@router.get("/feed", response_model=FeedResponse, status_code=200)
+@router.get("/api/feed", response_model=FeedResponse, status_code=200)
 async def consultar_feed(
     body: Annotated[ConsultarFeedRequest, Query()],
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: ConsultarFeedHandler = Depends(get_handler),
 ) -> FeedResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.handle(sesion.estudiante_id, body)
