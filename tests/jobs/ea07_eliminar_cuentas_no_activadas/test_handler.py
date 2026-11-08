@@ -64,3 +64,28 @@ def test_workflow_de_github_cada_hora_en_un_solo_job():
     assert "secrets.CRON_SECRET" in texto and "secrets.APP_BASE_URL" in texto
     assert texto.count('Authorization: Bearer ${CRON_SECRET}') == 3
     assert "${{ secrets" not in texto.split("steps:")[1]  # los secrets llegan por env, no interpolados en scripts
+
+
+def test_repositorio_consulta_por_ix_accounts_activation_exp():
+    """EA-07 usa el índice del Entregable 2 con un límite que no deja fuera ninguna cuenta vencida."""
+    from datetime import datetime, timezone
+
+    from app.jobs.ea07_eliminar_cuentas_no_activadas.repository import MongoEliminarCuentasRepository
+
+    class Coleccion:
+        def __init__(self):
+            self.llamadas = []
+
+        async def delete_many(self, filtro, **opciones):
+            self.llamadas.append((filtro, opciones))
+            return type("Resultado", (), {"deleted_count": 2})()
+
+    coleccion = Coleccion()
+    db = type("Db", (), {"accounts": coleccion})()
+    corte = datetime(2026, 10, 2, 14, 0, tzinfo=timezone.utc)
+    assert asyncio.run(MongoEliminarCuentasRepository(db).eliminar_no_activadas(corte)) == 2
+    filtro, opciones = coleccion.llamadas[0]
+    assert opciones == {"hint": "ix_accounts_activation_exp"}
+    # último enlace posible: emitido justo antes de las 72 h y vigente 24 h más → corte + 96 h
+    assert filtro["activation.expiresAt"] == {"$lte": corte + timedelta(hours=96)}
+    assert filtro["status"] == "PENDIENTE_ACTIVACION" and filtro["createdAt"] == {"$lte": corte}
