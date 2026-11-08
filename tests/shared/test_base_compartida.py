@@ -88,6 +88,17 @@ def test_minutos_hacia_arriba():
 
 
 # --- reloj --------------------------------------------------------------------------
+def test_hora_hhmm_en_america_lima():
+    """RF-CHT-11 / RN-34: HH:MM en la hora del sistema, también al cruzar la medianoche."""
+    from datetime import datetime, timezone
+
+    from app.shared.clock import hora_hhmm
+
+    assert hora_hhmm(datetime(2026, 10, 3, 3, 30, tzinfo=timezone.utc)) == "22:30"
+    assert hora_hhmm(datetime(2026, 10, 2, 17, 5, tzinfo=timezone.utc)) == "12:05"
+    assert hora_hhmm(datetime(2026, 10, 2, 17, 5)) == "12:05"  # valor sin zona: se asume UTC
+
+
 def test_relojes():
     assert SystemClock().ahora().tzinfo is not None
     reloj = FakeClock()

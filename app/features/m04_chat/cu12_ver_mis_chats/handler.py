@@ -9,6 +9,7 @@ RF: RF-CHT-15, RF-CHT-18, RF-CHT-19, RF-CHT-21, RF-CHT-25
 """
 from datetime import datetime, timedelta
 
+from app.shared.clock import hora_hhmm
 from app.shared.domain.contracts import IChatRepository, IClock, IConfigurationProvider, ImageStorage
 from app.shared.domain.entities import Chat, ClaveParametro
 from app.shared.domain.errors import NoDisponible, NoEncontrado
@@ -39,7 +40,8 @@ class VerMisChatsHandler:
         return MisChatsResponse(ahora=ahora, items=[
             ChatResumenResponse(id=c.id, tipo_publicacion=c.tipo_publicacion, titulo_publicacion=c.titulo_publicacion,
                                 nickname_contraparte=c.contraparte(estudiante_id)[1],
-                                ultimo_mensaje_en=c.ultima_actividad, fecha_expiracion=c.fecha_expiracion,
+                                ultimo_mensaje_en=c.ultima_actividad,
+                                hora_ultimo_mensaje=hora_hhmm(c.ultima_actividad), fecha_expiracion=c.fecha_expiracion,
                                 no_leidos=c.tiene_no_leidos(estudiante_id))
             for c in chats
         ])
@@ -59,7 +61,7 @@ class VerMisChatsHandler:
             mensajes=[MensajeResponse(id=m.id, es_propio=m.emisor_id == estudiante_id,
                                       nickname_emisor=m.nickname_emisor, texto=m.texto,
                                       imagen_url=url_imagen(chat.id, m.id) if m.imagen else None,
-                                      fecha_envio=m.fecha_envio)
+                                      fecha_envio=m.fecha_envio, hora=hora_hhmm(m.fecha_envio))
                       for m in mensajes],
         )
 

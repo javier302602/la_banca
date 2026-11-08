@@ -157,13 +157,14 @@ def test_utilidades_js_con_node():
     const en = (min) => new Date(Date.now() + min * 60000).toISOString();
     console.log(JSON.stringify({
       r1: B.restante(en(9.2)), r2: B.restante(en(124.5)), r3: B.restante(en(-1)),
-      hora: B.horaHHMM(new Date(2026, 9, 2, 7, 5).toISOString()),
+      horaLocal: typeof B.horaHHMM,
     }));
     """
     salida = subprocess.run(["node", "-e", script, str(RAIZ / "web/static/js/app.js")],
                             capture_output=True, text=True, check=True, timeout=30)
     datos = json.loads(salida.stdout)
-    assert datos == {"r1": "10 min", "r2": "2 h 5 min", "r3": "Expirada", "hora": "07:05"}
+    assert datos == {"r1": "10 min", "r2": "2 h 5 min", "r3": "Expirada",
+                     "horaLocal": "undefined"}  # RN-34: la hora HH:MM ya no se calcula en el navegador
 
 
 COMPRESION_JS = r"""
