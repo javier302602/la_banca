@@ -7,14 +7,13 @@
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
-  function datosMensaje() {
+  async function datosMensaje() {
     const texto = document.getElementById("texto").value;
-    const archivo = document.getElementById("imagen").files[0];
-    if (texto.trim() && archivo) throw new Banca.ErrorApi(422, { detail: "Un mensaje lleva texto o una imagen, no ambos" });
-    if (!texto.trim() && !archivo) throw new Banca.ErrorApi(422, { detail: "Escribe un mensaje o adjunta una imagen" });
-    if (archivo && archivo.size > 5 * 1024 * 1024) throw new Banca.ErrorApi(422, { detail: "La imagen supera el tamaño máximo de 5 MB" });
+    const original = document.getElementById("imagen").files[0];
+    if (texto.trim() && original) throw new Banca.ErrorApi(422, { detail: "Un mensaje lleva texto o una imagen, no ambos" });
+    if (!texto.trim() && !original) throw new Banca.ErrorApi(422, { detail: "Escribe un mensaje o adjunta una imagen" });
     const datos = new FormData();
-    if (archivo) datos.append("imagen", archivo); else datos.append("texto", texto);
+    if (original) datos.append("imagen", await Banca.comprimirImagen(original)); else datos.append("texto", texto);
     return datos;
   }
 
@@ -27,7 +26,7 @@
       const boton = formulario.querySelector("[type=submit]");
       ocupado(boton, true);
       try {
-        const r = await api(`/api/publicaciones/${id}/respuestas`, { metodo: "POST", formulario: datosMensaje() });
+        const r = await api(`/api/publicaciones/${id}/respuestas`, { metodo: "POST", formulario: await datosMensaje() });
         location.href = `/chats/${encodeURIComponent(r.chat_id)}`;
       } catch (error) {
         const extra = error.datos.chat_id  // RF-CHT-23
@@ -139,7 +138,7 @@
       const boton = formulario.querySelector("[type=submit]");
       ocupado(boton, true);
       try {
-        const m = await api(`/api/chats/${chatId}/mensajes`, { metodo: "POST", formulario: datosMensaje() });
+        const m = await api(`/api/chats/${chatId}/mensajes`, { metodo: "POST", formulario: await datosMensaje() });
         formulario.reset();
         document.getElementById("texto").dispatchEvent(new Event("input"));
         limpiar(mensajes);

@@ -98,6 +98,44 @@ const Banca = (() => {
 
   function parametro(nombre) { return new URLSearchParams(location.search).get(nombre); }
 
+  /* Vercel admite solicitudes de hasta 4.5 MB: una imagen de más de 4 MB se redimensiona y se vuelve a
+   * codificar con canvas (WebP si el navegador lo soporta, si no JPEG) antes de subirla. El servidor
+   * conserva su validación (≤ 5 MB) y la recodificación con Pillow. */
+  const LIMITE_SUBIDA = 4 * 1024 * 1024;
+  const LADO_MAXIMO = 2560;
+
+  function formatoSalida(lienzo) {
+    lienzo.width = lienzo.height = 1;
+    return String(lienzo.toDataURL("image/webp")).startsWith("data:image/webp") ? "image/webp" : "image/jpeg";
+  }
+
+  async function comprimirImagen(archivo, limite = LIMITE_SUBIDA) {
+    if (!archivo || archivo.size <= limite) return archivo;
+    let mapa;
+    try { mapa = await createImageBitmap(archivo); }
+    catch (e) { throw new ErrorApi(422, { detail: "La imagen está dañada o no se puede leer" }); }
+    const lienzo = document.createElement("canvas");
+    const formato = formatoSalida(lienzo);
+    let escala = Math.min(1, LADO_MAXIMO / Math.max(mapa.width, mapa.height));
+    let calidad = 0.85;
+    try {
+      for (let intento = 0; intento < 10; intento++) {
+        lienzo.width = Math.max(1, Math.round(mapa.width * escala));
+        lienzo.height = Math.max(1, Math.round(mapa.height * escala));
+        lienzo.getContext("2d").drawImage(mapa, 0, 0, lienzo.width, lienzo.height);
+        const blob = await new Promise((resolver) => lienzo.toBlob(resolver, formato, calidad));
+        if (blob && blob.size <= limite) {
+          const nombre = (archivo.name || "imagen").replace(/\.[^.]*$/, "") + (formato === "image/webp" ? ".webp" : ".jpg");
+          return new File([blob], nombre, { type: formato });
+        }
+        if (calidad > 0.6) calidad = Math.round((calidad - 0.1) * 100) / 100; else escala *= 0.75;
+      }
+    } finally {
+      if (mapa.close) mapa.close();
+    }
+    throw new ErrorApi(422, { detail: "No se pudo reducir la imagen por debajo de 4 MB" });
+  }
+
   setInterval(() => refrescarRestantes(), 30000);
 
   document.addEventListener("click", async (evento) => {
@@ -109,5 +147,5 @@ const Banca = (() => {
   });
 
   return { api, ErrorApi, TIPOS, sincronizar, ahora, restante, horaHHMM, el, alerta, limpiar, contador,
-           refrescarRestantes, ocupado, parametro };
+           refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };
 })();
