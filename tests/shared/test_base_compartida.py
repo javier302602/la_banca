@@ -232,6 +232,23 @@ def test_actualizacion_automatica_no_reinicia_conteo():
     assert error.value.mensaje == MENSAJE_INACTIVIDAD  # RF-AUT-23
 
 
+def test_cambio_de_inactividad_aplica_desde_la_siguiente_interaccion():
+    """RF-CFG-11: una sesión existente conserva su vencimiento; la siguiente interacción aplica el valor nuevo."""
+    repo, reloj = FakeAccountRepository(), FakeClock()
+    token = _sesion_activa(repo, reloj)  # creada con 12 h
+    config = FakeConfig()
+    validador = ValidadorSesion(repo, config, reloj)
+    config.valores[ClaveParametro.HORAS_INACTIVIDAD_SESION] = 2
+    reloj.avanzar(hours=5)
+    asyncio.run(validador.validar(token, es_interaccion=False))  # sigue vigente: conserva las 12 h originales
+    asyncio.run(validador.validar(token))  # interacción: ahora vence en 2 h
+    assert next(iter(repo.sesiones.values())).fecha_expiracion == reloj.ahora() + timedelta(hours=2)
+    reloj.avanzar(hours=2, minutes=1)
+    with pytest.raises(NoAutenticado) as error:
+        asyncio.run(validador.validar(token))
+    assert error.value.mensaje == MENSAJE_INACTIVIDAD
+
+
 def test_sesion_expirada_queda_invalidada():
     repo, reloj = FakeAccountRepository(), FakeClock()
     token = _sesion_activa(repo, reloj)
