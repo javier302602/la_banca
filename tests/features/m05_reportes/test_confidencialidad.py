@@ -95,3 +95,38 @@ def test_reporte_de_chat_invisible_para_el_otro_participante():
 
     despues = (asyncio.run(ver.handle("autor")).model_dump(), asyncio.run(ver.abrir("autor", cid)).model_dump())
     assert len(reportes.reportes) == 1 and despues == antes
+
+
+def test_contenido_conservado_inaccesible_desde_la_aplicacion():
+    """RN-37: tras expirar y limpiarse el chat, la copia retenida existe pero nadie la alcanza desde la app."""
+    import pytest
+
+    from app.jobs.ea03_limpiar_chats_expirados.handler import LimpiarChatsExpiradosHandler
+    from app.shared.domain.entities import ImagenAdjunta
+    from app.shared.domain.errors import NoDisponible, NoEncontrado
+    from tests.fakes import imagen
+
+    chats, reportes, imgs, reloj = FakeChatRepository(), FakeReportRepository(), FakeImageStorage(), FakeClock()
+    ahora = reloj.ahora()
+    cid = asyncio.run(chats.crear_con_primer_mensaje(
+        Chat("", "p1", "autor", "lector", ahora, ahora, ahora + timedelta(hours=24)),
+        Mensaje("", "", "lector", "beto", ahora, texto="hola")))
+    referencia = asyncio.run(imgs.guardar(imagen(), "image/png"))
+    mid = asyncio.run(chats.agregar_mensaje(Mensaje("", cid, "autor", "ana", ahora,
+                                                    imagen=ImagenAdjunta(referencia, "image/png", 9)),
+                                            ahora + timedelta(hours=24)))
+    asyncio.run(ReportarChatHandler(chats, reportes, imgs, FakeConfig(), reloj).handle(
+        "lector", cid, ReporteChat(codigo_motivo="SPAM")))
+    copia = next(iter(reportes.reportes.values())).contenido.snapshot_imagenes[0]
+
+    reloj.avanzar(hours=24, minutes=1)
+    asyncio.run(LimpiarChatsExpiradosHandler(chats, imgs, reloj).handle())
+    assert copia in imgs.objetos and referencia not in imgs.objetos  # se conserva solo en el área de retención
+
+    ver = VerMisChatsHandler(chats, imgs, FakeConfig(), reloj)
+    for usuario in ("autor", "lector", "tercero"):
+        assert asyncio.run(ver.handle(usuario)).items == []
+        with pytest.raises((NoEncontrado, NoDisponible)):
+            asyncio.run(ver.abrir(usuario, cid))
+        with pytest.raises((NoEncontrado, NoDisponible)):
+            asyncio.run(ver.imagen(usuario, cid, mid))

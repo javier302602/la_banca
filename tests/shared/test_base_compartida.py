@@ -270,8 +270,11 @@ def test_sin_token_o_token_desconocido():
 from app.shared.config.provider import ConfiguracionInvalida, verificar_entorno  # noqa: E402
 
 
+POLITICA = {"TERMINOS_VERSION": "1.0", "TERMINOS_FECHA": "2026-11-01", "CANAL_ARCO": "datospersonales@unas.edu.pe"}
+
+
 @pytest.mark.parametrize("entorno", [{}, {"ENTORNO": "desarrollo"}, {"ENTORNO": "produccion", "IMAGE_STORAGE": "s3",
-                                                                     "EMAIL_SENDER": "smtp"}])
+                                                                     "EMAIL_SENDER": "smtp", **POLITICA}])
 def test_entorno_valido(entorno):
     verificar_entorno(entorno)
 
@@ -286,6 +289,14 @@ def test_produccion_rechaza_proveedores_de_desarrollo(entorno, falta):
         verificar_entorno(entorno)
     for texto in falta:
         assert texto in str(error.value)
+
+
+@pytest.mark.parametrize("falta", ["TERMINOS_VERSION", "TERMINOS_FECHA", "CANAL_ARCO"])
+def test_produccion_exige_version_fecha_y_canal_arco_de_la_politica(falta):
+    """RN-31 / RNF-LEG-03: no se publica una política sin versión, fecha ni canal ARCO."""
+    entorno = {"ENTORNO": "produccion", "IMAGE_STORAGE": "s3", "EMAIL_SENDER": "smtp", **POLITICA, falta: " "}
+    with pytest.raises(ConfiguracionInvalida, match=f"Falta {falta}"):
+        verificar_entorno(entorno)
 
 
 def test_la_app_no_inicia_en_produccion_con_memoria():

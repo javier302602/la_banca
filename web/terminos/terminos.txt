@@ -1,11 +1,9 @@
-[BORRADOR — TODO: reemplazar por el texto legal aprobado. Los documentos del proyecto no incluyen el texto definitivo.]
-
 TÉRMINOS DE USO Y POLÍTICA DE PRIVACIDAD DE LA BANCA
 
 1. Finalidad del servicio
 La Banca es un espacio temporal para que estudiantes de la comunidad universitaria publiquen, descubran y respondan situaciones puntuales entre clases.
 
-2. Datos que se tratan (RN-31)
+2. Datos que se tratan
 Correo institucional, nickname, estado de activación de la cuenta, publicaciones, mensajes y reportes.
 
 3. Finalidad del tratamiento
@@ -14,11 +12,12 @@ Autenticar a los estudiantes, mostrar publicaciones y permitir conversaciones 1 
 4. Plazos de conservación
 - Publicaciones: 24 horas desde su creación.
 - Chats: se eliminan tras 24 horas sin mensajes.
-- Contenido reportado: se conserva durante el plazo de conservación configurado (inicialmente 7 días).
+- Contenido reportado: se conserva durante el plazo de conservación configurado (inicialmente 7 días) y se elimina del almacenamiento activo y de los registros técnicos dentro de las 24 horas siguientes al vencimiento de ese plazo.
 - Cuentas no activadas: se eliminan a las 72 horas del registro.
+- Copias de respaldo: se conservan como máximo 7 días; los datos eliminados desaparecen de ellas al rotarse.
 
 5. Quién accede
-Los demás usuarios ven solo tu nickname. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico.
+Los demás usuarios ven solo tu nickname. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico, y únicamente para atender un requerimiento de la institución o de una autoridad competente.
 
 6. Derechos ARCO
-TODO: indicar el canal oficial para ejercer los derechos de acceso, rectificación, cancelación y oposición (Ley N.° 29733).
+Puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición (Ley N.° 29733 y su reglamento) a través de: {{CANAL_ARCO}}.
