@@ -301,9 +301,10 @@ class FakeChatRepository(IChatRepository):
 
     async def eliminar_expirados(self, ahora):
         imagenes: list[str] = []
-        for c in [c for c in self.chats.values() if not c.activo(ahora)]:
+        expirados = [c for c in self.chats.values() if not c.activo(ahora)]
+        for c in expirados:
             imagenes += await self.eliminar_chat(c.id)
-        return imagenes
+        return len(expirados), imagenes
 
 
 class FakeReportRepository(IReportRepository):
@@ -324,7 +325,7 @@ class FakeReportRepository(IReportRepository):
         vencidos = [r for r in self.reportes.values() if r.fecha_retencion_fin <= ahora]
         for r in vencidos:
             del self.reportes[r.id]
-        return [k for r in vencidos for k in r.contenido.snapshot_imagenes]
+        return len(vencidos), [k for r in vencidos for k in r.contenido.snapshot_imagenes]
 
 
 class FakeParameterRepository(IParameterRepository):

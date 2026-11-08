@@ -156,8 +156,8 @@ class IChatRepository(ABC):
         """Atómico: inserta y reinicia la expiración solo si el chat sigue activo. Id del mensaje o None."""
         raise NotImplementedError
     async def marcar_leido(self, chat_id: str, usuario_id: str, ahora: datetime) -> None: raise NotImplementedError
-    async def eliminar_expirados(self, ahora: datetime) -> list[str]:
-        """Borra chats expirados y sus mensajes; devuelve las referencias de imagen a eliminar."""
+    async def eliminar_expirados(self, ahora: datetime) -> tuple[int, list[str]]:
+        """Borra chats expirados y sus mensajes; devuelve (chats eliminados, referencias de imagen a borrar)."""
         raise NotImplementedError
 
 
@@ -166,8 +166,8 @@ class IReportRepository(ABC):
         """Inserta el reporte con su ContenidoReportado embebido en una sola operación (RNF-FIA-03)."""
         raise NotImplementedError
     async def existe_reporte(self, reportante_id: str, tipo: TipoObjetoReportado, objeto_id: str) -> bool: raise NotImplementedError
-    async def eliminar_vencidos(self, ahora: datetime) -> list[str]:
-        """Purga REPORTE + CONTENIDO_REPORTADO vencidos; devuelve las imágenes retenidas a eliminar."""
+    async def eliminar_vencidos(self, ahora: datetime) -> tuple[int, list[str]]:
+        """Purga REPORTE + CONTENIDO_REPORTADO vencidos; devuelve (reportes eliminados, imágenes retenidas)."""
         raise NotImplementedError
 
 

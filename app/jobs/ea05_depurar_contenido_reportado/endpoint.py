@@ -1,8 +1,8 @@
-"""EA-05 — Eliminar contenido reportado vencido. Controlador MVC (APIRouter), sin lógica de negocio."""
+"""EA-05 — Eliminar contenido reportado vencido. Invocado por Vercel Cron (ver vercel.json)."""
 import hmac
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
@@ -24,17 +24,13 @@ def verificar_cron_secret(authorization: str | None = Header(default=None)) -> N
 
 
 def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> DepurarContenidoReportadoHandler:
-    return DepurarContenidoReportadoHandler(
-        reportes=MongoDepurarReportesRepository(db),
-        imagenes=get_image_storage(),
-        clock=get_clock(),
-    )
+    return DepurarContenidoReportadoHandler(reportes=MongoDepurarReportesRepository(db),
+                                            imagenes=get_image_storage(), clock=get_clock())
 
 
 @router.get("/jobs/ea05-depurar-contenido-reportado", status_code=200)
 async def ejecutar(
     _: None = Depends(verificar_cron_secret),
     handler: DepurarContenidoReportadoHandler = Depends(get_handler),
-) -> None:
-    """Invocado por Vercel Cron (15 3 * * *)."""
-    raise NotImplementedError
+) -> dict[str, int]:
+    return await handler.handle()

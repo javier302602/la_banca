@@ -1,14 +1,16 @@
-"""EA-07 — Eliminar las cuentas no activadas. Implementación Mongo de lo que necesita el slice."""
+"""EA-07 — Eliminar las cuentas no activadas. Implementación Mongo de lo que necesita el job."""
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.domain.contracts import IAccountRepository
+from app.shared.domain.entities import EstadoCuenta
 
 
 class MongoEliminarCuentasRepository(IAccountRepository):
-    """Implementa de IAccountRepository: eliminar_no_activadas."""
-
     def __init__(self, db: AsyncIOMotorDatabase) -> None:
         self._db = db
 
-    async def eliminar_no_activadas(self, *args, **kwargs):
-        raise NotImplementedError
+    async def eliminar_no_activadas(self, registradas_antes_de):
+        # Índice ix_accounts_pending {status, createdAt}; el enlace va embebido y se elimina con la cuenta
+        resultado = await self._db.accounts.delete_many(
+            {"status": EstadoCuenta.PENDIENTE_ACTIVACION.value, "createdAt": {"$lte": registradas_antes_de}})
+        return resultado.deleted_count
