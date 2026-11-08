@@ -93,6 +93,35 @@ def test_fallos_fuera_de_la_ventana_no_bloquean():
     assert repo.intentos["ana@unas.edu.pe"].conteo_fallidos == 1
 
 
+def test_ventana_movil_de_15_minutos():
+    """RF-AUT-19 / RN-39: fallos en los min 0, 10, 14, 16, 17 y 18 → a los 18 hay 5 en 8 min (10–18): bloqueo."""
+    h, repo, reloj = _escenario()
+    inicio = reloj.ahora()
+    for minuto in (0, 10, 14, 16, 17):
+        reloj.avanzar(minutes=minuto - (reloj.ahora() - inicio).total_seconds() / 60)
+        with pytest.raises(NoAutenticado):
+            _login(h, "mala1234")
+    assert repo.intentos["ana@unas.edu.pe"].conteo_fallidos == 4  # el del min 0 salió de la ventana
+    reloj.avanzar(minutes=1)  # min 18
+    with pytest.raises(NoAutenticado):
+        _login(h, "mala1234")
+    intento = repo.intentos["ana@unas.edu.pe"]
+    assert intento.conteo_fallidos == 5 and intento.bloqueado_hasta == reloj.ahora() + timedelta(minutes=15)
+    with pytest.raises(DemasiadosIntentos, match="en 15 min"):
+        _login(h)  # aun con la contraseña correcta
+
+
+def test_intento_antiguo_sin_failed_at_se_reconstruye():
+    from app.shared.db.mapeo import doc_a_intento, intento_a_doc
+
+    t0 = FakeClock().ahora()
+    doc = {"email": "a@unas.edu.pe", "failedCount": 3, "firstFailedAt": t0,
+           "lastFailedAt": t0 + timedelta(minutes=2), "lockedUntil": None}
+    intento = doc_a_intento(doc)
+    assert intento.fallos == [t0, t0 + timedelta(minutes=2), t0 + timedelta(minutes=2)]
+    assert intento_a_doc(intento)["failedAt"] == intento.fallos
+
+
 def test_exito_reinicia_contador():
     h, repo, _ = _escenario()
     with pytest.raises(NoAutenticado):

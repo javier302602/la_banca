@@ -88,13 +88,16 @@ def doc_a_estudiante(doc: dict) -> Estudiante:
 # --- login_attempts ---------------------------------------------------------------
 def intento_a_doc(i: IntentoAcceso) -> dict:
     return {"email": i.correo_ingresado, "failedCount": i.conteo_fallidos, "firstFailedAt": i.primer_fallo,
-            "lastFailedAt": i.ultimo_fallo, "lockedUntil": i.bloqueado_hasta}
+            "lastFailedAt": i.ultimo_fallo, "lockedUntil": i.bloqueado_hasta, "failedAt": list(i.fallos)}
 
 
 def doc_a_intento(doc: dict) -> IntentoAcceso:
+    fallos = list(doc.get("failedAt") or [])
+    if not fallos:  # documento anterior a la ventana móvil: se reconstruye con las marcas disponibles
+        fallos = [doc["firstFailedAt"]] + [doc["lastFailedAt"]] * (doc["failedCount"] - 1)
     return IntentoAcceso(id=_s(doc.get("_id")), correo_ingresado=doc["email"], conteo_fallidos=doc["failedCount"],
                          primer_fallo=doc["firstFailedAt"], ultimo_fallo=doc["lastFailedAt"],
-                         bloqueado_hasta=doc.get("lockedUntil"))
+                         bloqueado_hasta=doc.get("lockedUntil"), fallos=fallos)
 
 
 # --- sessions -----------------------------------------------------------------------

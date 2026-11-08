@@ -157,7 +157,11 @@ class Estudiante:
 
 @dataclass
 class IntentoAcceso:
-    """2. INTENTO_ACCESO — colección login_attempts (Tabla 6.2). Por correo, exista o no la cuenta (PA-27)."""
+    """2. INTENTO_ACCESO — colección login_attempts (Tabla 6.2). Por correo, exista o no la cuenta (PA-27).
+
+    `fallos` guarda los instantes de los fallos consecutivos que siguen dentro de la ventana móvil de
+    15 min (como máximo 5): conteo_fallidos = len(fallos), primer_fallo = fallos[0] (RN-39).
+    """
 
     correo_ingresado: str
     conteo_fallidos: int  # 1..5
@@ -165,6 +169,17 @@ class IntentoAcceso:
     ultimo_fallo: datetime
     bloqueado_hasta: datetime | None = None  # 5.º fallo + 15 min (RN-39)
     id: str | None = None
+    fallos: list[datetime] = field(default_factory=list)
+
+    def registrar_fallo(self, ahora: datetime) -> None:
+        """Ventana móvil (RF-AUT-19): descarta los fallos con más de 15 min y agrega el actual."""
+        recientes = [t for t in self.fallos if t > ahora - VENTANA_INTENTOS_FALLIDOS]
+        self.fallos = (recientes + [ahora])[-INTENTOS_FALLIDOS_BLOQUEO:]
+        self.conteo_fallidos = len(self.fallos)
+        self.primer_fallo = self.fallos[0]
+        self.ultimo_fallo = ahora
+        if self.conteo_fallidos >= INTENTOS_FALLIDOS_BLOQUEO:
+            self.bloqueado_hasta = ahora + DURACION_BLOQUEO_LOGIN
 
 
 @dataclass

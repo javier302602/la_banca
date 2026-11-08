@@ -9,8 +9,6 @@ from datetime import datetime, timedelta
 
 from app.shared.domain.contracts import IAccountRepository, IClock, IConfigurationProvider, IPasswordHasher, ITokenService
 from app.shared.domain.entities import (
-    DURACION_BLOQUEO_LOGIN,
-    INTENTOS_FALLIDOS_BLOQUEO,
     VENTANA_INTENTOS_FALLIDOS,
     ClaveParametro,
     EstadoCuenta,
@@ -75,17 +73,13 @@ class IniciarSesionHandler:
         return SesionIniciada(token=token, respuesta=SesionResponse(nickname=estudiante.nickname))
 
     async def _registrar_fallo(self, correo: str, intento: IntentoAcceso | None, ahora: datetime) -> None:
-        if intento is None or ahora - intento.primer_fallo > VENTANA_INTENTOS_FALLIDOS:
-            intento = IntentoAcceso(correo_ingresado=correo, conteo_fallidos=1, primer_fallo=ahora, ultimo_fallo=ahora)
-        else:
-            intento.conteo_fallidos = min(intento.conteo_fallidos + 1, INTENTOS_FALLIDOS_BLOQUEO)
-            intento.ultimo_fallo = ahora
-        if intento.conteo_fallidos >= INTENTOS_FALLIDOS_BLOQUEO:
-            intento.bloqueado_hasta = ahora + DURACION_BLOQUEO_LOGIN  # RF-AUT-19
+        if intento is None:
+            intento = IntentoAcceso(correo_ingresado=correo, conteo_fallidos=0, primer_fallo=ahora, ultimo_fallo=ahora)
+        intento.registrar_fallo(ahora)  # ventana móvil de 15 min; bloquea al 5.º fallo (RF-AUT-19)
         await self._cuentas.guardar_intento(intento)
 
     def _evaluar_desbloqueo(self, intento: IntentoAcceso, ahora: datetime) -> bool:
-        """EA-06 — True si el bloqueo ya venció o la racha de fallos salió de la ventana de 15 min."""
+        """EA-06 — True si el bloqueo ya venció o si todos los fallos de la racha salieron de la ventana."""
         if intento.bloqueado_hasta is not None:
             return ahora >= intento.bloqueado_hasta
-        return ahora - intento.primer_fallo > VENTANA_INTENTOS_FALLIDOS
+        return ahora - intento.ultimo_fallo > VENTANA_INTENTOS_FALLIDOS
