@@ -49,14 +49,18 @@ def test_vercel_json_programa_los_tres_crons():
     assert config["rewrites"] == [{"source": "/(.*)", "destination": "/api/index"}]
 
 
-def test_workflow_de_github_cada_hora():
+def test_workflow_de_github_cada_hora_en_un_solo_job():
     from pathlib import Path
 
     texto = (Path(__file__).resolve().parents[3] / ".github" / "workflows" / "jobs.yml").read_text(encoding="utf-8")
     assert 'cron: "0 * * * *"' in texto
-    for job in ("ea03-limpiar-chats-expirados", "ea05-depurar-contenido-reportado",
-                "ea07-eliminar-cuentas-no-activadas"):
-        assert f"- {job}" in texto
+    assert "matrix" not in texto and texto.count("runs-on:") == 1  # un solo job: ~1 minuto por ejecución
+    assert "timeout-minutes: 2" in texto
+    posiciones = [texto.index(f"/jobs/{job}") for job in ("ea03-limpiar-chats-expirados",
+                                                           "ea05-depurar-contenido-reportado",
+                                                           "ea07-eliminar-cuentas-no-activadas")]
+    assert posiciones == sorted(posiciones)  # pasos secuenciales en orden
+    assert texto.count("if: ${{ !cancelled() }}") == 3
     assert "secrets.CRON_SECRET" in texto and "secrets.APP_BASE_URL" in texto
-    assert 'Authorization: Bearer ${CRON_SECRET}' in texto
-    assert "${{ secrets" not in texto.split("run: |")[1]  # los secrets llegan por env, no interpolados en el script
+    assert texto.count('Authorization: Bearer ${CRON_SECRET}') == 3
+    assert "${{ secrets" not in texto.split("steps:")[1]  # los secrets llegan por env, no interpolados en scripts
