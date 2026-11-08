@@ -220,7 +220,13 @@ def test_feed_paginado_y_jobs(db):
         plan = db.accounts.find(filtro_no_activadas(datetime.now(timezone.utc) - timedelta(hours=72))) \
             .hint(INDICE).explain()["queryPlanner"]["winningPlan"]
         ok(INDICE in str(plan) and "IXSCAN" in str(plan), f"EA-07 recorre {INDICE}: {plan}")
+        vigentes = db.sessions.count_documents({})
+        db.sessions.insert_one({"userId": ObjectId(), "tokenHash": "sesion-de-hace-31-dias", "startedAt": ahora,
+                                "lastInteractionAt": ahora, "expiresAt": ahora - timedelta(days=31),
+                                "closedAt": None, "status": "ACTIVE"})
         r = c.get("/jobs/ea07-eliminar-cuentas-no-activadas", headers=cron).json()
+        ok(r["sesiones_eliminadas"] == 1 and db.sessions.count_documents({}) == vigentes
+           and not db.sessions.find_one({"tokenHash": "sesion-de-hace-31-dias"}), f"EA-07 depura sessions {r}")
         ok(r["cuentas_eliminadas"] == 2 and not db.accounts.find_one({"email": {"$in": ["tarde@unas.edu.pe",
                                                                                    "reenvio@unas.edu.pe"]}}),
            f"EA-07 {r}")

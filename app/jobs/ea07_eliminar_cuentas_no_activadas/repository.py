@@ -33,3 +33,10 @@ class MongoEliminarCuentasRepository(IAccountRepository):
         # El enlace va embebido en la cuenta y se elimina con ella
         resultado = await self._db.accounts.delete_many(filtro_no_activadas(registradas_antes_de), hint=INDICE)
         return resultado.deleted_count
+
+    async def eliminar_sesiones_vencidas(self, vencidas_antes_de):
+        # ix_sessions_exp {expiresAt}. Una sesión cerrada manualmente vence como mucho 72 h (máximo de
+        # CFG_HORAS_INACTIVIDAD_SESION) después de su última interacción, así que también entra.
+        resultado = await self._db.sessions.delete_many({"expiresAt": {"$lte": vencidas_antes_de}},
+                                                        hint="ix_sessions_exp")
+        return resultado.deleted_count

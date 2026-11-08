@@ -20,6 +20,7 @@ INTENTOS_FALLIDOS_BLOQUEO = 5                         # RN-39
 VENTANA_INTENTOS_FALLIDOS = timedelta(minutes=15)     # RN-39
 DURACION_BLOQUEO_LOGIN = timedelta(minutes=15)        # RN-39 / EA-06
 TAMANO_BLOQUE_FEED = 20                               # RN-29
+RETENCION_SESIONES = timedelta(days=30)               # Entregable 2 §7.3: se conservan los últimos 30 días
 
 LONGITUD_NICKNAME = (3, 20)
 PATRON_NICKNAME = r"^[A-Za-z0-9_]+$"
