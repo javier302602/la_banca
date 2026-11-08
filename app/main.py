@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import ValidationError
 
 from app.features.m01_acceso.cu01_registrar_cuenta.endpoint import router as cu01_registrar_cuenta
 from app.features.m01_acceso.cu02_iniciar_sesion.endpoint import router as cu02_iniciar_sesion
@@ -51,11 +52,14 @@ async def manejar_error_dominio(_: Request, error: ErrorDominio) -> JSONResponse
 
 
 @app.exception_handler(RequestValidationError)
-async def manejar_validacion(_: Request, error: RequestValidationError) -> JSONResponse:
+@app.exception_handler(ValidationError)
+async def manejar_validacion(_: Request, error: RequestValidationError | ValidationError) -> JSONResponse:
+    """422 con el mensaje del SRS (DTOs validados por FastAPI o construidos en el endpoint)."""
+    inicio = 1 if isinstance(error, RequestValidationError) else 0
     errores = []
     for e in error.errors():
         mensaje = str(e.get("msg", "Dato inválido")).removeprefix("Value error, ")
-        errores.append({"campo": ".".join(str(p) for p in e.get("loc", [])[1:]), "mensaje": mensaje})
+        errores.append({"campo": ".".join(str(p) for p in e.get("loc", [])[inicio:]), "mensaje": mensaje})
     detalle = errores[0]["mensaje"] if errores else "Datos inválidos"
     return JSONResponse({"detail": detalle, "codigo": "validacion", "errores": errores}, status_code=422)
 

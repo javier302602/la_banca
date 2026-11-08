@@ -163,3 +163,20 @@ def validar_parametro(clave: ClaveParametro, valor_crudo: str | int) -> str | in
     if clave is ClaveParametro.ANTICIPACION_AVISO_CHAT_MIN and timedelta(minutes=numero) >= INACTIVIDAD_CHAT:
         raise ValueError(f"{clave.value}: la anticipación debe ser menor que la inactividad del chat")
     return numero
+
+
+# --- Contenido de un mensaje del chat (RN-19, RF-CHT-08–10) ---------------------
+def validar_contenido_mensaje(texto: str | None, imagen: bytes | None) -> tuple[str | None, str | None]:
+    """Devuelve (texto normalizado | None, mime de la imagen | None). Exactamente uno de los dos."""
+    from app.shared.domain.entities import LONGITUD_MENSAJE
+
+    texto_normalizado = normalizar_texto(texto) or None
+    if texto_normalizado and imagen:
+        raise ValueError("Un mensaje lleva texto o una imagen, no ambos")
+    if not texto_normalizado and not imagen:
+        raise ValueError("Escribe un mensaje o adjunta una imagen")
+    if texto_normalizado:
+        if len(texto_normalizado) > LONGITUD_MENSAJE:
+            raise ValueError(f"El mensaje debe tener entre 1 y {LONGITUD_MENSAJE} caracteres")
+        return texto_normalizado, None
+    return None, validar_imagen(imagen or b"")

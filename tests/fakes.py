@@ -287,13 +287,13 @@ class FakeChatRepository(IChatRepository):
     async def agregar_mensaje(self, mensaje, nueva_expiracion):
         c = self.chats.get(mensaje.chat_id)
         if not c or not c.activo(mensaje.fecha_envio):
-            return False
+            return None
         mensaje = copy.deepcopy(mensaje)
         mensaje.id = mensaje.id or nuevo_id()
         self.mensajes[mensaje.id] = mensaje
         c.ultima_actividad, c.fecha_expiracion = mensaje.fecha_envio, nueva_expiracion
         c.ultima_lectura[mensaje.emisor_id] = mensaje.fecha_envio
-        return True
+        return mensaje.id
 
     async def marcar_leido(self, chat_id, usuario_id, ahora):
         if chat_id in self.chats:
@@ -347,9 +347,19 @@ def estudiante(correo="ana@unas.edu.pe", nickname="ana_07", estado=EstadoCuenta.
                       activacion=kw.pop("activacion", EnlaceUnUso()), **kw)
 
 
+def imagen(formato: str = "PNG", tamano: tuple[int, int] = (8, 8)) -> bytes:
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", tamano, "blue").save(buf, format=formato)
+    return buf.getvalue()
+
+
 __all__ = [
     "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReportRepository",
     "FakeParameterRepository", "FakeConfig", "FakePasswordHasher", "FakeEmailSender", "FakeImageStorage",
-    "FakeClock", "SecureTokenService", "nuevo_id", "estudiante", "TipoPublicacion", "TipoObjetoReportado",
+    "FakeClock", "SecureTokenService", "nuevo_id", "estudiante", "imagen", "TipoPublicacion", "TipoObjetoReportado",
     "EstadoChat",
 ]

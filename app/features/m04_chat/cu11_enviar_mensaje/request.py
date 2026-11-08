@@ -4,26 +4,29 @@ Los DTOs de respuesta nunca exponen el correo institucional, solo el nickname.
 """
 from datetime import datetime
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 
-from app.shared.domain.entities import LONGITUD_MENSAJE
+from app.shared.domain.reglas import validar_contenido_mensaje
+
 
 class MensajeEntrante(BaseModel):
-    """Texto opcional (≤ 500) + imagen opcional; al menos uno de los dos (RF-CHT-08, RF-CHT-09)."""
+    """Texto (1–500) o una imagen JPG/PNG/WebP ≤ 5 MB, no ambos (RN-19)."""
 
-    texto: str | None = Field(default=None, max_length=LONGITUD_MENSAJE)
-    imagen_bytes: bytes | None = None
+    texto: str | None = None
+    imagen: bytes | None = None
     imagen_mime: str | None = None
 
     @model_validator(mode="after")
     def _contenido(self) -> "MensajeEntrante":
-        """Exige texto o imagen; imagen en FORMATOS_IMAGEN y ≤ TAMANO_MAX_IMAGEN."""
-        raise NotImplementedError
+        self.texto, self.imagen_mime = validar_contenido_mensaje(self.texto, self.imagen)
+        return self
 
 
 class MensajeResponse(BaseModel):
     id: str
+    es_propio: bool
     nickname_emisor: str
     texto: str | None = None
     imagen_url: str | None = None
-    enviado_en: datetime
+    fecha_envio: datetime
+    fecha_expiracion_chat: datetime
