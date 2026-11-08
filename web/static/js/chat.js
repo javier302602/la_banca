@@ -76,7 +76,7 @@
         ? el("img", { src: m.imagen_url, alt: `Imagen de ${m.nickname_emisor}`, loading: "lazy" })
         : el("div", { class: "contenido-libre", text: m.texto });
       return el("div", { class: `burbuja ${m.es_propio ? "propia" : "ajena"}` }, contenido,
-        el("div", { class: "hora", text: m.hora })  // HH:MM en America/Lima, calculada en el servidor (RN-34));
+        el("div", { class: "hora", text: m.hora }));  // HH:MM en America/Lima, calculada en el servidor (RN-34)
     }
 
     function agregar(lista) {
