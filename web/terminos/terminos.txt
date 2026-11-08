@@ -1,0 +1,24 @@
+[BORRADOR — TODO: reemplazar por el texto legal aprobado. Los documentos del proyecto no incluyen el texto definitivo.]
+
+TÉRMINOS DE USO Y POLÍTICA DE PRIVACIDAD DE LA BANCA
+
+1. Finalidad del servicio
+La Banca es un espacio temporal para que estudiantes de la comunidad universitaria publiquen, descubran y respondan situaciones puntuales entre clases.
+
+2. Datos que se tratan (RN-31)
+Correo institucional, nickname, estado de activación de la cuenta, publicaciones, mensajes y reportes.
+
+3. Finalidad del tratamiento
+Autenticar a los estudiantes, mostrar publicaciones y permitir conversaciones 1 a 1.
+
+4. Plazos de conservación
+- Publicaciones: 24 horas desde su creación.
+- Chats: se eliminan tras 24 horas sin mensajes.
+- Contenido reportado: se conserva durante el plazo de conservación configurado (inicialmente 7 días).
+- Cuentas no activadas: se eliminan a las 72 horas del registro.
+
+5. Quién accede
+Los demás usuarios ven solo tu nickname. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico.
+
+6. Derechos ARCO
+TODO: indicar el canal oficial para ejercer los derechos de acceso, rectificación, cancelación y oposición (Ley N.° 29733).

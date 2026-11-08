@@ -2,16 +2,30 @@
 
 Los DTOs de respuesta nunca exponen el correo institucional, solo el nickname.
 """
-from pydantic import BaseModel, Field
+from dataclasses import dataclass
 
-from app.shared.domain.entities import LONGITUD_CONTRASENA
+from pydantic import BaseModel, Field, field_validator
+
+from app.shared.domain.reglas import normalizar_correo
+
 
 class IniciarSesionRequest(BaseModel):
     correo: str = Field(..., max_length=254)
-    contrasena: str = Field(..., min_length=1, max_length=LONGITUD_CONTRASENA[1])
+    contrasena: str = Field(..., max_length=256)
+
+    @field_validator("correo")
+    @classmethod
+    def _correo(cls, v: str) -> str:
+        return normalizar_correo(v)
 
 
 class SesionResponse(BaseModel):
-    """Solo se expone el nickname; el identificador de sesión viaja en cookie HttpOnly."""
+    """El identificador de sesión viaja solo en la cookie HttpOnly."""
 
     nickname: str
+
+
+@dataclass(frozen=True)
+class SesionIniciada:
+    token: str
+    respuesta: SesionResponse

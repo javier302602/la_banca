@@ -1,12 +1,14 @@
-"""CU-17 — Activar la cuenta. Controlador MVC (APIRouter), sin lógica de negocio."""
-from typing import Annotated
+"""CU-17 — Activar la cuenta. Controlador MVC (APIRouter), sin lógica de negocio.
 
-from fastapi import APIRouter, Depends, Query
+La activación se confirma con POST desde la página /activar (no con el GET del enlace), para que los
+escáneres de correo que abren enlaces automáticamente no consuman el token de un solo uso.
+"""
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
-from app.shared.email.sender import get_email_sender
+from app.shared.email.sender import get_email_sender, url_base
 from app.shared.security.hashing import SecureTokenService
 
 from .handler import ActivarCuentaHandler
@@ -22,22 +24,21 @@ def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ActivarCuen
         tokens=SecureTokenService(),
         correo=get_email_sender(),
         clock=get_clock(),
+        url_base=url_base(),
     )
 
 
-@router.get("/cuentas/activar", response_model=MensajeResponse, status_code=200)
+@router.post("/api/cuentas/activar", response_model=MensajeResponse, status_code=200)
 async def activar_cuenta(
-    body: Annotated[ActivarCuentaRequest, Query()],
+    body: ActivarCuentaRequest,
     handler: ActivarCuentaHandler = Depends(get_handler),
 ) -> MensajeResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.handle(body)
 
 
-@router.post("/cuentas/activacion/reenviar", response_model=MensajeResponse, status_code=202)
+@router.post("/api/cuentas/activacion/reenviar", response_model=MensajeResponse, status_code=202)
 async def reenviar_activacion(
     body: ReenviarActivacionRequest,
     handler: ActivarCuentaHandler = Depends(get_handler),
 ) -> MensajeResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    return await handler.reenviar(body)
