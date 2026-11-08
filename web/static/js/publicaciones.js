@@ -2,7 +2,8 @@
 "use strict";
 
 (() => {
-  const { api, alerta, el, contador, ocupado, restante, refrescarRestantes, TIPOS } = Banca;
+  const { api, alerta, el, limpiar, contador, ocupado, restante, refrescarRestantes, mostrarErrores, limpiarErrores,
+          errorEnCampo, TIPOS } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -24,7 +25,11 @@
       evento.preventDefault();
       const boton = formulario.querySelector("[type=submit]");
       const tipo = formulario.querySelector("input[name=tipo]:checked");
-      if (!tipo) { alerta(mensajes, "Selecciona el tipo de publicación"); return; }
+      limpiarErrores(formulario);
+      if (!tipo) {  // RNF-USA-03: junto al grupo de tipos
+        errorEnCampo(formulario, "tipo", "Selecciona el tipo de publicación").focus();
+        return;
+      }
       ocupado(boton, true);
       try {
         const p = await api("/api/publicaciones", { metodo: "POST", cuerpo: {
@@ -32,7 +37,7 @@
           descripcion: document.getElementById("descripcion").value } });
         location.href = `/publicaciones/${encodeURIComponent(p.id)}`;
       } catch (error) {
-        alerta(mensajes, error.message);
+        if (mostrarErrores(formulario, error)) limpiar(mensajes); else alerta(mensajes, error.message);
         cargarCupo();
       } finally { ocupado(boton, false); }
     });

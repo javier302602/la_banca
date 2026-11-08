@@ -210,3 +210,16 @@ def test_comprime_imagenes_de_mas_de_4mb(soporte, tipo, extension):
 def test_chat_comprime_antes_de_subir(cliente):
     js = cliente.get("/static/js/chat.js").text
     assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 2
+
+
+@pytest.mark.parametrize("ruta,campos", [("/chats/c1", ["texto", "imagen"]), ("/feed", ["filtro-tipo"]),
+                                         ("/publicaciones/abc123/responder", ["texto", "imagen"])])
+def test_campos_con_etiqueta_visible(cliente, ruta, campos):
+    """RNF-USA-07: cada campo tiene un <label for> visible (sin la clase visually-hidden)."""
+    import re
+
+    con_sesion()
+    html = cliente.get(ruta).text
+    assert "visually-hidden" not in html
+    for campo in campos:
+        assert re.search(rf'<label class="[^"]*form-label[^"]*" for="{campo}">', html), campo

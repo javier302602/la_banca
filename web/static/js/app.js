@@ -77,6 +77,54 @@ const Banca = (() => {
 
   function limpiar(contenedor) { if (contenedor) contenedor.replaceChildren(); }
 
+  /* RNF-USA-03: el mensaje de un dato inválido se muestra junto al campo, enlazado con aria-describedby.
+   * El servidor indica el campo en `errores[].campo` (validación) o en `campo` (errores de dominio). */
+  function limpiarErrores(formulario) {
+    formulario.querySelectorAll("[data-error-de]").forEach((n) => n.remove());
+    formulario.querySelectorAll("[aria-invalid]").forEach((campo) => {
+      campo.removeAttribute("aria-invalid");
+      campo.classList.remove("is-invalid");
+      const ids = (campo.getAttribute("aria-describedby") || "").split(" ").filter((i) => i && !i.startsWith("error-"));
+      if (ids.length) campo.setAttribute("aria-describedby", ids.join(" ")); else campo.removeAttribute("aria-describedby");
+    });
+  }
+
+  function errorEnCampo(formulario, nombre, mensaje) {
+    const campos = nombre ? [...formulario.querySelectorAll(`[name="${CSS.escape(nombre)}"]`)] : [];
+    if (!campos.length) return null;
+    const id = `error-${nombre}`;
+    formulario.querySelectorAll(`[data-error-de="${CSS.escape(nombre)}"]`).forEach((n) => n.remove());
+    const aviso = el("div", { class: "invalid-feedback d-block", id, "data-error-de": nombre, text: mensaje });
+    const grupo = campos[0].type === "radio" ? campos[0].closest("fieldset") : null;
+    if (grupo) grupo.append(aviso); else campos[0].insertAdjacentElement("afterend", aviso);
+    for (const campo of campos) {
+      campo.setAttribute("aria-invalid", "true");
+      if (!grupo) campo.classList.add("is-invalid");
+      const ids = (campo.getAttribute("aria-describedby") || "").split(" ").filter(Boolean);
+      if (!ids.includes(id)) campo.setAttribute("aria-describedby", [...ids, id].join(" "));
+    }
+    return campos[0];
+  }
+
+  /* Muestra los errores de un ErrorApi junto a sus campos. Devuelve true si ubicó alguno; si no, el llamador
+   * muestra el mensaje general. `general` es el campo para los errores de validación sin campo propio. */
+  function mostrarErrores(formulario, error, { general = null } = {}) {
+    limpiarErrores(formulario);
+    const datos = (error && error.datos) || {};
+    let primero = null;
+    for (const e of datos.errores || []) {
+      const campo = errorEnCampo(formulario, e.campo || general, e.mensaje);
+      primero = primero || campo;
+    }
+    if (!primero && datos.campo) primero = errorEnCampo(formulario, datos.campo, error.message);
+    if (primero) primero.focus();
+    return Boolean(primero);
+  }
+
+  function vaciarContrasenas(formulario) {  // RNF-USA-06: tras un error solo se vacían las contraseñas
+    formulario.querySelectorAll('input[type="password"]').forEach((campo) => { campo.value = ""; });
+  }
+
   function contador(campo, salida, maximo) {  // RF-PUB-12
     const actualizar = () => { salida.textContent = `${campo.value.trim().length}/${maximo}`; };
     campo.addEventListener("input", actualizar);
@@ -144,5 +192,6 @@ const Banca = (() => {
   });
 
   return { api, ErrorApi, TIPOS, sincronizar, ahora, restante, el, alerta, limpiar, contador,
+           limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };
 })();

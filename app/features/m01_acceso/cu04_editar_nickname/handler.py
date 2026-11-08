@@ -20,9 +20,9 @@ class EditarNicknameHandler:
 
     async def handle(self, estudiante_id: str, body: EditarNicknameRequest) -> NicknameResponse:
         if await self._cuentas.existe_por_nickname(body.nickname, excluir_id=estudiante_id):
-            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado")
+            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado", campo="nickname")
         try:
             await self._cuentas.actualizar_nickname(estudiante_id, body.nickname)
         except Conflicto:
-            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado") from None
+            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado", campo="nickname") from None
         return NicknameResponse(nickname=body.nickname)
