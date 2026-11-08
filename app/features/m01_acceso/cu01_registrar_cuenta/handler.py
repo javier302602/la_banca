@@ -53,7 +53,8 @@ class RegistrarCuentaHandler:
         ahora = self._clock.ahora()
         dominio = self._config.texto(ClaveParametro.DOMINIO_INSTITUCIONAL)
         if not correo_del_dominio(body.correo, dominio):
-            raise ErrorValidacion(f"Debes usar tu correo institucional (@{dominio})", codigo="dominio_invalido")
+            raise ErrorValidacion(f"Debes usar tu correo institucional (@{dominio})", codigo="dominio_invalido",
+                                  campo="correo")
 
         # EA-07 al consultar: las cuentas pendientes con más de 72 h liberan correo y nickname (RN-43)
         await self._cuentas.eliminar_no_activadas(ahora - PLAZO_CUENTA_NO_ACTIVADA)
@@ -61,10 +62,10 @@ class RegistrarCuentaHandler:
         existente = await self._cuentas.buscar_por_correo(body.correo)
         if existente is not None:
             if existente.estado is EstadoCuenta.ACTIVA:
-                raise Conflicto(MSG_CORREO_REGISTRADO, codigo="correo_registrado")
-            raise Conflicto(MSG_CORREO_PENDIENTE, codigo="cuenta_pendiente")
+                raise Conflicto(MSG_CORREO_REGISTRADO, codigo="correo_registrado", campo="correo")
+            raise Conflicto(MSG_CORREO_PENDIENTE, codigo="cuenta_pendiente", campo="correo")
         if await self._cuentas.existe_por_nickname(body.nickname):
-            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado")
+            raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado", campo="nickname")
 
         token, token_hash = self._tokens.generar()
         estudiante = Estudiante(
@@ -81,8 +82,8 @@ class RegistrarCuentaHandler:
             await self._cuentas.crear(estudiante)
         except Conflicto as error:  # carrera con otro registro simultáneo
             if error.codigo == "nickname_duplicado":
-                raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado") from None
-            raise Conflicto(MSG_CORREO_PENDIENTE, codigo="cuenta_pendiente") from None
+                raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado", campo="nickname") from None
+            raise Conflicto(MSG_CORREO_PENDIENTE, codigo="cuenta_pendiente", campo="correo") from None
 
         try:
             await self._correo.enviar_activacion(body.correo, body.nickname, f"{self._url_base}/activar?token={token}")

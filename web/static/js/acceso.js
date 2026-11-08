@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, el, ocupado } = Banca;
+  const { api, alerta, el, limpiar, ocupado, mostrarErrores, limpiarErrores, vaciarContrasenas } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
   const valor = (id) => document.getElementById(id).value;
@@ -12,18 +12,23 @@
       evento.preventDefault();
       const boton = formulario.querySelector("[type=submit]");
       ocupado(boton, true);
-      try { await accion(); } catch (error) { if (error.status !== 401 || pagina === "login") manejar(error); }
-      finally { ocupado(boton, false); }
+      limpiarErrores(formulario);
+      try { await accion(); } catch (error) {
+        if (error.status !== 401 || pagina === "login") manejar(formulario, error);
+        vaciarContrasenas(formulario);  // RNF-USA-06
+      } finally { ocupado(boton, false); }
     });
   }
 
-  function manejar(error) {
+  function manejar(formulario, error) {
+    const enCampo = mostrarErrores(formulario, error);  // RNF-USA-03
     const extras = [];
     if (error.codigo === "cuenta_pendiente" || error.codigo === "cuenta_no_activada" || error.codigo === "enlace_invalido") {
       extras.push(" ", el("a", { href: "/activar", class: "alert-link", text: "Solicitar un nuevo enlace" }));
     }
     if (error.codigo === "correo_registrado") extras.push(" ", el("a", { href: "/login", class: "alert-link", text: "Ir a iniciar sesión" }));
-    alerta(mensajes, error.message, error.status === 429 ? "warning" : "danger", ...extras);
+    if (!enCampo || extras.length) alerta(mensajes, error.message, error.status === 429 ? "warning" : "danger", ...extras);
+    else limpiar(mensajes);
   }
 
   if (pagina === "registro") {

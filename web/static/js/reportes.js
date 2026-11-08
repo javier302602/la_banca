@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, el, contador, ocupado } = Banca;
+  const { api, alerta, el, limpiar, contador, ocupado, mostrarErrores, limpiarErrores } = Banca;
   const formulario = document.getElementById("form-reporte");
   if (!formulario) return;
   const mensajes = document.getElementById("mensajes");
@@ -20,13 +20,16 @@
     const motivo = formulario.querySelector("input[name=codigo_motivo]:checked");
     if (!motivo) return;
     ocupado(enviar, true);
+    limpiarErrores(formulario);
     try {
       const r = await api(destino.url, { metodo: "POST", cuerpo: {
         codigo_motivo: motivo.value, observacion: document.getElementById("observacion").value || null } });
       formulario.classList.add("d-none");
       alerta(mensajes, r.mensaje, "success", " ", el("a", { class: "alert-link", href: destino.volver, text: "Volver" }));
     } catch (error) {
-      if (error.status !== 401) alerta(mensajes, error.message);
+      if (error.status !== 401) {
+        if (mostrarErrores(formulario, error)) limpiar(mensajes); else alerta(mensajes, error.message);
+      }
       ocupado(enviar, false);
     }
   });

@@ -3,15 +3,16 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, contador, ocupado, TIPOS } = Banca;
+  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
   async function datosMensaje() {
     const texto = document.getElementById("texto").value;
     const original = document.getElementById("imagen").files[0];
-    if (texto.trim() && original) throw new Banca.ErrorApi(422, { detail: "Un mensaje lleva texto o una imagen, no ambos" });
-    if (!texto.trim() && !original) throw new Banca.ErrorApi(422, { detail: "Escribe un mensaje o adjunta una imagen" });
+    const invalido = (detail) => new Banca.ErrorApi(422, { detail, errores: [{ campo: "texto", mensaje: detail }] });
+    if (texto.trim() && original) throw invalido("Un mensaje lleva texto o una imagen, no ambos");
+    if (!texto.trim() && !original) throw invalido("Escribe un mensaje o adjunta una imagen");
     const datos = new FormData();
     if (original) datos.append("imagen", await Banca.comprimirImagen(original)); else datos.append("texto", texto);
     return datos;
@@ -25,13 +26,16 @@
       evento.preventDefault();
       const boton = formulario.querySelector("[type=submit]");
       ocupado(boton, true);
+      limpiarErrores(formulario);
       try {
         const r = await api(`/api/publicaciones/${id}/respuestas`, { metodo: "POST", formulario: await datosMensaje() });
         location.href = `/chats/${encodeURIComponent(r.chat_id)}`;
       } catch (error) {
         const extra = error.datos.chat_id  // RF-CHT-23
           ? [" ", el("a", { class: "alert-link", href: `/chats/${encodeURIComponent(error.datos.chat_id)}`, text: "Abrir el chat" })] : [];
-        alerta(mensajes, error.message, "danger", ...extra);
+        // RNF-USA-03: los errores del contenido van junto al mensaje; los demás, en el aviso general
+        if (!extra.length && mostrarErrores(formulario, error, { general: "texto" })) limpiar(mensajes);
+        else alerta(mensajes, error.message, "danger", ...extra);
       } finally { ocupado(boton, false); }
     });
   }
@@ -137,6 +141,7 @@
       evento.preventDefault();
       const boton = formulario.querySelector("[type=submit]");
       ocupado(boton, true);
+      limpiarErrores(formulario);
       try {
         const m = await api(`/api/chats/${chatId}/mensajes`, { metodo: "POST", formulario: await datosMensaje() });
         formulario.reset();
@@ -146,7 +151,8 @@
         historial.scrollTop = historial.scrollHeight;
         mostrarAviso(null);  // el mensaje reinicia la expiración (RF-CHT-12)
       } catch (error) {
-        if (error.status === 410) marcarExpirado(); else if (error.status !== 401) alerta(mensajes, error.message);
+        if (error.status === 410) marcarExpirado();
+        else if (error.status !== 401 && !mostrarErrores(formulario, error, { general: "texto" })) alerta(mensajes, error.message);
       } finally { if (!expirado) ocupado(boton, false); }
     });
   }

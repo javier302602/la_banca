@@ -1,5 +1,5 @@
 """CU-18 — Recuperar la contraseña. DTOs Pydantic."""
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from app.shared.domain.reglas import normalizar_correo, validar_confirmacion, validar_contrasena
 
@@ -23,10 +23,12 @@ class RestablecerContrasenaRequest(BaseModel):
     def _contrasena(cls, v: str) -> str:
         return validar_contrasena(v)  # RF-AUT-37 → RF-AUT-14
 
-    @model_validator(mode="after")
-    def _confirmacion(self) -> "RestablecerContrasenaRequest":
-        validar_confirmacion(self.contrasena, self.confirmacion)  # RF-AUT-15
-        return self
+    @field_validator("confirmacion")
+    @classmethod
+    def _confirmacion(cls, v: str, info: ValidationInfo) -> str:
+        if "contrasena" in info.data:
+            validar_confirmacion(info.data["contrasena"], v)  # RF-AUT-15
+        return v
 
 
 class MensajeResponse(BaseModel):
