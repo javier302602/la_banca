@@ -78,7 +78,7 @@ def validar_longitud(valor: str | None, minimo: int, maximo: int, campo: str) ->
     texto = normalizar_texto(valor)
     if not (minimo <= len(texto) <= maximo):
         if minimo > 0 and not texto:
-            raise ValueError(f"{campo} es obligatorio")
+            raise ValueError(f"Debes ingresar {campo[0].lower()}{campo[1:]}")
         raise ValueError(f"{campo} debe tener entre {minimo} y {maximo} caracteres")
     return texto
 
