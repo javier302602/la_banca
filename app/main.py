@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.features.m01_acceso.cu01_registrar_cuenta.endpoint import router as cu01_registrar_cuenta
 from app.features.m01_acceso.cu02_iniciar_sesion.endpoint import router as cu02_iniciar_sesion
@@ -33,6 +34,7 @@ from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_
 from app.shared.config.provider import verificar_entorno
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
+from app.shared.web.plantillas import plantillas
 from app.shared.web.validacion import mensaje_en_espanol
 
 logging.basicConfig(level=logging.INFO)
@@ -52,6 +54,26 @@ app = FastAPI(title="La Banca", version="1.0.0", lifespan=lifespan)
 @app.exception_handler(ErrorDominio)
 async def manejar_error_dominio(_: Request, error: ErrorDominio) -> JSONResponse:
     return JSONResponse({"detail": error.mensaje, "codigo": error.codigo, **error.extra}, status_code=error.status)
+
+
+ERRORES_HTTP = {  # RNF-USA-05: reemplaza «Not Found» / «Method Not Allowed» de Starlette
+    404: ("no_encontrado", "Página no encontrada", "La dirección que buscas no existe o ya no está disponible."),
+    405: ("metodo_no_permitido", "Acción no permitida", "Esta dirección no admite la acción solicitada."),
+}
+PREFIJOS_SIN_PAGINA = ("/api/", "/jobs/", "/static/")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def manejar_http(request: Request, error: StarletteHTTPException):
+    """404 y 405 en español: página HTML al navegar, JSON en /api, /jobs y /static. Otros códigos se conservan."""
+    if error.status_code not in ERRORES_HTTP:
+        return JSONResponse({"detail": error.detail}, status_code=error.status_code, headers=error.headers)
+    codigo, titulo, mensaje = ERRORES_HTTP[error.status_code]
+    if request.url.path.startswith(PREFIJOS_SIN_PAGINA) or request.url.path in ("/api", "/jobs"):
+        return JSONResponse({"detail": mensaje, "codigo": codigo}, status_code=error.status_code, headers=error.headers)
+    return plantillas.TemplateResponse(
+        request, "error.html", {"sesion": None, "codigo": error.status_code, "titulo": titulo, "mensaje": mensaje},
+        status_code=error.status_code, headers={**(error.headers or {}), "Cache-Control": "no-store"})
 
 
 @app.exception_handler(RequestValidationError)
