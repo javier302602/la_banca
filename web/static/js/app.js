@@ -47,12 +47,14 @@ const Banca = (() => {
     return datos;
   }
 
-  function restante(fechaIso) {
+  function restante(fechaIso) {  // RNF-USA-01: «X h Y min», «X h», «Y min» o «menos de 1 min»
     const ms = new Date(fechaIso).getTime() - ahora();
     if (ms <= 0) return "Expirada";
-    const minutos = Math.ceil(ms / 60000);
+    const minutos = Math.floor(ms / 60000);
+    if (minutos < 1) return "menos de 1 min";
     const h = Math.floor(minutos / 60), m = minutos % 60;
-    return h > 0 ? `${h} h ${m} min` : `${m} min`;
+    if (h === 0) return `${m} min`;
+    return m === 0 ? `${h} h` : `${h} h ${m} min`;
   }
 
   function el(etiqueta, atributos = {}, ...hijos) {
