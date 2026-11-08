@@ -55,6 +55,18 @@ No hay pantalla ni API de administración. Los parámetros se cambian con variab
 python -m app.features.m06_configuracion.cu15_configurar_parametros.endpoint --registrar
 ```
 
+## Respaldos (Entregable 2 §8.1)
+
+`scripts/respaldo_mongodb.py` ejecuta `mongodump --gzip --archive` y elimina los respaldos de más de 7 días
+(PA-37, RNF-PRI-02; la retención no puede superar 7 días). Requiere MongoDB Database Tools en el PATH:
+
+```bash
+MONGO_URI="mongodb+srv://..." python scripts/respaldo_mongodb.py --destino /ruta/respaldos
+```
+
+Prográmalo una vez al día (p. ej. a las 03:00 UTC−5) en un equipo con almacenamiento persistente; Vercel no sirve
+para esto porque su sistema de archivos es efímero.
+
 ## Despliegue en Vercel
 
 `vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons
