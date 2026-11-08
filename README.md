@@ -1,6 +1,6 @@
 # La Banca
 
-Monolito modular (FastAPI + MongoDB + Object Storage) con Vertical Slice Architecture y MVC en la presentación.
+Monolito modular (FastAPI + MongoDB con la API async de PyMongo + Object Storage) con Vertical Slice Architecture y MVC en la presentación.
 Cada caso de uso vive en `app/features/mXX_*/cuXX_*/` (endpoint · request · handler · repository) y cada
 automatismo programado en `app/jobs/eaXX_*/`.
 

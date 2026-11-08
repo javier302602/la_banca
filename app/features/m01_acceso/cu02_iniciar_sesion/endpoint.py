@@ -1,6 +1,6 @@
 """CU-02 — Iniciar sesión. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request, Response
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
@@ -16,7 +16,7 @@ from .request import IniciarSesionRequest, SesionResponse
 router = APIRouter(tags=["M01 Acceso"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> IniciarSesionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> IniciarSesionHandler:
     return IniciarSesionHandler(
         cuentas=MongoIniciarSesionRepository(db),
         hasher=BcryptPasswordHasher(),

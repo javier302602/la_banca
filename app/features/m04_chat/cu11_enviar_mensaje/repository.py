@@ -1,5 +1,5 @@
 """CU-11 — Enviar mensaje en un chat. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_chat, mensaje_a_doc
 from app.shared.db.mongo import en_transaccion, oid
@@ -8,7 +8,7 @@ from app.shared.domain.entities import EstadoChat
 
 
 class MongoEnviarMensajeRepository(IChatRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def buscar_por_id(self, chat_id):

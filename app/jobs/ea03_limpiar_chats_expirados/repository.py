@@ -1,5 +1,5 @@
 """EA-03 — Expirar chat por inactividad. Implementación Mongo de lo que necesita el job."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.domain.contracts import IChatRepository
 
@@ -7,7 +7,7 @@ LOTE = 500
 
 
 class MongoLimpiarChatsRepository(IChatRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def eliminar_expirados(self, ahora):

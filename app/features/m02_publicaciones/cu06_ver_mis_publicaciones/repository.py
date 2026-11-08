@@ -1,6 +1,6 @@
 """CU-06 — Ver mis publicaciones activas. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import DESCENDING
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_publicacion
 from app.shared.db.mongo import oid
@@ -9,7 +9,7 @@ from app.shared.domain.entities import EstadoPublicacion
 
 
 class MongoVerMisPublicacionesRepository(IPublicationRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def listar_activas_por_usuario(self, autor_id, ahora):

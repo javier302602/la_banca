@@ -1,6 +1,6 @@
 """CU-07 — Cerrar publicación manualmente. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -12,7 +12,7 @@ from .repository import MongoCerrarPublicacionRepository
 router = APIRouter(tags=["M02 Publicaciones"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> CerrarPublicacionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> CerrarPublicacionHandler:
     return CerrarPublicacionHandler(publicaciones=MongoCerrarPublicacionRepository(db), clock=get_clock())
 
 

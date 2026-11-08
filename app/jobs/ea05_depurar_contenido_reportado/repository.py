@@ -1,5 +1,5 @@
 """EA-05 — Eliminar contenido reportado vencido. Implementación Mongo de lo que necesita el job."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.domain.contracts import IReportRepository
 
@@ -7,7 +7,7 @@ LOTE = 500
 
 
 class MongoDepurarReportesRepository(IReportRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def eliminar_vencidos(self, ahora):

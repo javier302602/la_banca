@@ -4,7 +4,7 @@ La activación se confirma con POST desde la página /activar (no con el GET del
 escáneres de correo que abren enlaces automáticamente no consuman el token de un solo uso.
 """
 from fastapi import APIRouter, Depends, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -20,7 +20,7 @@ from .request import ActivarCuentaRequest, MensajeResponse, ReenviarActivacionRe
 router = APIRouter(tags=["M01 Acceso"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ActivarCuentaHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> ActivarCuentaHandler:
     return ActivarCuentaHandler(
         cuentas=MongoActivarCuentaRepository(db),
         tokens=SecureTokenService(),

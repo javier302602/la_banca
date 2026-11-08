@@ -1,4 +1,4 @@
-"""Cliente Motor compartido, helpers de mapeo y creación de colecciones/índices del Entregable 2 (Anexo B).
+"""Cliente async de PyMongo (AsyncMongoClient) compartido, helpers de mapeo y creación de colecciones/índices del Entregable 2 (Anexo B).
 
 Las operaciones atómicas de varios documentos usan transacciones: MongoDB debe ser un replica set
 (MongoDB Atlas lo es; en local: `mongod --replSet rs0` o la imagen de Docker con replica set).
@@ -12,8 +12,10 @@ from typing import Any, TypeVar
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorClientSession, AsyncIOMotorDatabase
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.client_session import AsyncClientSession
 from pymongo import ASCENDING, DESCENDING
+from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.collation import Collation
 from pymongo.errors import CollectionInvalid, DuplicateKeyError, PyMongoError
 
@@ -24,14 +26,14 @@ log = logging.getLogger("la_banca.db")
 # Colación sin distinción de mayúsculas para el nickname (RN-05 / RN-33)
 COLACION_NICKNAME = Collation(locale="en", strength=2)
 
-# Un cliente por event loop: Motor queda ligado al loop en que se usa por primera vez y algunos
+# Un cliente por event loop: el cliente async queda ligado al loop en que se usa por primera vez y algunos
 # entornos (pruebas, runtimes serverless) crean más de un loop en el mismo proceso.
-_clientes: dict[asyncio.AbstractEventLoop, AsyncIOMotorClient] = {}
+_clientes: dict[asyncio.AbstractEventLoop, AsyncMongoClient] = {}
 _indices_creados = False
 T = TypeVar("T")
 
 
-def get_client() -> AsyncIOMotorClient:
+def get_client() -> AsyncMongoClient:
     loop = asyncio.get_running_loop()
     cliente = _clientes.get(loop)
     if cliente is None:
@@ -39,17 +41,17 @@ def get_client() -> AsyncIOMotorClient:
         if not uri:
             raise RuntimeError("Falta configurar MONGO_URI")
         for viejo in [l for l in _clientes if l.is_closed()]:
-            _clientes.pop(viejo).close()
-        cliente = _clientes[loop] = AsyncIOMotorClient(uri, tz_aware=True, serverSelectionTimeoutMS=5000)
+            _clientes.pop(viejo)  # su loop ya cerró: no se puede esperar close(); se libera la referencia
+        cliente = _clientes[loop] = AsyncMongoClient(uri, tz_aware=True, serverSelectionTimeoutMS=5000)
     return cliente
 
 
-def base_de_datos() -> AsyncIOMotorDatabase:
+def base_de_datos() -> AsyncDatabase:
     """Base configurada (Entregable 2: la_banca_db). Debe llamarse dentro de un event loop."""
     return get_client()[variable("MONGO_DB", "la_banca_db")]
 
 
-async def get_database() -> AsyncIOMotorDatabase:
+async def get_database() -> AsyncDatabase:
     """Dependencia FastAPI (async: se resuelve en el event loop de la solicitud)."""
     return base_de_datos()
 
@@ -72,8 +74,8 @@ MAX_INTENTOS_TRANSACCION = 10
 ESPERA_MAXIMA_REINTENTO = 0.2  # s
 
 
-async def en_transaccion(db: AsyncIOMotorDatabase,
-                         operacion: Callable[[AsyncIOMotorClientSession], Awaitable[T]],
+async def en_transaccion(db: AsyncDatabase,
+                         operacion: Callable[[AsyncClientSession], Awaitable[T]],
                          intentos: int = MAX_INTENTOS_TRANSACCION) -> T:
     """Ejecuta `operacion(sesion)` en una transacción (RNF-FIA-03).
 
@@ -82,8 +84,8 @@ async def en_transaccion(db: AsyncIOMotorDatabase,
     UnknownTransactionCommitResult se reintenta solo la confirmación.
     """
     for intento in range(1, intentos + 1):
-        async with await db.client.start_session() as sesion:
-            sesion.start_transaction()
+        async with db.client.start_session() as sesion:
+            await sesion.start_transaction()
             try:
                 resultado = await operacion(sesion)
                 await _confirmar(sesion)
@@ -164,7 +166,7 @@ COLECCIONES = ["accounts", "login_attempts", "sessions", "publications", "chats"
                "reports", "system_parameters"]
 
 
-async def _asegurar_coleccion(db: AsyncIOMotorDatabase, nombre: str, validador: dict | None) -> None:
+async def _asegurar_coleccion(db: AsyncDatabase, nombre: str, validador: dict | None) -> None:
     opciones: dict[str, Any] = {}
     if validador:
         # "moderate": las cuentas creadas con un dominio anterior siguen siendo editables (RF-CFG-12)
@@ -176,7 +178,7 @@ async def _asegurar_coleccion(db: AsyncIOMotorDatabase, nombre: str, validador: 
             await db.command("collMod", nombre, **opciones)
 
 
-async def crear_indices(db: AsyncIOMotorDatabase, dominio: str | None) -> None:
+async def crear_indices(db: AsyncDatabase, dominio: str | None) -> None:
     """Crea colecciones, validadores $jsonSchema e índices. Idempotente."""
     validadores = {"accounts": _validador_accounts(dominio), "login_attempts": VALIDADOR_LOGIN_ATTEMPTS}
     for nombre in COLECCIONES:

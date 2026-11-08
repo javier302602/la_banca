@@ -1,6 +1,6 @@
 """CU-18 — Recuperar la contraseña. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_estudiante, enlace_a_doc
 from app.shared.db.mongo import oid
@@ -9,7 +9,7 @@ from app.shared.domain.entities import EstadoCuenta, EstadoSesion
 
 
 class MongoRecuperarContrasenaRepository(IAccountRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def buscar_por_correo(self, correo):

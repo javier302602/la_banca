@@ -1,6 +1,6 @@
 """CU-03 — Cerrar sesión manualmente. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request, Response
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -13,7 +13,7 @@ from .repository import MongoCerrarSesionRepository
 router = APIRouter(tags=["M01 Acceso"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> CerrarSesionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> CerrarSesionHandler:
     return CerrarSesionHandler(
         cuentas=MongoCerrarSesionRepository(db),
         tokens=SecureTokenService(),
