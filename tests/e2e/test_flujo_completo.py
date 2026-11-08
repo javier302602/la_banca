@@ -207,9 +207,23 @@ def test_feed_paginado_y_jobs(db):
         # EA-07: cuenta pendiente con 72 h
         c.post("/api/cuentas", json={"correo": "tarde@unas.edu.pe", "contrasena": "clave123",
                                      "confirmacion": "clave123", "nickname": "tarde", "acepta_terminos": True})
+        # cuenta con reenvío a las 71 h 59 min: su enlace vence 95 h 59 min después del registro
+        # (se registran ambas antes de envejecerlas: cada registro purga las vencidas, RN-43)
+        c.post("/api/cuentas", json={"correo": "reenvio@unas.edu.pe", "contrasena": "clave123",
+                                     "confirmacion": "clave123", "nickname": "reenvio", "acepta_terminos": True})
         db.accounts.update_one({"email": "tarde@unas.edu.pe"}, {"$set": {"createdAt": ahora - timedelta(hours=72)}})
+        db.accounts.update_one({"email": "reenvio@unas.edu.pe"},
+                               {"$set": {"createdAt": ahora - timedelta(hours=72, minutes=1),
+                                         "activation.expiresAt": ahora + timedelta(hours=23, minutes=58)}})
+        from app.jobs.ea07_eliminar_cuentas_no_activadas.repository import INDICE, filtro_no_activadas
+
+        plan = db.accounts.find(filtro_no_activadas(datetime.now(timezone.utc) - timedelta(hours=72))) \
+            .hint(INDICE).explain()["queryPlanner"]["winningPlan"]
+        ok(INDICE in str(plan) and "IXSCAN" in str(plan), f"EA-07 recorre {INDICE}: {plan}")
         r = c.get("/jobs/ea07-eliminar-cuentas-no-activadas", headers=cron).json()
-        ok(r == {"cuentas_eliminadas": 1} and not db.accounts.find_one({"email": "tarde@unas.edu.pe"}), f"EA-07 {r}")
+        ok(r["cuentas_eliminadas"] == 2 and not db.accounts.find_one({"email": {"$in": ["tarde@unas.edu.pe",
+                                                                                   "reenvio@unas.edu.pe"]}}),
+           f"EA-07 {r}")
         ok(db.accounts.count_documents({"status": "ACTIVA"}) == 3, "cuentas activas intactas")
 
         # CU-15 registra en system_parameters
