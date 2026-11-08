@@ -1,8 +1,17 @@
 {% extends "base.html" %}
-{# CU-06, CU-07 — Mis publicaciones activas #}
+{# CU-06 — Mis publicaciones activas · CU-07 — Cerrar publicación #}
 
-{% block title %}Mis publicaciones activas{% endblock %}
+{% block title %}Mis publicaciones{% endblock %}
+{% block pagina %}mis-publicaciones{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Mis publicaciones activas</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Mis publicaciones activas</h1>
+  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva">Nueva publicación</a>
+</div>
+<div id="mensajes" aria-live="polite"></div>
+<ul class="list-group" id="lista"></ul>
+<p class="text-body-secondary d-none" id="vacio">No tienes publicaciones activas.</p>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/publicaciones.js"></script>{% endblock %}

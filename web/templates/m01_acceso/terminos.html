@@ -2,7 +2,12 @@
 {# CU-16 — Términos de uso y política de privacidad #}
 
 {% block title %}Términos de uso y política de privacidad{% endblock %}
+{% block pagina %}terminos{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Términos de uso y política de privacidad</h1>
+<article class="mx-auto" style="max-width: 48rem">
+  <h1 class="h4">Términos de uso y política de privacidad</h1>
+  <p class="text-body-secondary small">Versión {{ terminos.version }} · {{ terminos.fecha }}</p>
+  <div class="contenido-libre">{{ terminos.texto }}</div>
+</article>
 {% endblock %}

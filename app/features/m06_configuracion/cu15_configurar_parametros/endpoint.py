@@ -25,11 +25,11 @@ router = APIRouter(tags=["M06 Configuración"])
 async def _ejecutar(registrar: bool) -> int:
     repositorio = None
     if registrar:
-        from app.shared.db.mongo import get_database
+        from app.shared.db.mongo import base_de_datos
 
         from .repository import MongoParameterRepository
 
-        repositorio = MongoParameterRepository(get_database())
+        repositorio = MongoParameterRepository(base_de_datos())
     handler = ConfigurarParametrosHandler(get_config(), repositorio, get_clock())
     revision = await handler.revisar(os.environ, registrar=registrar)
     for clave, valor in revision.efectivos.items():

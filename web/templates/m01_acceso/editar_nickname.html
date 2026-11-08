@@ -1,8 +1,28 @@
 {% extends "base.html" %}
-{# CU-04 — Editar nickname #}
+{# CU-04 — Editar nickname (perfil) · CU-16 desde el perfil (RF-AUT-24) #}
 
-{% block title %}Editar nickname{% endblock %}
+{% block title %}Mi perfil{% endblock %}
+{% block pagina %}perfil{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Editar nickname</h1>
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <h1 class="h4 mb-3">Mi perfil</h1>
+    <div id="mensajes" aria-live="polite"></div>
+    <form id="form-nickname" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="nickname">Nickname</label>
+        <input class="form-control" id="nickname" name="nickname" required maxlength="20" value="{{ sesion.nickname }}"
+               aria-describedby="ayuda-nickname">
+        <div class="form-text" id="ayuda-nickname">De 3 a 20 caracteres: letras sin tilde, dígitos o guion bajo (_).</div>
+      </div>
+      <button class="btn btn-primary" type="submit">Guardar nickname</button>
+    </form>
+    <hr>
+    <p class="small mb-1"><a href="/terminos">Términos de uso y política de privacidad</a></p>
+    <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>Cerrar sesión</button>
+  </div>
+</div>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/acceso.js"></script>{% endblock %}

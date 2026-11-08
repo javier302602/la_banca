@@ -1,7 +1,9 @@
 """CU-16 — Consultar términos de uso y política de privacidad. Controlador MVC (APIRouter)."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.shared.config.provider import variable
+from app.shared.security.session import SesionActual, get_sesion_opcional
+from app.shared.web.plantillas import render
 
 from .handler import ConsultarTerminosHandler
 from .repository import leer_terminos
@@ -17,3 +19,9 @@ def get_handler() -> ConsultarTerminosHandler:
 @router.get("/api/terminos", response_model=TerminosResponse, status_code=200)
 async def consultar_terminos(handler: ConsultarTerminosHandler = Depends(get_handler)) -> TerminosResponse:
     return await handler.handle()
+
+
+@router.get("/terminos", include_in_schema=False)
+async def pagina_terminos(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional),
+                          handler: ConsultarTerminosHandler = Depends(get_handler)):
+    return render(request, "m01_acceso/terminos.html", sesion, terminos=await handler.handle())

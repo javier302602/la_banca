@@ -1,8 +1,28 @@
 {% extends "base.html" %}
 {# CU-09 — Detalle de publicación #}
 
-{% block title %}Detalle de publicación{% endblock %}
+{% block title %}Publicación{% endblock %}
+{% block pagina %}detalle{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Detalle de publicación</h1>
+<div class="mx-auto" style="max-width: 44rem">
+  <p><a href="/feed">← Volver al feed</a></p>
+  <div id="mensajes" aria-live="polite"></div>
+  <article class="card d-none" id="detalle">
+    <div class="card-body">
+      <div class="d-flex gap-2 align-items-center mb-2">
+        <span class="badge text-bg-secondary" id="tipo"></span>
+        <span class="badge text-bg-info etiqueta-propia d-none" id="propia">Tu publicación</span>
+      </div>
+      <h1 class="h4 card-title" id="titulo"></h1>
+      <p class="card-text contenido-libre" id="descripcion"></p>
+      <p class="small text-body-secondary mb-3">Por <span id="autor"></span> · Tiempo restante:
+        <span id="restante"></span></p>
+      <div class="d-flex gap-2" id="acciones"></div>
+    </div>
+  </article>
+</div>
+<span id="publicacion" data-id="{{ publicacion_id }}" hidden></span>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/feed.js"></script>{% endblock %}

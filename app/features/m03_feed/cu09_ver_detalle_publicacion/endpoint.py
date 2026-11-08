@@ -1,10 +1,11 @@
 """CU-09 — Ver detalle de una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
-from app.shared.security.session import SesionActual, get_sesion_actual
+from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
+from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import VerDetallePublicacionHandler
 from .repository import MongoChatExistenteRepository, MongoVerDetallePublicacionRepository
@@ -28,3 +29,10 @@ async def ver_detalle_publicacion(
     handler: VerDetallePublicacionHandler = Depends(get_handler),
 ) -> DetallePublicacionResponse:
     return await handler.handle(sesion.estudiante_id, publicacion_id)
+
+
+@router.get("/publicaciones/{publicacion_id}", include_in_schema=False)
+async def pagina_detalle(request: Request, publicacion_id: str, sesion: SesionActual | None = Depends(get_sesion_opcional)):
+    if sesion is None:
+        return redirigir_a_login(request)
+    return render(request, "m03_feed/detalle_publicacion.html", sesion, publicacion_id=publicacion_id)

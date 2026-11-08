@@ -1,12 +1,13 @@
 """CU-02 — Iniciar sesión. Controlador MVC (APIRouter), sin lógica de negocio."""
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
 from app.shared.db.mongo import get_database
 from app.shared.security.hashing import BcryptPasswordHasher, SecureTokenService
-from app.shared.security.session import escribir_cookie_sesion
+from app.shared.security.session import SesionActual, escribir_cookie_sesion, get_sesion_opcional
+from app.shared.web.plantillas import redirigir, render
 
 from .handler import IniciarSesionHandler
 from .repository import MongoIniciarSesionRepository
@@ -34,3 +35,10 @@ async def iniciar_sesion(
     resultado = await handler.handle(body)
     escribir_cookie_sesion(response, resultado.token)
     return resultado.respuesta
+
+
+@router.get("/login", include_in_schema=False)
+async def pagina_login(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
+    if sesion is not None:
+        return redirigir("/feed")
+    return render(request, "m01_acceso/login.html", sesion, motivo=request.query_params.get("motivo"))

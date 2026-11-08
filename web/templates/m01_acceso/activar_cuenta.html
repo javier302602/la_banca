@@ -1,8 +1,32 @@
 {% extends "base.html" %}
-{# CU-17 — Activar cuenta #}
+{# CU-17 — Activar cuenta (y A1: solicitar un nuevo enlace) #}
 
 {% block title %}Activar cuenta{% endblock %}
+{% block pagina %}activar{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Activar cuenta</h1>
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <h1 class="h4 mb-3">Activar cuenta</h1>
+    <div id="mensajes" aria-live="polite">
+      {% if token %}<div class="alert alert-info" role="status">Activando tu cuenta…</div>{% endif %}
+    </div>
+    <div id="continuar" class="d-none mb-4">
+      <a class="btn btn-primary" href="/login">Continuar</a>
+    </div>
+    <section id="reenvio" class="{% if token %}d-none{% endif %}">
+      <h2 class="h6">Solicitar un nuevo enlace de activación</h2>
+      <form id="form-reenvio" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="correo">Correo con el que te registraste</label>
+          <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required>
+        </div>
+        <button class="btn btn-outline-primary" type="submit">Enviar nuevo enlace</button>
+      </form>
+    </section>
+  </div>
+</div>
+<span id="token" data-token="{{ token or '' }}" hidden></span>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/acceso.js"></script>{% endblock %}

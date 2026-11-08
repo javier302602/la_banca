@@ -1,0 +1,16 @@
+/* La Banca — estilos complementarios a Bootstrap 5 */
+.contenido-libre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.tarjeta-publicacion { transition: box-shadow .15s ease; }
+.tarjeta-publicacion:hover { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .08); }
+.etiqueta-propia { font-size: .75rem; }
+
+.chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; }
+.burbuja { max-width: 75%; padding: .5rem .75rem; border-radius: 1rem; overflow-wrap: anywhere; }
+.burbuja.propia { align-self: flex-end; background: var(--bs-primary-bg-subtle); border-bottom-right-radius: .25rem; }
+.burbuja.ajena { align-self: flex-start; background: var(--bs-secondary-bg); border-bottom-left-radius: .25rem; }
+.burbuja img { max-width: 100%; max-height: 40vh; border-radius: .5rem; display: block; }
+.burbuja .hora { font-size: .7rem; color: var(--bs-secondary-color); text-align: right; }
+
+.aviso-expiracion { animation: latido 2s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .aviso-expiracion { animation: none; } }

@@ -3,6 +3,7 @@
 Las operaciones atómicas de varios documentos usan transacciones: MongoDB debe ser un replica set
 (MongoDB Atlas lo es; en local: `mongod --replSet rs0` o la imagen de Docker con replica set).
 """
+import asyncio
 import logging
 import re
 from collections.abc import Awaitable, Callable
@@ -22,24 +23,34 @@ log = logging.getLogger("la_banca.db")
 # Colación sin distinción de mayúsculas para el nickname (RN-05 / RN-33)
 COLACION_NICKNAME = Collation(locale="en", strength=2)
 
-_client: AsyncIOMotorClient | None = None
+# Un cliente por event loop: Motor queda ligado al loop en que se usa por primera vez y algunos
+# entornos (pruebas, runtimes serverless) crean más de un loop en el mismo proceso.
+_clientes: dict[asyncio.AbstractEventLoop, AsyncIOMotorClient] = {}
 _indices_creados = False
 T = TypeVar("T")
 
 
 def get_client() -> AsyncIOMotorClient:
-    global _client
-    if _client is None:
+    loop = asyncio.get_running_loop()
+    cliente = _clientes.get(loop)
+    if cliente is None:
         uri = variable("MONGO_URI")
         if not uri:
             raise RuntimeError("Falta configurar MONGO_URI")
-        _client = AsyncIOMotorClient(uri, tz_aware=True, serverSelectionTimeoutMS=5000)
-    return _client
+        for viejo in [l for l in _clientes if l.is_closed()]:
+            _clientes.pop(viejo).close()
+        cliente = _clientes[loop] = AsyncIOMotorClient(uri, tz_aware=True, serverSelectionTimeoutMS=5000)
+    return cliente
 
 
-def get_database() -> AsyncIOMotorDatabase:
-    """Dependencia FastAPI que entrega la base configurada (Entregable 2: la_banca_db)."""
+def base_de_datos() -> AsyncIOMotorDatabase:
+    """Base configurada (Entregable 2: la_banca_db). Debe llamarse dentro de un event loop."""
     return get_client()[variable("MONGO_DB", "la_banca_db")]
+
+
+async def get_database() -> AsyncIOMotorDatabase:
+    """Dependencia FastAPI (async: se resuelve en el event loop de la solicitud)."""
+    return base_de_datos()
 
 
 def oid(valor: str | None) -> ObjectId | None:
@@ -173,7 +184,7 @@ async def asegurar_indices_una_vez() -> None:
             dominio = get_config().texto(ClaveParametro.DOMINIO_INSTITUCIONAL)
         except RuntimeError:
             dominio = None
-        await crear_indices(get_database(), dominio)
+        await crear_indices(base_de_datos(), dominio)
         _indices_creados = True
     except (PyMongoError, RuntimeError) as error:
         log.error("No se pudieron crear los índices de MongoDB: %s", error)

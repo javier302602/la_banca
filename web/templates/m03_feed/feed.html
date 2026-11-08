@@ -1,8 +1,26 @@
 {% extends "base.html" %}
-{# CU-08 — Ahora #}
+{# CU-08 — Feed «Ahora» #}
 
 {% block title %}Ahora{% endblock %}
+{% block pagina %}feed{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Ahora</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">Ahora</h1>
+  <div class="d-flex gap-2 align-items-center">
+    <label class="visually-hidden" for="filtro-tipo">Tipo</label>
+    <select class="form-select form-select-sm" id="filtro-tipo" aria-label="Filtrar por tipo">
+      <option value="" selected>Todos</option>
+      {% for valor, nombre in tipos %}<option value="{{ valor }}">{{ nombre }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-outline-secondary btn-sm d-none text-nowrap" type="button" id="quitar-filtro">Ver todos</button>
+    <button class="btn btn-outline-primary btn-sm" type="button" id="actualizar">Actualizar</button>
+  </div>
+</div>
+<div id="mensajes" aria-live="polite"></div>
+<div class="row g-3" id="lista"></div>
+<p class="text-body-secondary mt-3 d-none" id="vacio" role="status"></p>
+<div id="centinela" class="py-3 text-center small text-body-secondary" aria-hidden="true"></div>
 {% endblock %}
+
+{% block scripts %}<script src="/static/js/feed.js"></script>{% endblock %}
