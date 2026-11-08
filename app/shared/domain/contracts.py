@@ -152,8 +152,8 @@ class IChatRepository(ABC):
     async def buscar_por_id(self, chat_id: str) -> Chat | None: raise NotImplementedError
     async def listar_mensajes(self, chat_id: str, despues_de: datetime | None = None) -> list[Mensaje]: raise NotImplementedError
     async def buscar_mensaje(self, chat_id: str, mensaje_id: str) -> Mensaje | None: raise NotImplementedError
-    async def agregar_mensaje(self, mensaje: Mensaje, nueva_expiracion: datetime) -> bool:
-        """Atómico: inserta y reinicia la expiración solo si el chat sigue activo. True si se registró."""
+    async def agregar_mensaje(self, mensaje: Mensaje, nueva_expiracion: datetime) -> str | None:
+        """Atómico: inserta y reinicia la expiración solo si el chat sigue activo. Id del mensaje o None."""
         raise NotImplementedError
     async def marcar_leido(self, chat_id: str, usuario_id: str, ahora: datetime) -> None: raise NotImplementedError
     async def eliminar_expirados(self, ahora: datetime) -> list[str]:

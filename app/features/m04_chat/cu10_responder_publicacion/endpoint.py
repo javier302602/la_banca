@@ -1,12 +1,11 @@
 """CU-10 — Responder a una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
-
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
 from app.shared.security.session import SesionActual, get_sesion_actual
-from app.shared.storage.image_storage import get_image_storage
+from app.shared.storage.image_storage import get_image_storage, leer_imagen_subida
 
 from .handler import ResponderPublicacionHandler
 from .repository import MongoPublicacionLecturaRepository, MongoResponderPublicacionRepository
@@ -24,7 +23,7 @@ def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ResponderPu
     )
 
 
-@router.post("/publicaciones/{publicacion_id}/respuestas", response_model=ChatCreadoResponse, status_code=201)
+@router.post("/api/publicaciones/{publicacion_id}/respuestas", response_model=ChatCreadoResponse, status_code=201)
 async def responder_publicacion(
     publicacion_id: str,
     texto: str | None = Form(default=None),
@@ -32,5 +31,5 @@ async def responder_publicacion(
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: ResponderPublicacionHandler = Depends(get_handler),
 ) -> ChatCreadoResponse:
-    """Delegar en el handler."""
-    raise NotImplementedError
+    body = MensajeEntrante(texto=texto, imagen=await leer_imagen_subida(imagen))
+    return await handler.handle(sesion.estudiante_id, sesion.nickname, publicacion_id, body)

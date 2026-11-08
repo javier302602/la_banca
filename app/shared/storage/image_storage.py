@@ -138,3 +138,13 @@ def get_image_storage() -> ImageStorage:
 
 def mime_de_referencia(referencia: str) -> str:
     return _mime_de_clave(referencia)
+
+
+async def leer_imagen_subida(archivo) -> bytes | None:
+    """Lee un UploadFile de FastAPI sin cargar más de 5 MB + 1 byte. None si no se adjuntó archivo."""
+    from app.shared.domain.entities import TAMANO_MAX_IMAGEN
+
+    if archivo is None or not getattr(archivo, "filename", ""):
+        return None
+    contenido = await archivo.read(TAMANO_MAX_IMAGEN + 1)
+    return contenido or None
