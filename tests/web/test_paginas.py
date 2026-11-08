@@ -157,13 +157,17 @@ def test_utilidades_js_con_node():
     const en = (min) => new Date(Date.now() + min * 60000).toISOString();
     console.log(JSON.stringify({
       r1: B.restante(en(9.2)), r2: B.restante(en(124.5)), r3: B.restante(en(-1)),
+      // RNF-USA-01 (criterio CA-RNF): 1 h 25 min, 2 h 0 min, 0 h 40 min y 30 s; además 2 h 15 min
+      c1: B.restante(en(85.1)), c2: B.restante(en(120.1)), c3: B.restante(en(40.1)), c4: B.restante(en(0.5)),
+      c5: B.restante(en(135.1)),
       horaLocal: typeof B.horaHHMM,
     }));
     """
     salida = subprocess.run(["node", "-e", script, str(RAIZ / "web/static/js/app.js")],
                             capture_output=True, text=True, check=True, timeout=30)
     datos = json.loads(salida.stdout)
-    assert datos == {"r1": "10 min", "r2": "2 h 5 min", "r3": "Expirada",
+    assert datos == {"r1": "9 min", "r2": "2 h 4 min", "r3": "Expirada",
+                     "c1": "1 h 25 min", "c2": "2 h", "c3": "40 min", "c4": "menos de 1 min", "c5": "2 h 15 min",
                      "horaLocal": "undefined"}  # RN-34: la hora HH:MM ya no se calcula en el navegador
 
 

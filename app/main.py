@@ -33,6 +33,7 @@ from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_
 from app.shared.config.provider import verificar_entorno
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
+from app.shared.web.validacion import mensaje_en_espanol
 
 logging.basicConfig(level=logging.INFO)
 verificar_entorno()  # falla al iniciar si ENTORNO=produccion usa proveedores de desarrollo
@@ -56,12 +57,12 @@ async def manejar_error_dominio(_: Request, error: ErrorDominio) -> JSONResponse
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
 async def manejar_validacion(_: Request, error: RequestValidationError | ValidationError) -> JSONResponse:
-    """422 con el mensaje del SRS (DTOs validados por FastAPI o construidos en el endpoint)."""
+    """422 con el mensaje del SRS, siempre en español (RNF-USA-05)."""
     inicio = 1 if isinstance(error, RequestValidationError) else 0
     errores = []
     for e in error.errors():
-        mensaje = str(e.get("msg", "Dato inválido")).removeprefix("Value error, ")
-        errores.append({"campo": ".".join(str(p) for p in e.get("loc", [])[inicio:]), "mensaje": mensaje})
+        errores.append({"campo": ".".join(str(p) for p in e.get("loc", [])[inicio:]),
+                        "mensaje": mensaje_en_espanol(e)})
     detalle = errores[0]["mensaje"] if errores else "Datos inválidos"
     return JSONResponse({"detail": detalle, "codigo": "validacion", "errores": errores}, status_code=422)
 
