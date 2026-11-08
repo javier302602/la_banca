@@ -39,6 +39,13 @@ pytest
 Los tests de handlers usan fakes en memoria de los contratos y un reloj falso (`tests/fakes.py`); no
 necesitan MongoDB.
 
+Las pruebas de punta a punta (`tests/e2e/`) se excluyen por defecto y usan un MongoDB real (replica set,
+como el del paso 1; otra URI con `E2E_MONGO_URI`). Vacían la base `la_banca_e2e`:
+
+```bash
+pytest -m e2e
+```
+
 ## Configuración técnica (CU-15)
 
 No hay pantalla ni API de administración. Los parámetros se cambian con variables de entorno

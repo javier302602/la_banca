@@ -12,8 +12,8 @@ from app.shared.domain.errors import Conflicto
 from tests.fakes import FakeConfig
 
 
-def test_creaciones_simultaneas_respetan_el_maximo(entorno_e2e):
-    db_sync = entorno_e2e
+def test_creaciones_simultaneas_respetan_el_maximo(base_e2e_limpia):
+    db_sync = base_e2e_limpia
     autor = ObjectId()
     db_sync.accounts.insert_one({"_id": autor, "email": "concurrente@unas.edu.pe", "passwordHash": "x" * 60,
                                  "nickname": "concurrente", "status": "ACTIVA",

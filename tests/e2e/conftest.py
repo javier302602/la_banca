@@ -35,10 +35,17 @@ def entorno_e2e():
                "IMAGE_STORAGE": "memoria", "EMAIL_SENDER": "consola", "ENTORNO": "desarrollo"}
     anteriores = {k: os.environ.get(k) for k in valores}
     os.environ.update(valores)
-    MongoClient(uri).drop_database(BASE_E2E)
-    yield MongoClient(uri)[BASE_E2E]
+    yield MongoClient(uri)
+
     for clave, valor in anteriores.items():
         if valor is None:
             os.environ.pop(clave, None)
         else:
             os.environ[clave] = valor
+
+
+@pytest.fixture(scope="module")
+def base_e2e_limpia(entorno_e2e):
+    """Cada módulo e2e empieza con la base vacía."""
+    entorno_e2e.drop_database(BASE_E2E)
+    return entorno_e2e[BASE_E2E]
