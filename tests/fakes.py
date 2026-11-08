@@ -211,6 +211,11 @@ class FakePublicationRepository(IPublicationRepository):
         self._orden[publicacion.id] = len(self._orden)
         return publicacion.id
 
+    async def crear_si_hay_cupo(self, publicacion, maximo, ahora):
+        if await self.contar_activas_por_usuario(publicacion.autor_id, ahora) >= maximo:
+            return None
+        return await self.crear(publicacion)
+
     def _clave(self, p):
         return (p.fecha_creacion, self._orden[p.id])
 

@@ -2,7 +2,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.shared.db.mapeo import publicacion_a_doc
-from app.shared.db.mongo import oid
+from app.shared.db.mongo import en_transaccion, oid
 from app.shared.domain.contracts import IPublicationRepository
 from app.shared.domain.entities import EstadoPublicacion
 
@@ -16,6 +16,18 @@ class MongoCrearPublicacionRepository(IPublicationRepository):
         return await self._db.publications.count_documents(
             {"authorId": oid(autor_id), "status": EstadoPublicacion.ACTIVE.value, "expiresAt": {"$gt": ahora}})
 
-    async def crear(self, publicacion):
-        resultado = await self._db.publications.insert_one(publicacion_a_doc(publicacion))
-        return str(resultado.inserted_id)
+    async def crear_si_hay_cupo(self, publicacion, maximo, ahora):
+        autor = oid(publicacion.autor_id)
+
+        async def operacion(s):
+            # Escribir en la cuenta del autor hace que dos creaciones simultáneas choquen (WriteConflict →
+            # TransientTransactionError); en_transaccion repite la perdedora, que ya ve la publicación nueva.
+            await self._db.accounts.update_one({"_id": autor}, {"$inc": {"publicationsVersion": 1}}, session=s)
+            activas = await self._db.publications.count_documents(
+                {"authorId": autor, "status": EstadoPublicacion.ACTIVE.value, "expiresAt": {"$gt": ahora}}, session=s)
+            if activas >= maximo:
+                return None
+            resultado = await self._db.publications.insert_one(publicacion_a_doc(publicacion), session=s)
+            return str(resultado.inserted_id)
+
+        return await en_transaccion(self._db, operacion)
