@@ -13,7 +13,8 @@ router = APIRouter(tags=["M01 Acceso"])
 
 
 def get_handler() -> ConsultarTerminosHandler:
-    return ConsultarTerminosHandler(variable("TERMINOS_VERSION"), variable("TERMINOS_FECHA"), leer_terminos)
+    return ConsultarTerminosHandler(variable("TERMINOS_VERSION"), variable("TERMINOS_FECHA"), leer_terminos,
+                                    variable("CANAL_ARCO"))
 
 
 @router.get("/api/terminos", response_model=TerminosResponse, status_code=200)

@@ -85,3 +85,18 @@ def test_cursor_mongo_ida_y_vuelta_e_invalido():
     for malo in ("xxx", "e30", codificar_cursor(reloj.ahora(), id_)[:-3]):
         with pytest.raises(ErrorValidacion):
             decodificar_cursor(malo)
+
+
+def test_filtro_no_altera_las_publicaciones_ni_su_vencimiento():
+    """RN-45: filtrar no cambia el conjunto de activas ni su vencimiento; el filtro se aplica en cada consulta."""
+    import copy
+
+    repo, reloj = FakePublicationRepository(), FakeClock()
+    for tipo in ("NECESITO", "OFREZCO", "OFREZCO"):
+        publicar(repo, reloj, tipo=TipoPublicacion(tipo))
+    antes = copy.deepcopy(repo.publicaciones)
+    assert len(consultar(repo, reloj, tipo="OFREZCO").items) == 2
+    assert repo.publicaciones == antes  # sin efecto sobre los datos
+    publicar(repo, reloj, tipo=TipoPublicacion.OFREZCO)  # nueva publicación: entra en la siguiente actualización filtrada
+    assert len(consultar(repo, reloj, tipo="OFREZCO").items) == 3
+    assert len(consultar(repo, reloj).items) == 4
