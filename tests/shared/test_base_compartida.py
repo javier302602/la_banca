@@ -236,3 +236,37 @@ def test_sin_token_o_token_desconocido():
     for token in (None, "desconocido"):
         with pytest.raises(NoAutenticado):
             asyncio.run(validador.validar(token))
+
+
+# --- verificación del entorno de producción ---------------------------------------------
+from app.shared.config.provider import ConfiguracionInvalida, verificar_entorno  # noqa: E402
+
+
+@pytest.mark.parametrize("entorno", [{}, {"ENTORNO": "desarrollo"}, {"ENTORNO": "produccion", "IMAGE_STORAGE": "s3",
+                                                                     "EMAIL_SENDER": "smtp"}])
+def test_entorno_valido(entorno):
+    verificar_entorno(entorno)
+
+
+@pytest.mark.parametrize("entorno,falta", [
+    ({"ENTORNO": "produccion"}, ["IMAGE_STORAGE=memoria", "EMAIL_SENDER=consola"]),
+    ({"ENTORNO": "Produccion", "IMAGE_STORAGE": "s3", "EMAIL_SENDER": "consola"}, ["EMAIL_SENDER=consola"]),
+    ({"ENTORNO": "produccion", "IMAGE_STORAGE": "memoria", "EMAIL_SENDER": "smtp"}, ["IMAGE_STORAGE=memoria"]),
+])
+def test_produccion_rechaza_proveedores_de_desarrollo(entorno, falta):
+    with pytest.raises(ConfiguracionInvalida) as error:
+        verificar_entorno(entorno)
+    for texto in falta:
+        assert texto in str(error.value)
+
+
+def test_la_app_no_inicia_en_produccion_con_memoria():
+    import os
+    import subprocess
+    import sys
+
+    env = {**os.environ, "ENTORNO": "produccion", "IMAGE_STORAGE": "memoria", "EMAIL_SENDER": "consola"}
+    proceso = subprocess.run([sys.executable, "-c", "import app.main"], env=env, capture_output=True, text=True,
+                             timeout=60)
+    assert proceso.returncode != 0
+    assert "Configuración inválida para ENTORNO=produccion" in proceso.stderr and "usa IMAGE_STORAGE=s3" in proceso.stderr

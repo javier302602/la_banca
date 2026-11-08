@@ -51,5 +51,5 @@ python -m app.features.m06_configuracion.cu15_configurar_parametros.endpoint --r
 ## Despliegue en Vercel
 
 `vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons
-de EA-03, EA-05 y EA-07. Define en Vercel las variables de `.env.example`, con `IMAGE_STORAGE=s3`,
+de EA-03, EA-05 y EA-07. Define en Vercel las variables de `.env.example`, con `ENTORNO=produccion`, `IMAGE_STORAGE=s3`,
 `EMAIL_SENDER=smtp` y un `CRON_SECRET` aleatorio.

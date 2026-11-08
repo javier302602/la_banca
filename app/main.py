@@ -30,10 +30,12 @@ from app.features.m06_configuracion.cu15_configurar_parametros.endpoint import r
 from app.jobs.ea03_limpiar_chats_expirados.endpoint import router as ea03_limpiar_chats_expirados
 from app.jobs.ea05_depurar_contenido_reportado.endpoint import router as ea05_depurar_contenido_reportado
 from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_eliminar_cuentas_no_activadas
+from app.shared.config.provider import verificar_entorno
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
 
 logging.basicConfig(level=logging.INFO)
+verificar_entorno()  # falla al iniciar si ENTORNO=produccion usa proveedores de desarrollo
 RAIZ = Path(__file__).resolve().parent.parent
 
 

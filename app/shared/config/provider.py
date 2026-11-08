@@ -65,3 +65,25 @@ def variable(nombre: str, por_defecto: str | None = None) -> str | None:
     """Variables técnicas que no son parámetros de negocio (URIs, credenciales, selección de proveedores)."""
     valor = os.environ.get(nombre)
     return valor if valor not in (None, "") else por_defecto
+
+
+class ConfiguracionInvalida(RuntimeError):
+    pass
+
+
+def verificar_entorno(entorno: Mapping[str, str] | None = None) -> None:
+    """Con ENTORNO=produccion exige proveedores reales: impide arrancar con imágenes en memoria o correo en consola."""
+    entorno = entorno if entorno is not None else os.environ
+    if (entorno.get("ENTORNO") or "").strip().lower() != "produccion":
+        return
+    errores = []
+    imagenes = (entorno.get("IMAGE_STORAGE") or "memoria").strip().lower()
+    if imagenes != "s3":
+        errores.append(f"IMAGE_STORAGE={imagenes} no está permitido en producción (las imágenes se perderían): "
+                       "usa IMAGE_STORAGE=s3")
+    correo = (entorno.get("EMAIL_SENDER") or "consola").strip().lower()
+    if correo != "smtp":
+        errores.append(f"EMAIL_SENDER={correo} no está permitido en producción (no se enviarían los enlaces): "
+                       "usa EMAIL_SENDER=smtp")
+    if errores:
+        raise ConfiguracionInvalida("Configuración inválida para ENTORNO=produccion:\n- " + "\n- ".join(errores))
