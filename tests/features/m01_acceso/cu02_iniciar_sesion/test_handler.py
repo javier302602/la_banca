@@ -122,6 +122,31 @@ def test_intento_antiguo_sin_failed_at_se_reconstruye():
     assert intento_a_doc(intento)["failedAt"] == intento.fallos
 
 
+def test_cuenta_existente_conserva_acceso_al_cambiar_el_dominio():
+    """RF-CFG-12: el inicio de sesión no vuelve a validar el dominio; la cuenta de @unas.edu.pe sigue entrando."""
+    repo, reloj = FakeAccountRepository(), FakeClock()
+    asyncio.run(repo.crear(estudiante(password_hash=HASHER.hash("clave123"))))
+    h = IniciarSesionHandler(repo, HASHER, SecureTokenService(), FakeConfig(dominio="nueva.edu.pe"), reloj)
+    assert _login(h).respuesta.nickname == "ana_07"
+
+
+def test_validador_de_accounts_moderado_para_cuentas_de_un_dominio_anterior():
+    """RF-CFG-12: con validationLevel «moderate» las cuentas que ya no cumplen el patrón siguen editables."""
+    from app.shared.db import mongo
+
+    class BaseFalsa:
+        def __init__(self):
+            self.opciones = {}
+
+        async def create_collection(self, nombre, **opciones):
+            self.opciones[nombre] = opciones
+
+    db = BaseFalsa()
+    asyncio.run(mongo._asegurar_coleccion(db, "accounts", mongo._validador_accounts("nueva.edu.pe")))
+    assert db.opciones["accounts"]["validationLevel"] == "moderate"
+    assert "nueva\\.edu\\.pe" in db.opciones["accounts"]["validator"]["$jsonSchema"]["properties"]["email"]["pattern"]
+
+
 def test_exito_reinicia_contador():
     h, repo, _ = _escenario()
     with pytest.raises(NoAutenticado):
