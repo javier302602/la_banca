@@ -5,6 +5,7 @@ Las operaciones atómicas de varios documentos usan transacciones: MongoDB debe 
 """
 import asyncio
 import logging
+import random
 import re
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar
@@ -67,11 +68,57 @@ def campo_duplicado(error: DuplicateKeyError) -> str:
     return next(iter(patron), "")
 
 
+MAX_INTENTOS_TRANSACCION = 10
+ESPERA_MAXIMA_REINTENTO = 0.2  # s
+
+
 async def en_transaccion(db: AsyncIOMotorDatabase,
-                         operacion: Callable[[AsyncIOMotorClientSession], Awaitable[T]]) -> T:
-    """Ejecuta `operacion(sesion)` dentro de una transacción con reintentos (RNF-FIA-03)."""
-    async with await db.client.start_session() as sesion:
-        return await sesion.with_transaction(operacion)
+                         operacion: Callable[[AsyncIOMotorClientSession], Awaitable[T]],
+                         intentos: int = MAX_INTENTOS_TRANSACCION) -> T:
+    """Ejecuta `operacion(sesion)` en una transacción (RNF-FIA-03).
+
+    Ante un error con la etiqueta TransientTransactionError (p. ej. WriteConflict entre dos transacciones que
+    escriben el mismo documento) se aborta y se repite la operación completa; ante
+    UnknownTransactionCommitResult se reintenta solo la confirmación.
+    """
+    for intento in range(1, intentos + 1):
+        async with await db.client.start_session() as sesion:
+            sesion.start_transaction()
+            try:
+                resultado = await operacion(sesion)
+                await _confirmar(sesion)
+                return resultado
+            except PyMongoError as error:
+                await _abortar(sesion)
+                if error.has_error_label("TransientTransactionError") and intento < intentos:
+                    log.info("Transacción transitoria fallida (%s); reintento %d", error, intento)
+                    # backoff exponencial con jitter: las transacciones en conflicto no vuelven a chocar al unísono
+                    await asyncio.sleep(random.uniform(0, min(ESPERA_MAXIMA_REINTENTO, 0.005 * 2 ** intento)))
+                    continue
+                raise
+            except BaseException:
+                await _abortar(sesion)
+                raise
+    raise RuntimeError("inalcanzable")
+
+
+async def _confirmar(sesion, intentos: int = 3) -> None:
+    for intento in range(1, intentos + 1):
+        try:
+            await sesion.commit_transaction()
+            return
+        except PyMongoError as error:
+            if error.has_error_label("UnknownTransactionCommitResult") and intento < intentos:
+                continue
+            raise
+
+
+async def _abortar(sesion) -> None:
+    if sesion.in_transaction:
+        try:
+            await sesion.abort_transaction()
+        except PyMongoError:
+            pass
 
 
 # --- Esquema físico (Entregable 2, Anexo B) ------------------------------------

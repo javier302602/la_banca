@@ -128,6 +128,11 @@ class IAccountRepository(ABC):
 class IPublicationRepository(ABC):
     async def contar_activas_por_usuario(self, autor_id: str, ahora: datetime) -> int: raise NotImplementedError
     async def crear(self, publicacion: Publicacion) -> str: raise NotImplementedError
+    async def crear_si_hay_cupo(self, publicacion: Publicacion, maximo: int, ahora: datetime) -> str | None:
+        """Atómico: crea solo si el autor tiene menos de `maximo` activas (RF-PUB-06). Id o None si no hay cupo.
+
+        Debe serializar las creaciones simultáneas del mismo autor (otra pestaña u otro dispositivo)."""
+        raise NotImplementedError
     async def listar_activas_por_usuario(self, autor_id: str, ahora: datetime) -> list[Publicacion]: raise NotImplementedError
     async def buscar_por_id(self, publicacion_id: str) -> Publicacion | None: raise NotImplementedError
     async def cerrar(self, publicacion_id: str, autor_id: str, ahora: datetime) -> bool:
