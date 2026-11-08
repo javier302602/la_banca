@@ -72,3 +72,14 @@ para esto porque su sistema de archivos es efímero.
 `vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons
 de EA-03, EA-05 y EA-07. Define en Vercel las variables de `.env.example`, con `ENTORNO=produccion`, `IMAGE_STORAGE=s3`,
 `EMAIL_SENDER=smtp` y un `CRON_SECRET` aleatorio.
+
+La política de privacidad necesita además tres datos del texto legal aprobado. Con `ENTORNO=produccion`
+la app **no arranca** si falta alguno (RN-31, RNF-LEG-01–03):
+
+| Variable | Contenido | Ejemplo |
+|---|---|---|
+| `TERMINOS_VERSION` | Versión del texto aprobado; se muestra en la política y se registra en cada aceptación (RF-AUT-17) | `1.0` |
+| `TERMINOS_FECHA` | Fecha de esa versión | `2026-11-01` |
+| `CANAL_ARCO` | Canal oficial para ejercer los derechos ARCO (Ley N.° 29733); reemplaza `{{CANAL_ARCO}}` en `web/terminos/terminos.txt` | `datospersonales@unas.edu.pe` |
+
+Al cambiar el texto de `web/terminos/terminos.txt`, sube `TERMINOS_VERSION` y `TERMINOS_FECHA`.
