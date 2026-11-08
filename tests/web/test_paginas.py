@@ -164,3 +164,44 @@ def test_utilidades_js_con_node():
                             capture_output=True, text=True, check=True, timeout=30)
     datos = json.loads(salida.stdout)
     assert datos == {"r1": "10 min", "r2": "2 h 5 min", "r3": "Expirada", "hora": "07:05"}
+
+
+COMPRESION_JS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const soportaWebp = process.argv[2] === "webp";
+// Tamaño simulado del resultado: proporcional a los píxeles y a la calidad
+const lienzo = () => ({ width: 0, height: 0,
+  toDataURL(tipo) { return soportaWebp && tipo === "image/webp" ? "data:image/webp;base64,AA" : "data:image/png;base64,AA"; },
+  getContext() { return { drawImage() {} }; },
+  toBlob(cb, tipo, calidad) { cb(new Blob([new Uint8Array(Math.round(this.width * this.height * calidad))], { type: tipo })); } });
+const ctx = { console, setInterval: () => 0, Date, URLSearchParams, Blob, File, Math, Promise,
+  location: { search: "" }, document: { addEventListener() {}, createElement: lienzo },
+  createImageBitmap: async () => ({ width: 6000, height: 4000, close() { ctx.cerrado = true; } }) };
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + ";globalThis.Banca = Banca;", ctx);
+(async () => {
+  const pequeno = new File([new Uint8Array(1000)], "a.png", { type: "image/png" });
+  const grande = new File([new Uint8Array(4 * 1024 * 1024 + 1)], "foto.HEIC.jpg", { type: "image/jpeg" });
+  const igual = await ctx.Banca.comprimirImagen(pequeno);
+  const r = await ctx.Banca.comprimirImagen(grande);
+  console.log(JSON.stringify({ mismo: igual === pequeno, tipo: r.type, nombre: r.name, bytes: r.size,
+                               limite: ctx.Banca.LIMITE_SUBIDA, cerrado: !!ctx.cerrado }));
+})();
+"""
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node no disponible")
+@pytest.mark.parametrize("soporte,tipo,extension", [("webp", "image/webp", ".webp"), ("sin-webp", "image/jpeg", ".jpg")])
+def test_comprime_imagenes_de_mas_de_4mb(soporte, tipo, extension):
+    salida = subprocess.run(["node", "-e", COMPRESION_JS, str(RAIZ / "web/static/js/app.js"), soporte],
+                            capture_output=True, text=True, check=True, timeout=30)
+    r = json.loads(salida.stdout)
+    assert r["mismo"]  # ≤ 4 MB: se sube tal cual
+    assert r["tipo"] == tipo and r["nombre"] == f"foto.HEIC{extension}" and r["cerrado"]
+    assert 0 < r["bytes"] <= r["limite"] == 4 * 1024 * 1024
+
+
+def test_chat_comprime_antes_de_subir(cliente):
+    js = cliente.get("/static/js/chat.js").text
+    assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 2
