@@ -45,7 +45,7 @@ class ResponderPublicacionHandler:
         imagen = None
         if body.imagen is not None:
             referencia = await self._imagenes.guardar(body.imagen, body.imagen_mime)
-            imagen = ImagenAdjunta(referencia, body.imagen_mime, len(body.imagen))
+            imagen = ImagenAdjunta(referencia, body.imagen_mime, len(body.imagen), self._imagenes.bucket)
         chat = Chat(
             id="", publicacion_id=publicacion.id, autor_id=publicacion.autor_id, respondedor_id=estudiante_id,
             fecha_inicio=ahora, ultima_actividad=ahora, fecha_expiracion=ahora + INACTIVIDAD_CHAT,

@@ -107,6 +107,11 @@ def test_flujo_completo(db):
         ok(b.post(f"/api/chats/{cid}/reportes", json={"codigo_motivo": "SPAM"}).status_code == 201, "reportar chat")
         rep = db.reports.find_one({"targetType": "CHAT"})
         ok(len(rep["reportedContentSnapshot"]["retainedImageKeys"]) == 1, "snapshot con imagen retenida")
+        snap = rep["reportedContentSnapshot"]
+        ok(snap["capturedAt"] and snap["publicationData"]["publicationId"] == pid
+           and isinstance(snap["messagesSnapshot"], list), "snapshot con capturedAt y publicationData")
+        ok(db.messages.find_one({"imageAttachment": {"$ne": None}})["imageAttachment"]["storageBucket"] == "memoria",
+           "messages.imageAttachment.storageBucket")
         ok(a.post(f"/api/publicaciones/{pid}/reportes", json={"codigo_motivo": "SPAM"}).status_code == 403,
            "no reportar la propia")
         ok(b.post(f"/api/publicaciones/{pid}/reportes", json={"codigo_motivo": "FRAUD", "observacion": " x "})

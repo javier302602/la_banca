@@ -30,11 +30,14 @@ def _reportar(h, cid, usuario="lector"):
 
 
 def test_snapshot_de_textos_e_imagenes_retenidas():
-    h, chats, reportes, imgs, _, cid, referencia = _escenario()
+    h, chats, reportes, imgs, reloj, cid, referencia = _escenario()
     assert _reportar(h, cid).mensaje == "Reporte registrado. Gracias por avisar"
     [r] = reportes.reportes.values()
     assert r.tipo_objeto is TipoObjetoReportado.CHAT and r.contenido.usuario_reportado_id == "autor"
-    textos = [m["texto"] for m in r.contenido.snapshot_textos["mensajes"]]
+    assert r.contenido.capturado_en == reloj.ahora()
+    assert r.contenido.datos_publicacion == {"publicationId": "p1", "type": "NECESITO", "title": "Apuntes"}
+    assert set(r.contenido.mensajes[0]) == {"messageId", "senderId", "senderNickname", "text", "imageKey", "sentAt"}
+    textos = [m["text"] for m in r.contenido.mensajes]
     assert textos == ["hola", None]  # RF-REP-17
     [copia] = r.contenido.snapshot_imagenes
     assert copia.startswith("reports/") and copia != referencia and copia in imgs.objetos

@@ -43,11 +43,11 @@ class ReportarPublicacionHandler:
             observacion=body.observacion,
             contenido=ContenidoReportado(
                 usuario_reportado_id=p.autor_id,
-                snapshot_textos={  # RF-REP-06
-                    "tipo": p.tipo.value, "titulo": p.titulo, "descripcion": p.descripcion,
-                    "nicknameAutor": p.nickname_autor, "fechaCreacion": p.fecha_creacion,
-                    "fechaExpiracion": p.fecha_expiracion,
+                datos_publicacion={  # RF-REP-06 (publicationData)
+                    "publicationId": p.id, "type": p.tipo.value, "title": p.titulo, "description": p.descripcion,
+                    "authorNickname": p.nickname_autor, "createdAt": p.fecha_creacion, "expiresAt": p.fecha_expiracion,
                 },
+                capturado_en=ahora,
             ),
         ))
         return ReporteResponse(mensaje=MSG_REGISTRADO)

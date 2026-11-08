@@ -42,9 +42,9 @@ class ReportarChatHandler:
                 if m.imagen is not None:
                     retenida = await self._imagenes.copiar_a_retencion(m.imagen.referencia)
                     copias.append(retenida)
-                snapshot_mensajes.append({"mensajeId": m.id, "emisorId": m.emisor_id,
-                                          "nicknameEmisor": m.nickname_emisor, "texto": m.texto,
-                                          "imagenRetenida": retenida, "fechaEnvio": m.fecha_envio})
+                snapshot_mensajes.append({"messageId": m.id, "senderId": m.emisor_id,  # Entregable 2 §5.3
+                                          "senderNickname": m.nickname_emisor, "text": m.texto,
+                                          "imageKey": retenida, "sentAt": m.fecha_envio})
             dias = self._config.entero(ClaveParametro.DIAS_RETENCION_REPORTES)
             await self._reportes.crear(Reporte(
                 id="", reportante_id=estudiante_id, tipo_objeto=TipoObjetoReportado.CHAT, objeto_id=chat.id,
@@ -52,9 +52,11 @@ class ReportarChatHandler:
                 fecha_retencion_fin=ahora + timedelta(days=dias), observacion=body.observacion,
                 contenido=ContenidoReportado(
                     usuario_reportado_id=chat.contraparte(estudiante_id)[0],  # RF-REP-07
-                    snapshot_textos={"publicacionId": chat.publicacion_id, "tituloPublicacion": chat.titulo_publicacion,
-                                     "mensajes": snapshot_mensajes},
+                    mensajes=snapshot_mensajes,  # RF-REP-17
                     snapshot_imagenes=copias,
+                    datos_publicacion={"publicationId": chat.publicacion_id,  # contexto de la publicación de origen
+                                       "type": chat.tipo_publicacion.value, "title": chat.titulo_publicacion},
+                    capturado_en=ahora,
                 ),
             ))
         except Exception:
