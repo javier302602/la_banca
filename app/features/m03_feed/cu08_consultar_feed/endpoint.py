@@ -6,7 +6,7 @@ inactividad de la sesión (RF-AUT-25).
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -21,7 +21,7 @@ from .request import ConsultarFeedRequest, FeedResponse
 router = APIRouter(tags=["M03 Feed"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ConsultarFeedHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> ConsultarFeedHandler:
     return ConsultarFeedHandler(publicaciones=MongoConsultarFeedRepository(db), clock=get_clock())
 
 

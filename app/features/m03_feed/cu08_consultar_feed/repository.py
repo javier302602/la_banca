@@ -8,8 +8,8 @@ import json
 from datetime import datetime
 
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import DESCENDING
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_publicacion
 from app.shared.db.mongo import oid
@@ -35,7 +35,7 @@ def decodificar_cursor(cursor: str) -> tuple[datetime, ObjectId]:
 
 
 class MongoConsultarFeedRepository(IPublicationRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def listar_feed(self, ahora, tipo, cursor, limite):

@@ -18,7 +18,7 @@ class SesionFalsa:
     async def __aexit__(self, *_):
         return False
 
-    def start_transaction(self):
+    async def start_transaction(self):
         self.in_transaction = True
         self.registro.append("inicio")
 
@@ -36,10 +36,7 @@ class ClienteFalso:
         self.registro = []
 
     def start_session(self):
-        async def abrir():
-            return SesionFalsa(self.registro)
-
-        return abrir()
+        return SesionFalsa(self.registro)
 
 
 class BaseFalsa:

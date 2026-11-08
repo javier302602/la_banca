@@ -1,6 +1,6 @@
 """CU-12 — Ver mis chats activos y abrir uno. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ASCENDING, DESCENDING
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_chat, doc_a_mensaje
 from app.shared.db.mongo import oid
@@ -9,7 +9,7 @@ from app.shared.domain.entities import EstadoChat
 
 
 class MongoVerMisChatsRepository(IChatRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def listar_activos_por_usuario(self, usuario_id, ahora):

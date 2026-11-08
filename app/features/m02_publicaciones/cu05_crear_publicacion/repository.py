@@ -1,5 +1,5 @@
 """CU-05 — Crear publicación. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import publicacion_a_doc
 from app.shared.db.mongo import en_transaccion, oid
@@ -8,7 +8,7 @@ from app.shared.domain.entities import EstadoPublicacion
 
 
 class MongoCrearPublicacionRepository(IPublicationRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def contar_activas_por_usuario(self, autor_id, ahora):

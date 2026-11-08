@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from fastapi import Depends, Request, Response
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config, variable
@@ -70,7 +70,7 @@ class ValidadorSesion:
 class MongoSesionRepository(IAccountRepository):
     """Subconjunto de IAccountRepository que necesita la validación de sesión."""
 
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def buscar_sesion_por_token(self, token_hash: str) -> Sesion | None:
@@ -90,18 +90,18 @@ class MongoSesionRepository(IAccountRepository):
                                            {"$set": {"status": estado.value, "closedAt": ahora}})
 
 
-def _validador(db: AsyncIOMotorDatabase) -> ValidadorSesion:
+def _validador(db: AsyncDatabase) -> ValidadorSesion:
     return ValidadorSesion(MongoSesionRepository(db), get_config(), get_clock())
 
 
-async def get_sesion_actual(request: Request, db: AsyncIOMotorDatabase = Depends(get_database)) -> SesionActual:
+async def get_sesion_actual(request: Request, db: AsyncDatabase = Depends(get_database)) -> SesionActual:
     """Dependencia para la API: exige sesión activa (RNF-SEG-01)."""
     es_interaccion = request.headers.get(HEADER_AUTOMATICA) != "1"
     return await _validador(db).validar(request.cookies.get(COOKIE_SESION), es_interaccion)
 
 
 async def get_sesion_opcional(request: Request,
-                              db: AsyncIOMotorDatabase = Depends(get_database)) -> SesionActual | None:
+                              db: AsyncDatabase = Depends(get_database)) -> SesionActual | None:
     """Dependencia para páginas: None si no hay sesión válida (la página redirige al inicio de sesión)."""
     try:
         return await _validador(db).validar(request.cookies.get(COOKIE_SESION), True)

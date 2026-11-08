@@ -1,12 +1,12 @@
 """EA-07 — Eliminar las cuentas no activadas. Implementación Mongo de lo que necesita el job."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.domain.contracts import IAccountRepository
 from app.shared.domain.entities import EstadoCuenta
 
 
 class MongoEliminarCuentasRepository(IAccountRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def eliminar_no_activadas(self, registradas_antes_de):

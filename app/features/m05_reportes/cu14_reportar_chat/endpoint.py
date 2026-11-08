@@ -1,6 +1,6 @@
 """CU-14 — Reportar un chat. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
@@ -17,7 +17,7 @@ from .request import ReporteRequest, ReporteResponse
 router = APIRouter(tags=["M05 Reportes"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ReportarChatHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> ReportarChatHandler:
     return ReportarChatHandler(
         chats=MongoChatLecturaRepository(db),
         reportes=MongoReportarChatRepository(db),

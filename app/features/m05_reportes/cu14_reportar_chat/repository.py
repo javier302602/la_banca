@@ -1,6 +1,6 @@
 """CU-14 — Reportar un chat. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ASCENDING
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_chat, doc_a_mensaje, reporte_a_doc
 from app.shared.db.mongo import oid
@@ -8,7 +8,7 @@ from app.shared.domain.contracts import IChatRepository, IReportRepository
 
 
 class MongoChatLecturaRepository(IChatRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def buscar_por_id(self, chat_id):
@@ -22,7 +22,7 @@ class MongoChatLecturaRepository(IChatRepository):
 
 
 class MongoReportarChatRepository(IReportRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def crear(self, reporte):

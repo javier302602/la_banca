@@ -1,6 +1,6 @@
 """CU-11 — Enviar mensaje en un chat. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, File, Form, UploadFile
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -14,7 +14,7 @@ from .request import MensajeEntrante, MensajeResponse
 router = APIRouter(tags=["M04 Chat"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> EnviarMensajeHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> EnviarMensajeHandler:
     return EnviarMensajeHandler(
         chats=MongoEnviarMensajeRepository(db),
         imagenes=get_image_storage(),

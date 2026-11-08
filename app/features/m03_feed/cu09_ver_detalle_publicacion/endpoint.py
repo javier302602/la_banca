@@ -1,6 +1,6 @@
 """CU-09 — Ver detalle de una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -14,7 +14,7 @@ from .request import DetallePublicacionResponse
 router = APIRouter(tags=["M03 Feed"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> VerDetallePublicacionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerDetallePublicacionHandler:
     return VerDetallePublicacionHandler(
         publicaciones=MongoVerDetallePublicacionRepository(db),
         chats=MongoChatExistenteRepository(db),

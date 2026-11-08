@@ -1,6 +1,6 @@
 """CU-06 — Ver mis publicaciones activas. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -14,7 +14,7 @@ from .request import MisPublicacionesResponse
 router = APIRouter(tags=["M02 Publicaciones"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> VerMisPublicacionesHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerMisPublicacionesHandler:
     return VerMisPublicacionesHandler(publicaciones=MongoVerMisPublicacionesRepository(db), clock=get_clock())
 
 

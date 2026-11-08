@@ -1,6 +1,6 @@
 """CU-05 — Crear publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
@@ -16,7 +16,7 @@ from .request import CrearPublicacionRequest, CupoResponse, PublicacionResponse
 router = APIRouter(tags=["M02 Publicaciones"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> CrearPublicacionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> CrearPublicacionHandler:
     return CrearPublicacionHandler(
         publicaciones=MongoCrearPublicacionRepository(db),
         config=get_config(),

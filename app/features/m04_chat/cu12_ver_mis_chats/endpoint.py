@@ -6,7 +6,7 @@ reinicia la inactividad de la sesión (RF-AUT-25) y solo trae mensajes nuevos.
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
@@ -22,7 +22,7 @@ from .request import AbrirChatRequest, ChatDetalleResponse, MisChatsResponse
 router = APIRouter(tags=["M04 Chat"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> VerMisChatsHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerMisChatsHandler:
     return VerMisChatsHandler(
         chats=MongoVerMisChatsRepository(db),
         imagenes=get_image_storage(),

@@ -1,6 +1,6 @@
 """CU-10 — Responder a una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -15,7 +15,7 @@ from .request import ChatCreadoResponse, MensajeEntrante
 router = APIRouter(tags=["M04 Chat"])
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> ResponderPublicacionHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> ResponderPublicacionHandler:
     return ResponderPublicacionHandler(
         publicaciones=MongoPublicacionLecturaRepository(db),
         chats=MongoResponderPublicacionRepository(db),

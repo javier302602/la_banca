@@ -1,12 +1,12 @@
 """CU-02 — Iniciar sesión. Implementación Mongo de lo que necesita el slice."""
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.db.mapeo import doc_a_estudiante, doc_a_intento, intento_a_doc, sesion_a_doc
 from app.shared.domain.contracts import IAccountRepository
 
 
 class MongoIniciarSesionRepository(IAccountRepository):
-    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+    def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def buscar_por_correo(self, correo):

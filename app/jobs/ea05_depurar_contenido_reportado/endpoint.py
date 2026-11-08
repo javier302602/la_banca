@@ -3,7 +3,7 @@ import hmac
 import os
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
@@ -23,7 +23,7 @@ def verificar_cron_secret(authorization: str | None = Header(default=None)) -> N
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No autorizado")
 
 
-def get_handler(db: AsyncIOMotorDatabase = Depends(get_database)) -> DepurarContenidoReportadoHandler:
+def get_handler(db: AsyncDatabase = Depends(get_database)) -> DepurarContenidoReportadoHandler:
     return DepurarContenidoReportadoHandler(reportes=MongoDepurarReportesRepository(db),
                                             imagenes=get_image_storage(), clock=get_clock())
 
