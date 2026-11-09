@@ -150,6 +150,7 @@
         agregar([m]);
         historial.scrollTop = historial.scrollHeight;
         mostrarAviso(null);  // el mensaje reinicia la expiración (RF-CHT-12)
+        document.getElementById("texto").focus();  // RNF-USA-08: se puede seguir escribiendo sin el ratón
       } catch (error) {
         if (error.status === 410) marcarExpirado();
         else if (error.status !== 401 && !mostrarErrores(formulario, error, { general: "texto" })) alerta(mensajes, error.message);

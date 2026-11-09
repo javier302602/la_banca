@@ -97,17 +97,29 @@ def test_axe_sin_violaciones_serias_de_contraste_ni_etiquetas(navegador, servido
 
 
 def _tab_hasta(pagina, selector: str, maximo: int = 40) -> None:
-    """Pulsa Tab hasta que el foco llegue al elemento indicado (falla si no es alcanzable con el teclado)."""
+    """Mueve el foco con el teclado hasta el elemento indicado (falla si no es alcanzable).
+
+    Avanza con Tab o, si el elemento está antes que el foco actual, retrocede con Shift+Tab, como haría una
+    persona (Firefox no vuelve al principio de la página tras el último control: pasa a la barra del navegador).
+    Si no lo alcanza en ese sentido, prueba el contrario.
+    """
     objetivo = pagina.locator(selector).first
-    for _ in range(maximo):
-        pagina.keyboard.press("Tab")
-        if objetivo.evaluate("n => n === document.activeElement"):
-            return
-    raise AssertionError(f"{selector} no es alcanzable con Tab")
+    objetivo.wait_for()
+    antes = objetivo.evaluate("n => !!(document.activeElement && document.activeElement !== document.body"
+                              " && (n.compareDocumentPosition(document.activeElement) & Node.DOCUMENT_POSITION_FOLLOWING))")
+    for tecla in (("Shift+Tab", "Tab") if antes else ("Tab", "Shift+Tab")):
+        for _ in range(maximo):
+            pagina.keyboard.press(tecla)
+            if objetivo.evaluate("n => n === document.activeElement"):
+                return
+    raise AssertionError(f"{selector} no es alcanzable con el teclado")
 
 
 def test_flujo_principal_solo_con_teclado(navegador, servidor, usuarios):
     """RNF-USA-08: iniciar sesión, publicar, responder, chatear y reportar usando solo el teclado (PC)."""
+    if navegador.browser_type.name == "webkit":
+        pytest.skip("RNF-USA-08 aplica a navegadores de PC (Chrome, Firefox y Edge según RNF-COM-01); en WebKit, "
+                    "como en Safari por defecto, Tab no recorre los enlaces y Playwright no emula Opción+Tab")
     def contexto():
         return navegador.new_context(base_url=servidor, viewport={"width": 1366, "height": 900})
 

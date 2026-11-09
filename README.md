@@ -46,6 +46,16 @@ como el del paso 1; otra URI con `E2E_MONGO_URI`). Vacían la base `la_banca_e2e
 pytest -m e2e
 ```
 
+`tests/e2e/navegador/` abre la app en navegadores reales con Playwright (formularios, 360 px, axe-core, teclado
+y flujos principales). Corren en Chromium, Firefox y WebKit (RNF-COM-01), y en Chromium y WebKit también con
+emulación de Pixel 7 e iPhone 14. Instala los navegadores una vez:
+
+```bash
+pip install -r requirements-dev.txt
+python -m playwright install chromium firefox webkit
+NAVEGADORES=chromium pytest -m e2e tests/e2e/navegador   # opcional: limitar los motores
+```
+
 ## Configuración técnica (CU-15)
 
 No hay pantalla ni API de administración. Los parámetros se cambian con variables de entorno
