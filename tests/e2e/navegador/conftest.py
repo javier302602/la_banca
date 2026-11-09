@@ -5,7 +5,7 @@ Forman parte de `pytest -m e2e` (están bajo tests/e2e). Requieren:
 - Playwright con sus navegadores: `pip install -r requirements-dev.txt` y `python -m playwright install`.
 Si falta algo, se omiten.
 
-NAVEGADORES (por defecto «chromium») elige los motores, separados por comas: chromium,firefox,webkit.
+NAVEGADORES elige los motores, separados por comas; por defecto los tres (RNF-COM-01): chromium,firefox,webkit.
 """
 import os
 import socket
@@ -22,7 +22,7 @@ from tests.e2e.conftest import URI_POR_DEFECTO
 RAIZ = Path(__file__).resolve().parents[3]
 BASE = "la_banca_navegador"
 CLAVE = "clave123"
-NAVEGADORES = [n.strip() for n in os.environ.get("NAVEGADORES", "chromium").split(",") if n.strip()]
+NAVEGADORES = [n.strip() for n in os.environ.get("NAVEGADORES", "chromium,firefox,webkit").split(",") if n.strip()]
 
 
 @pytest.fixture(scope="session")
@@ -48,7 +48,13 @@ def _puerto_libre() -> int:
 
 
 @pytest.fixture(scope="session")
-def servidor(base_navegador):
+def registro_servidor(tmp_path_factory) -> Path:
+    """Archivo con el registro técnico de uvicorn (incluye los correos de desarrollo con sus enlaces)."""
+    return tmp_path_factory.mktemp("servidor") / "uvicorn.log"
+
+
+@pytest.fixture(scope="session")
+def servidor(base_navegador, registro_servidor):
     _, uri = base_navegador
     puerto = _puerto_libre()
     url = f"http://127.0.0.1:{puerto}"
@@ -56,9 +62,11 @@ def servidor(base_navegador):
                "COOKIE_SECURE": "false", "EMAIL_SENDER": "consola", "IMAGE_STORAGE": "memoria",
                "ENTORNO": "desarrollo", "CRON_SECRET": "s3cr3t", "APP_BASE_URL": url,
                "TERMINOS_VERSION": "1.0", "TERMINOS_FECHA": "2026-11-01", "CANAL_ARCO": "datospersonales@unas.edu.pe"}
-    proceso = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
-                                "--port", str(puerto), "--log-level", "warning"],
-                               cwd=RAIZ, env=entorno, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    # A un archivo y no a una tubería: una tubería sin leer se llena y bloquea al servidor
+    with open(registro_servidor, "wb") as salida:
+        proceso = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
+                                    "--port", str(puerto), "--log-level", "warning"],
+                                   cwd=RAIZ, env=entorno, stdout=salida, stderr=subprocess.STDOUT)
     limite = time.monotonic() + 30
     while True:
         try:
@@ -69,11 +77,23 @@ def servidor(base_navegador):
             pass
         if proceso.poll() is not None or time.monotonic() > limite:
             proceso.kill()
-            pytest.fail(f"uvicorn no arrancó: {proceso.stderr.read().decode(errors='replace')[-2000:]}")
+            pytest.fail(f"uvicorn no arrancó: {registro_servidor.read_text(errors='replace')[-2000:]}")
         time.sleep(0.2)
     yield url
     proceso.terminate()
     proceso.wait(timeout=10)
+
+
+def ultimo_enlace(registro: Path, ruta: str) -> str:
+    """Último enlace (/activar o /restablecer) que el emisor de correo de desarrollo dejó en el registro."""
+    limite = time.monotonic() + 10
+    while time.monotonic() < limite:
+        enlaces = [linea.rsplit("-> ", 1)[1].strip() for linea in registro.read_text(errors="replace").splitlines()
+                   if "[correo de desarrollo]" in linea and f"{ruta}?token=" in linea]
+        if enlaces:
+            return enlaces[-1]
+        time.sleep(0.2)
+    raise AssertionError(f"No se envió ningún enlace {ruta}")
 
 
 @pytest.fixture(scope="session")
@@ -116,6 +136,15 @@ def navegador(request, playwright_sync):
         pytest.skip(f"{request.param} no disponible: {str(error).splitlines()[0]}")
     yield browser
     browser.close()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _datos_limpios(navegador, base_navegador):
+    """Cada archivo de pruebas y cada navegador empiezan sin publicaciones, chats, reportes ni sesiones
+    (las cuentas se conservan): así el límite de publicaciones activas no depende del orden de ejecución."""
+    db, _ = base_navegador
+    for coleccion in ("publications", "chats", "messages", "reports", "sessions", "login_attempts"):
+        db[coleccion].delete_many({})
 
 
 @pytest.fixture
