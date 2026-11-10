@@ -217,7 +217,9 @@ def test_comprime_imagenes_de_mas_de_4mb(soporte, tipo, extension):
 
 def test_chat_comprime_antes_de_subir(cliente):
     js = cliente.get("/static/js/chat.js").text
-    assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 2
+    # Responder (primer mensaje) y chat abierto (SRS v2.0: el adjunto elegido puede ser imagen o documento)
+    assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 1
+    assert "await Banca.comprimirImagen(adjunto.archivo)" in js
 
 
 @pytest.mark.parametrize("ruta,campos", [("/chats/c1", ["texto", "imagen"]), ("/feed", ["filtro-tipo"]),

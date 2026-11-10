@@ -34,6 +34,7 @@ LONGITUD_OBSERVACION = 300
 FORMATOS_IMAGEN = ("image/jpeg", "image/png", "image/webp")
 TAMANO_MAX_IMAGEN = 5 * 1024 * 1024  # 5 242 880 bytes
 MAX_IMAGENES_PUBLICACION = 3        # SRS v2.0, cambio 3.1
+STICKERS = tuple(f"sticker-{n:02d}" for n in range(1, 21))  # SRS v2.0, cambio 4.3: paquete propio de 20
 
 
 # --- Enumeraciones (valores = CHECK IN del Entregable 2) --------------------
@@ -270,7 +271,8 @@ class Chat:
 
 @dataclass
 class Mensaje:
-    """6. MENSAJE — colección messages (Tabla 6.6). Texto o imagen, no ambos (RN-19)."""
+    """6. MENSAJE — colección messages (Tabla 6.6). Exactamente un contenido: texto, imagen, sticker o
+    documento (RN-19 modificada por el SRS v2.0)."""
 
     id: str
     chat_id: str
@@ -279,6 +281,25 @@ class Mensaje:
     fecha_envio: datetime
     texto: str | None = None
     imagen: ImagenAdjunta | None = None
+    sticker: str | None = None                 # sticker-NN
+    documento: DocumentoAdjunto | None = None
+
+    @property
+    def archivos(self) -> list[str]:
+        """Objetos del almacenamiento que pertenecen al mensaje (imagen o documento)."""
+        return [a.referencia for a in (self.imagen, self.documento) if a is not None]
+
+
+@dataclass(frozen=True)
+class DocumentoAdjunto:
+    """Subdocumento documentAttachment de MENSAJE (SRS v2.0, cambio 4.4)."""
+
+    referencia: str    # objectKey (prefijo documentos/)
+    mime_type: str
+    tamano_bytes: int  # 1 .. TAMANO_MAX_DOCUMENTO
+    nombre: str        # saneado, con la extensión del tipo detectado por contenido
+    tipo: str          # pdf | docx | xlsx | pptx | txt
+    bucket: str | None = None
 
 
 @dataclass

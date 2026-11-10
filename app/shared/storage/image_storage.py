@@ -19,7 +19,12 @@ from app.shared.domain.contracts import ImageStorage
 from app.shared.domain.errors import ErrorValidacion
 
 _FORMATO_PIL = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
-_EXTENSION = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+_EXTENSION = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+              # Documentos del chat (SRS v2.0): la clave conserva la extensión del tipo detectado por contenido
+              "application/pdf": "pdf", "text/plain": "txt",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx"}
 MAX_PIXELES = 40_000_000  # defensa ante «bombas de descompresión»
 
 

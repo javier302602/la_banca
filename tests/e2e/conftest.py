@@ -46,6 +46,9 @@ def entorno_e2e():
 
 @pytest.fixture(scope="module")
 def base_e2e_limpia(entorno_e2e):
-    """Cada módulo e2e empieza con la base vacía."""
+    """Cada módulo e2e empieza con la base vacía (y con los índices por crear al arrancar la app de nuevo)."""
+    from app.shared.db import mongo
+
     entorno_e2e.drop_database(BASE_E2E)
+    mongo._indices_creados = False
     return entorno_e2e[BASE_E2E]

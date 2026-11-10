@@ -18,7 +18,7 @@ Autenticar a los estudiantes, mostrar publicaciones y permitir conversaciones 1 
 - Copias de respaldo: se conservan como máximo 7 días; los datos eliminados desaparecen de ellas al rotarse.
 
 5. Quién accede
-Los demás usuarios ven tu nickname, tu foto o avatar, tu biografía y tu fecha de ingreso; tu correo institucional no se muestra a nadie. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico, y únicamente para atender un requerimiento de la institución o de una autoridad competente.
+Los demás usuarios ven tu nickname, tu foto o avatar, tu biografía y tu fecha de ingreso; tu correo institucional no se muestra a nadie. El contenido de un chat (textos, imágenes, stickers y documentos) solo lo ven sus dos participantes, y cada uno ve si el otro ya leyó sus mensajes. El contenido reportado solo lo consulta el responsable técnico, y únicamente para atender un requerimiento de la institución o de una autoridad competente.
 
 6. Derechos ARCO
 Puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición (Ley N.° 29733 y su reglamento) a través de: {{CANAL_ARCO}}.

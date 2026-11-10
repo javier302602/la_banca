@@ -181,14 +181,15 @@ def test_i18n_selector_de_imagen_y_hora_en_lima(navegador, servidor, escenario, 
         p = contexto.new_page()
         p.goto(f"/chats/{escenario['chat']}")
         p.locator("#historial .burbuja").first.wait_for()
-        assert p.inner_text(".boton-archivo") == "Elegir imagen"
-        assert p.inner_text("#nombre-archivo") == "Ningún archivo seleccionado"
+        # SRS v2.0: los botones de adjuntar y el adjunto elegido usan el catálogo, no el idioma del navegador
+        assert p.inner_text("label[for=imagen]").strip() == "Imagen"
+        assert p.inner_text("label[for=documento]").strip() == "Documento"
         imagen = tmp_path / "foto.png"
         imagen.write_bytes(bytes.fromhex("89504e470d0a1a0a"))
         p.set_input_files("#imagen", str(imagen))
-        assert p.inner_text("#nombre-archivo") == "foto.png"
+        assert p.inner_text("#adjunto-elegido").startswith("Adjunto: foto.png (8 B)")
         esperado = contexto.request.get(f"/api/chats/{escenario['chat']}").json()["mensajes"][0]["hora"]  # Lima
-        assert p.inner_text("#historial .burbuja .hora") == esperado
+        assert p.inner_text("#historial .burbuja .hora").startswith(esperado)  # «HH:MM · Visto»
         assert p.evaluate("document.documentElement.lang") == "es-PE"
     finally:
         contexto.close()

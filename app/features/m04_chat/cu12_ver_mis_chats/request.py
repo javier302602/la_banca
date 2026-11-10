@@ -7,6 +7,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.features.m04_chat.cu11_enviar_mensaje.request import DocumentoResponse
 from app.shared.domain.entities import TipoPublicacion
 from app.shared.domain.perfiles import Apariencia
 
@@ -46,6 +47,9 @@ class MensajeResponse(BaseModel):
     nickname_emisor: str
     texto: str | None = None
     imagen_url: str | None = None
+    sticker: str | None = None
+    sticker_url: str | None = None
+    documento: DocumentoResponse | None = None
     fecha_envio: datetime
     hora: str  # HH:MM en America/Lima (RF-CHT-11, RN-34)
 
@@ -61,9 +65,19 @@ class ChatDetalleResponse(BaseModel):
     segundos_restantes: int
     aviso: AvisoExpiracion
     mensajes: list[MensajeResponse]
+    # SRS v2.0, cambio 4.1: lastReadAt de la otra persona. Un mensaje propio con fecha_envio ≤ visto_hasta
+    # está «Visto»; si no, «Enviado».
+    visto_hasta: datetime | None = None
 
 
 @dataclass(frozen=True)
 class ImagenDescargada:
     contenido: bytes
     mime_type: str
+
+
+@dataclass(frozen=True)
+class DocumentoDescargado:
+    contenido: bytes
+    mime_type: str
+    nombre: str

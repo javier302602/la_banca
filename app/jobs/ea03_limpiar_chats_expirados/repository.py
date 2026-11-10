@@ -17,9 +17,13 @@ class MongoLimpiarChatsRepository(IChatRepository):
             ids = [d["_id"] async for d in self._db.chats.find({"expiresAt": {"$lte": ahora}}, {"_id": 1}).limit(LOTE)]
             if not ids:
                 return total, imagenes
-            async for m in self._db.messages.find({"chatId": {"$in": ids}, "imageAttachment": {"$ne": None}},
-                                                  {"imageAttachment.objectKey": 1}):
-                imagenes.append(m["imageAttachment"]["objectKey"])
+            async for m in self._db.messages.find(
+                    {"chatId": {"$in": ids},
+                     "$or": [{"imageAttachment": {"$ne": None}}, {"documentAttachment": {"$nin": [None]}}]},
+                    {"imageAttachment.objectKey": 1, "documentAttachment.objectKey": 1}):
+                for campo in ("imageAttachment", "documentAttachment"):  # SRS v2.0: también documentos
+                    if m.get(campo):
+                        imagenes.append(m[campo]["objectKey"])
             await self._db.messages.delete_many({"chatId": {"$in": ids}})
             resultado = await self._db.chats.delete_many({"_id": {"$in": ids}, "expiresAt": {"$lte": ahora}})
             total += resultado.deleted_count

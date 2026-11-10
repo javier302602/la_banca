@@ -165,17 +165,48 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--
 /* --- Chat — proximidad, figura-fondo y continuidad ------------------------------------------------------------- */
 .chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0;
                  background: var(--lb-color-fondo-chat); padding: var(--lb-espacio-3); }
+/* Estilo Messenger (SRS v2.0): cada mensaje es una fila; las ajenas llevan la foto o el avatar de la otra persona
+ * en el último mensaje de cada grupo (los mensajes seguidos del mismo autor se agrupan: proximidad) */
+.fila-mensaje { display: flex; align-items: flex-end; gap: var(--lb-espacio-2); margin-top: var(--lb-espacio-4); }
+.fila-mensaje:first-child { margin-top: 0; }
+.fila-mensaje.continua { margin-top: var(--lb-espacio-1); }
+.fila-mensaje.propia { justify-content: flex-end; }
+.fila-mensaje .avatar { width: 1.75rem; height: 1.75rem; }
+.fila-mensaje .avatar.oculto { visibility: hidden; }
 .burbuja { max-width: 85%; padding: var(--lb-espacio-2) var(--lb-espacio-3); border-radius: var(--lb-radio-lg);
-           overflow-wrap: anywhere; margin-top: var(--lb-espacio-4); box-shadow: var(--lb-sombra-tarjeta);
-           color: var(--lb-color-texto); }
-.burbuja:first-child { margin-top: 0; }
-.burbuja.continua { margin-top: var(--lb-espacio-1); }
-.burbuja.propia { align-self: flex-end; background: var(--lb-color-burbuja-propia); border-bottom-right-radius: var(--lb-radio-sm); }
-.burbuja.ajena { align-self: flex-start; background: var(--lb-color-burbuja-ajena); border-bottom-left-radius: var(--lb-radio-sm); }
+           overflow-wrap: anywhere; box-shadow: var(--lb-sombra-tarjeta); color: var(--lb-color-texto); }
+.burbuja.propia { background: var(--lb-color-burbuja-propia); border-bottom-right-radius: var(--lb-radio-sm); }
+.burbuja.ajena { background: var(--lb-color-burbuja-ajena); border-bottom-left-radius: var(--lb-radio-sm); }
 .burbuja.propia.continua { border-top-right-radius: var(--lb-radio-sm); }
 .burbuja.ajena.continua { border-top-left-radius: var(--lb-radio-sm); }
 .burbuja img { max-width: 100%; max-height: 40vh; border-radius: var(--lb-radio-md); display: block; }
 .burbuja .hora { font-size: var(--lb-fuente-tamano-xs); color: var(--lb-color-texto-hora); text-align: right; }
+.burbuja .estado-mensaje .bi { margin-right: 2px; }
+.burbuja.sticker { background: transparent; box-shadow: none; padding: 0; }
+.burbuja.sticker img { width: 7.5rem; height: 7.5rem; }
+.tarjeta-documento { display: flex; align-items: center; gap: var(--lb-espacio-3); min-width: 12rem; padding: var(--lb-espacio-2);
+                     border: 1px solid var(--lb-color-borde); border-radius: var(--lb-radio-md); background: var(--lb-color-superficie);
+                     color: var(--lb-color-texto); text-decoration: none; }
+.tarjeta-documento:hover .nombre-documento { text-decoration: underline; }
+.tarjeta-documento > .bi { font-size: var(--lb-fuente-tamano-xl); color: var(--lb-color-primario); }
+.tarjeta-documento .nombre-documento { font-weight: var(--lb-fuente-peso-negrita); overflow-wrap: anywhere; display: block; }
+.tarjeta-documento .tamano-documento { font-size: var(--lb-fuente-tamano-xs); color: var(--lb-color-texto-secundario); }
+
+/* Barra de adjuntos: el <input type=file> real cubre su etiqueta (transparente) y recibe el foco */
+.adjunto { position: relative; }
+.adjunto .entrada-oculta { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.adjunto:has(.entrada-oculta:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.adjunto-elegido { display: flex; align-items: center; gap: var(--lb-espacio-2); font-size: var(--lb-fuente-tamano-sm); }
+.panel-selector { border: 1px solid var(--lb-color-borde); border-radius: var(--lb-radio-md); padding: var(--lb-espacio-2);
+                  background: var(--lb-color-superficie); max-height: 14rem; overflow-y: auto; }
+.panel-emojis { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr)); gap: var(--lb-espacio-1); }
+.panel-emojis button { font-size: 1.375rem; line-height: 1; min-height: 2.5rem; border: 0; background: none; border-radius: var(--lb-radio-sm); }
+.panel-emojis button:hover { background: var(--lb-color-primario-suave); }
+.panel-stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: var(--lb-espacio-2); }
+.panel-stickers button { border: 0; background: none; padding: var(--lb-espacio-1); border-radius: var(--lb-radio-md); }
+.panel-stickers button:hover { background: var(--lb-color-primario-suave); }
+.panel-stickers img { width: 4rem; height: 4rem; display: block; margin: 0 auto; }
+.panel-selector button:focus-visible { outline: 3px solid var(--lb-color-foco); outline-offset: 1px; }
 
 @media (min-width: 768px) {
   .chat-mensajes { height: 60vh; padding: var(--lb-espacio-4); }

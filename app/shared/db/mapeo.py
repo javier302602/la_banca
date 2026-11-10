@@ -13,6 +13,7 @@ from app.shared.domain.entities import (
     VENTANA_ENLACES,
     Chat,
     CodigoMotivo,
+    DocumentoAdjunto,
     ContenidoReportado,
     EnlaceUnUso,
     EstadoChat,
@@ -187,9 +188,14 @@ def doc_a_chat(doc: dict) -> Chat:
 
 def mensaje_a_doc(m: Mensaje) -> dict:
     doc = {"chatId": ObjectId(m.chat_id), "senderId": ObjectId(m.emisor_id), "senderNickname": m.nickname_emisor,
-           "text": m.texto, "imageAttachment": None, "sentAt": m.fecha_envio}
+           "text": m.texto, "imageAttachment": None, "sentAt": m.fecha_envio,
+           "sticker": m.sticker, "documentAttachment": None}
     if m.imagen:
         doc["imageAttachment"] = imagen_a_doc(m.imagen)
+    if m.documento:
+        d = m.documento
+        doc["documentAttachment"] = {"objectKey": d.referencia, "mimeType": d.mime_type, "sizeBytes": d.tamano_bytes,
+                                     "fileName": d.nombre, "kind": d.tipo, "storageBucket": d.bucket}
     return doc
 
 
@@ -197,7 +203,15 @@ def doc_a_mensaje(doc: dict) -> Mensaje:
     adj = doc.get("imageAttachment")
     return Mensaje(id=_s(doc["_id"]), chat_id=_s(doc["chatId"]), emisor_id=_s(doc["senderId"]),
                    nickname_emisor=doc.get("senderNickname", ""), fecha_envio=doc["sentAt"], texto=doc.get("text"),
-                   imagen=doc_a_imagen(adj) if adj else None)
+                   imagen=doc_a_imagen(adj) if adj else None, sticker=doc.get("sticker"),
+                   documento=doc_a_documento(doc.get("documentAttachment")))
+
+
+def doc_a_documento(d: dict | None) -> DocumentoAdjunto | None:
+    if not d:
+        return None
+    return DocumentoAdjunto(d["objectKey"], d["mimeType"], d["sizeBytes"], d["fileName"], d["kind"],
+                            d.get("storageBucket"))
 
 
 # --- reports ---------------------------------------------------------------------------
