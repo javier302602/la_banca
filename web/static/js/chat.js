@@ -3,7 +3,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS, t, formatoHora } = Banca;
+  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS, t, formatoHora, etiquetaTipo } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -25,7 +25,7 @@
     api(`/api/publicaciones/${id}`).then((p) => {
       document.getElementById("contexto-autor").textContent = p.nickname_autor;
       const tipo = document.getElementById("contexto-tipo");
-      tipo.textContent = TIPOS[p.tipo];
+      tipo.replaceChildren(...etiquetaTipo(p.tipo));
       tipo.classList.add(`tipo-${p.tipo}`);
       document.getElementById("contexto-titulo").textContent = p.titulo;
       document.getElementById("contexto-descripcion").textContent = p.descripcion;

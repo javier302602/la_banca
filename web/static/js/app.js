@@ -109,6 +109,11 @@ const Banca = (() => {
 
   function limpiar(contenedor) { if (contenedor) contenedor.replaceChildren(); }
 
+  /* Iconos de Bootstrap Icons: siempre decorativos (aria-hidden); el texto visible da el nombre accesible. */
+  function icono(nombre) { return el("i", { class: `bi ${nombre}`, "aria-hidden": "true" }); }
+
+  function etiquetaTipo(tipo) { return [icono(t(`iconos_tipo.${tipo}`)), ` ${TIPOS[tipo]}`]; }
+
   /* RNF-USA-03: el mensaje de un dato inválido se muestra junto al campo, enlazado con aria-describedby.
    * El servidor indica el campo en `errores[].campo` (validación) o en `campo` (errores de dominio). */
   function limpiarErrores(formulario) {
@@ -241,7 +246,40 @@ const Banca = (() => {
     });
   }
 
+  /* Modo claro/oscuro: el <head> ya aplicó la preferencia guardada o la del sistema (prefers-color-scheme).
+   * El interruptor (role="switch") alterna y recuerda la elección en este navegador; sin elección guardada,
+   * la página sigue los cambios del sistema. */
+  const CLAVE_TEMA = "banca.tema";
+  function temaActual() { return document.documentElement.getAttribute("data-bs-theme") === "dark" ? "oscuro" : "claro"; }
+  function aplicarTema(tema) {
+    document.documentElement.setAttribute("data-bs-theme", tema === "oscuro" ? "dark" : "light");
+    const boton = document.getElementById("boton-tema");
+    if (!boton) return;
+    boton.setAttribute("aria-checked", String(tema === "oscuro"));
+    const icono = boton.querySelector(".bi");
+    if (icono) icono.className = `bi ${tema === "oscuro" ? "bi-sun" : "bi-moon-stars"}`;
+  }
+  function prepararTema() {
+    const boton = document.getElementById("boton-tema");
+    if (!boton) return;
+    aplicarTema(temaActual());
+    boton.addEventListener("click", () => {
+      const nuevo = temaActual() === "oscuro" ? "claro" : "oscuro";
+      try { localStorage.setItem(CLAVE_TEMA, nuevo); } catch (e) { /* sin almacenamiento: solo esta página */ }
+      aplicarTema(nuevo);
+    });
+    const sistema = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    if (sistema && sistema.addEventListener) {
+      sistema.addEventListener("change", (e) => {
+        let guardado = null;
+        try { guardado = localStorage.getItem(CLAVE_TEMA); } catch (err) { /* */ }
+        if (!guardado) aplicarTema(e.matches ? "oscuro" : "claro");
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    prepararTema();
     // Fechas visibles formateadas con Intl en America/Lima (p. ej. la versión de los términos)
     document.querySelectorAll("time[data-fecha]").forEach((n) => { n.textContent = formatoFecha(n.getAttribute("datetime")); });
     prepararSelectorArchivo();
@@ -265,7 +303,7 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, t, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
+  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
            alerta, limpiar, contador,
            limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };

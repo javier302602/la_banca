@@ -3,8 +3,9 @@
     python scripts/tomar_capturas.py --mongo-uri "mongodb://localhost:27017/?replicaSet=rs0&directConnection=true"
 
 Vacía la base `la_banca_capturas`, arranca la app con uvicorn, siembra datos de ejemplo (tres cuentas,
-publicaciones de los tres tipos y un chat con mensajes) y guarda una captura de página completa por página y
-ancho en docs/investigacion/capturas/<nn>-<página>-<ancho>.png. Requiere Playwright con Chromium.
+publicaciones de los tres tipos y un chat con mensajes) y guarda una captura de página completa por página, ancho
+y modo en docs/investigacion/capturas/<modo>/<nn>-<página>-<ancho>.png (modos: claro y oscuro, emulando
+prefers-color-scheme). Requiere Playwright con Chromium.
 """
 import argparse
 import os
@@ -20,6 +21,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 
 ANCHOS = (360, 768, 1024)
+TEMAS = {"claro": "light", "oscuro": "dark"}
 ALTO = 800
 CLAVE = "clave123"
 CUENTAS = {"ana": ("ana@unas.edu.pe", "ana_07"), "beto": ("beto@unas.edu.pe", "beto_9"),
@@ -112,7 +114,8 @@ def sembrar(db, url: str, navegador) -> dict:
     return {"ajena": ajena, "para_responder": para_responder, "chat": chat}
 
 
-def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_capturas") -> list[Path]:
+def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_capturas",
+             temas=tuple(TEMAS)) -> list[Path]:
     from playwright.sync_api import sync_playwright
     from pymongo import MongoClient
 
@@ -125,17 +128,20 @@ def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_captur
         with sync_playwright() as p:
             navegador = p.chromium.launch()
             datos = sembrar(cliente[base], url, navegador)
-            for ancho in anchos:
+            for tema, esquema in ((t, TEMAS[t]) for t in temas):
+              (salida / tema).mkdir(parents=True, exist_ok=True)
+              for ancho in anchos:
                 for n, (nombre, ruta, cuenta, listo) in enumerate(paginas(datos), start=1):
                     contexto = navegador.new_context(base_url=url, viewport={"width": ancho, "height": ALTO},
-                                                     locale="es-PE", timezone_id="America/Lima")
+                                                     locale="es-PE", timezone_id="America/Lima",
+                                                     color_scheme=esquema)
                     if cuenta:
                         contexto.request.post("/api/sesiones", data={"correo": CUENTAS[cuenta][0], "contrasena": CLAVE})
                     pagina = contexto.new_page()
                     pagina.goto(ruta)
                     pagina.locator(listo).first.wait_for(timeout=15_000)
                     pagina.wait_for_timeout(300)  # fin de transiciones
-                    archivo = salida / f"{n:02d}-{nombre}-{ancho}.png"
+                    archivo = salida / tema / f"{n:02d}-{nombre}-{ancho}.png"
                     pagina.screenshot(path=str(archivo), full_page=True)
                     archivos.append(archivo)
                     contexto.close()
@@ -154,8 +160,10 @@ def main() -> int:
         "E2E_MONGO_URI", "mongodb://localhost:27017/?replicaSet=rs0&directConnection=true"))
     parser.add_argument("--salida", default=str(RAIZ / "docs" / "investigacion" / "capturas"))
     parser.add_argument("--anchos", default=",".join(map(str, ANCHOS)))
+    parser.add_argument("--temas", default=",".join(TEMAS))
     args = parser.parse_args()
-    archivos = capturar(args.mongo_uri, Path(args.salida), tuple(int(a) for a in args.anchos.split(",")))
+    archivos = capturar(args.mongo_uri, Path(args.salida), tuple(int(a) for a in args.anchos.split(",")),
+                        temas=tuple(args.temas.split(",")))
     print(f"{len(archivos)} capturas en {args.salida}")
     return 0
 

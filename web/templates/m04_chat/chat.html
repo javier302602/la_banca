@@ -14,7 +14,7 @@
         <div class="fw-semibold" id="contraparte"></div>
         <div class="small text-body-secondary"><span id="tipo"></span>{{ t("js.separador") }}<span id="titulo"></span></div>
       </div>
-      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar">{{ t("chat.reportar") }}</a>
+      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar"><i class="bi bi-flag" aria-hidden="true"></i> {{ t("chat.reportar") }}</a>
     </header>
     <div class="alert alert-warning rounded-0 mb-0 d-none aviso-expiracion" id="aviso" role="status"></div>
     <div class="card-body chat-mensajes" id="historial" aria-live="polite"></div>
@@ -38,7 +38,7 @@
             <span class="small text-body-secondary nombre-archivo" id="nombre-archivo">{{ t("js.imagen.ninguna") }}</span>
           </div>
           </div>
-          <button class="btn btn-primary" type="submit">{{ t("chat.enviar") }}</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-send" aria-hidden="true"></i> {{ t("chat.enviar") }}</button>
         </div>
       </form>
     </footer>

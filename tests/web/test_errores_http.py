@@ -16,7 +16,7 @@ def cliente():
 def test_404_de_navegacion_es_una_pagina_en_espanol(cliente, ruta):
     r = cliente.get(ruta, headers=HTML)
     assert r.status_code == 404 and r.headers["content-type"].startswith("text/html")
-    assert '<html lang="es-PE">' in r.text and "Página no encontrada" in r.text and "Ir al inicio" in r.text
+    assert 'lang="es-PE"' in r.text and "Página no encontrada" in r.text and "Ir al inicio" in r.text
     assert "Not Found" not in r.text
 
 

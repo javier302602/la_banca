@@ -5,10 +5,10 @@
 {% block pagina %}terminos{% endblock %}
 
 {% block content %}
-<article class="contenedor-ancho">
+<article class="contenedor-ancho card"><div class="card-body">
   <h1 class="h4">{{ t("terminos.titulo") }}</h1>
   <p class="text-body-secondary small">{{ t("terminos.version", version=terminos.version) }} ·
     <time datetime="{{ terminos.fecha }}" data-fecha>{{ terminos.fecha }}</time></p>
   <div class="contenido-libre">{{ terminos.texto }}</div>
-</article>
+</div></article>
 {% endblock %}

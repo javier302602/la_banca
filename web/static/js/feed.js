@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t } = Banca;
+  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -18,7 +18,7 @@
                 href: `/publicaciones/${encodeURIComponent(p.id)}` },
         el("div", { class: "card-body" },
           el("div", { class: "d-flex gap-2 mb-2" },
-            el("span", { class: "badge etiqueta-tipo", text: TIPOS[p.tipo] }),
+            el("span", { class: "badge etiqueta-tipo" }, ...etiquetaTipo(p.tipo)),
             p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
           el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), t("separador"),
@@ -46,7 +46,7 @@
         siguiente = cursor;
         bloquesCargados = Math.ceil(items.length / ultima.tamano_bloque) || 1;
         lista.replaceChildren(...items.map(tarjeta));
-        vacio.textContent = ultima.mensaje_vacio || "";
+        document.getElementById("vacio-texto").textContent = ultima.mensaje_vacio || "";
         vacio.classList.toggle("d-none", !ultima.mensaje_vacio);
         centinela.textContent = siguiente ? t("feed.cargando_mas") : "";
         limpiar(mensajes);
@@ -95,7 +95,7 @@
 
     api(`/api/publicaciones/${enlaceId}`).then((p) => {
       const tipo = document.getElementById("tipo");
-      tipo.textContent = TIPOS[p.tipo];
+      tipo.replaceChildren(...etiquetaTipo(p.tipo));
       tipo.classList.add(`tipo-${p.tipo}`);  // Gestalt: mismo color que en el feed (similitud)
       document.getElementById("titulo").textContent = p.titulo;
       document.getElementById("descripcion").textContent = p.descripcion;
@@ -104,9 +104,9 @@
       r.dataset.expira = p.fecha_expiracion;
       r.textContent = restante(p.fecha_expiracion);
       document.getElementById("propia").classList.toggle("d-none", !p.es_propia);
-      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder`, text: t("feed.responder") }));
-      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}`, text: t("feed.abrir_chat") }));
-      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar`, text: t("feed.reportar") }));
+      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder` }, icono("bi-reply"), ` ${t("feed.responder")}`));
+      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}` }, icono("bi-chat-text"), ` ${t("feed.abrir_chat")}`));
+      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar` }, icono("bi-flag"), ` ${t("feed.reportar")}`));
       tarjeta.classList.remove("d-none");
     }).catch((error) => {
       if (error.status !== 401) alerta(mensajes, error.message, error.status === 410 ? "secondary" : "danger");  // RF-FED-10

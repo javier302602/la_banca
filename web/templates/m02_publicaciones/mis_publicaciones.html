@@ -6,12 +6,16 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{{ t("mias.titulo") }}</h1>
-  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva">{{ t("mias.nueva") }}</a>
+  <h1 class="h4 mb-0"><i class="bi bi-card-list icono-titulo" aria-hidden="true"></i>{{ t("mias.titulo") }}</h1>
+  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva"><i class="bi bi-plus-circle" aria-hidden="true"></i> {{ t("mias.nueva") }}</a>
 </div>
 <div id="mensajes" aria-live="polite"></div>
 <ul class="list-group" id="lista"></ul>
-<p class="text-body-secondary d-none" id="vacio">{{ t("mias.vacio") }}</p>
+<div class="estado-vacio d-none" id="vacio">
+  <img src="/static/img/vacio-publicaciones.svg" alt="">
+  <p class="mb-3">{{ t("mias.vacio") }}</p>
+  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva"><i class="bi bi-plus-circle" aria-hidden="true"></i> {{ t("vacio.publicar") }}</a>
+</div>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/publicaciones.js"></script>{% endblock %}

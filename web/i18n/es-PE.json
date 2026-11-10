@@ -235,6 +235,33 @@
     },
     "reportes": {
       "volver": "Volver"
+    },
+    "iconos_tipo": {
+      "NECESITO": "bi-life-preserver",
+      "OFREZCO": "bi-gift",
+      "ACTIVIDAD": "bi-people"
     }
+  },
+  "tema": {
+    "oscuro": "Modo oscuro"
+  },
+  "portada": {
+    "titulo_pagina": "Bienvenida",
+    "lema_1": "¿Tienes un hueco de 1 hora o más?",
+    "lema_2": "Mira qué hay.",
+    "descripcion": "La Banca reúne lo que pasa ahora en tu universidad: alguien necesita algo, alguien lo ofrece, alguien arma una actividad. Todo dura 24 horas.",
+    "crear_cuenta": "Crear cuenta",
+    "iniciar_sesion": "Ya tengo cuenta",
+    "necesito": "Pide apuntes, un cargador o compañía para estudiar.",
+    "ofrezco": "Presta, regala o enseña lo que tengas a mano.",
+    "actividad": "Arma un partido, un grupo de estudio o un café.",
+    "como_funciona": "Cómo funciona",
+    "paso_1": "Publica lo que necesitas u ofreces: dura 24 horas.",
+    "paso_2": "Responde a una publicación y conversa en un chat privado.",
+    "paso_3": "Pónganse de acuerdo: el chat se borra solo tras 24 horas sin mensajes."
+  },
+  "vacio": {
+    "publicar": "Crear una publicación",
+    "ver_feed": "Ver qué hay ahora"
   }
 }

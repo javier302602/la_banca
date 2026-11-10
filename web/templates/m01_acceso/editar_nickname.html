@@ -5,8 +5,9 @@
 {% block pagina %}perfil{% endblock %}
 
 {% block content %}
-<div class="contenedor-estrecho">
-    <h1 class="h4 mb-3">{{ t("perfil.titulo") }}</h1>
+<div class="contenedor-estrecho card tarjeta-formulario">
+  <div class="card-body">
+    <h1 class="h4 mb-3"><i class="bi bi-person-circle icono-titulo" aria-hidden="true"></i>{{ t("perfil.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-nickname" novalidate>
       <div class="mb-3">
@@ -20,6 +21,7 @@
     <hr>
     <p class="small mb-1"><a href="/terminos">{{ t("pie.terminos") }}</a></p>
     <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>{{ t("nav.cerrar_sesion") }}</button>
+  </div>
 </div>
 {% endblock %}
 

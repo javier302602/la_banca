@@ -24,7 +24,8 @@ def escenario(navegador, servidor, usuarios):
 
 
 def todas(e):
-    return paginas(e) + [("/ayuda", None, "article"), ("/ayuda", "ana@unas.edu.pe", "article")]
+    return paginas(e) + [("/ayuda", None, "article"), ("/ayuda", "ana@unas.edu.pe", "article"),
+                         ("/", None, ".portada")]
 
 
 def _abrir(navegador, servidor, ruta, correo, listo, **opciones):
@@ -42,15 +43,19 @@ def test_axe_wcag22aa_sin_violaciones(navegador, servidor, escenario):
     from axe_playwright_python.sync_playwright import Axe
 
     axe, hallazgos = Axe(), []
-    for ruta, correo, listo in todas(escenario):
-        for ancho in (360, 1366):
-            contexto, pagina = _abrir(navegador, servidor, ruta, correo, listo, viewport={"width": ancho, "height": 900})
-            try:
-                resultado = axe.run(pagina, options={"runOnly": {"type": "tag", "values": TAGS_WCAG}})
-                for v in resultado.response["violations"]:
-                    hallazgos.append((ruta, ancho, v["id"], v["impact"], [n["target"] for n in v["nodes"]][:3]))
-            finally:
-                contexto.close()
+    for modo, tema in (("light", "light"), ("dark", "dark")):  # modo claro y oscuro (prefers-color-scheme)
+        for ruta, correo, listo in todas(escenario):
+            for ancho in (360, 1366):
+                contexto, pagina = _abrir(navegador, servidor, ruta, correo, listo,
+                                          viewport={"width": ancho, "height": 900}, color_scheme=modo)
+                try:
+                    assert pagina.evaluate("document.documentElement.dataset.bsTheme") == tema
+                    resultado = axe.run(pagina, options={"runOnly": {"type": "tag", "values": TAGS_WCAG}})
+                    for v in resultado.response["violations"]:
+                        hallazgos.append((modo, ruta, ancho, v["id"], v["impact"],
+                                          [n["target"] for n in v["nodes"]][:3]))
+                finally:
+                    contexto.close()
     assert not hallazgos, hallazgos
 
 

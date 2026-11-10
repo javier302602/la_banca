@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-hidden="true">
+  <!-- La Banca: ilustración original del proyecto (banca bajo un árbol, reloj y burbujas de mensaje) -->
+  <circle cx="160" cy="120" r="110" fill="#7c6cf0" opacity=".16"/>
+  <circle cx="250" cy="52" r="22" fill="#f59f00" opacity=".9"/>
+  <rect x="60" y="70" width="14" height="110" rx="6" fill="#8a5a2b"/>
+  <circle cx="67" cy="62" r="40" fill="#2f9e63"/>
+  <circle cx="42" cy="78" r="24" fill="#3fbf7f"/>
+  <circle cx="92" cy="80" r="26" fill="#3fbf7f"/>
+  <rect x="110" y="140" width="140" height="12" rx="6" fill="#4f3cc9"/>
+  <rect x="110" y="118" width="140" height="10" rx="5" fill="#6f5ce0"/>
+  <rect x="118" y="152" width="10" height="34" rx="4" fill="#3a2a9e"/>
+  <rect x="232" y="152" width="10" height="34" rx="4" fill="#3a2a9e"/>
+  <rect x="30" y="186" width="260" height="8" rx="4" fill="#5b5f73" opacity=".35"/>
+  <g transform="translate(150 54)">
+    <rect width="72" height="40" rx="12" fill="#ff9b6b"/>
+    <path d="M14 40 l8 12 l6-12z" fill="#ff9b6b"/>
+    <circle cx="22" cy="20" r="4" fill="#1a0d06"/><circle cx="36" cy="20" r="4" fill="#1a0d06"/><circle cx="50" cy="20" r="4" fill="#1a0d06"/>
+  </g>
+  <g transform="translate(262 120)">
+    <circle r="22" fill="#ffffff" stroke="#4f3cc9" stroke-width="5"/>
+    <path d="M0 -12 V0 L9 6" stroke="#4f3cc9" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

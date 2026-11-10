@@ -5,8 +5,9 @@
 {% block pagina %}restablecer{% endblock %}
 
 {% block content %}
-<div class="contenedor-estrecho">
-    <h1 class="h4 mb-3">{{ t("restablecer.titulo") }}</h1>
+<div class="contenedor-estrecho card tarjeta-formulario">
+  <div class="card-body">
+    <h1 class="h4 mb-3"><i class="bi bi-shield-lock icono-titulo" aria-hidden="true"></i>{{ t("restablecer.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-restablecer" novalidate>
       <div class="mb-3">
@@ -25,6 +26,7 @@
     <div id="acciones" class="mt-3 small d-none">
       <a href="/recuperar">{{ t("restablecer.nuevo_enlace") }}</a>
     </div>
+  </div>
 </div>
 <span id="token" data-token="{{ token or '' }}" hidden></span>
 {% endblock %}
