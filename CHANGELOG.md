@@ -7,7 +7,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 
 ## [Unreleased]
 
-## [2.0.0] - en desarrollo
+## [2.0.0] - 2026-11-10
 
 Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cambio).
 
@@ -22,7 +22,7 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
 - **Modo claro y oscuro:** interruptor en la barra (`role="switch"`) que respeta `prefers-color-scheme` y recuerda
   la elección en el navegador; todos los colores salen de los tokens, con un juego por modo.
 - `tokens.json` con los conjuntos `global`, `claro` y `oscuro`, los temas Claro y Oscuro y sombras `boxShadow`.
-- 90 capturas (15 páginas × 3 anchos × 2 modos).
+- Capturas por página, ancho (360, 768 y 1024 px) y modo (96 en la versión final: 16 páginas × 3 × 2).
 
 - **Fase 2 — Perfiles:** página pública `/perfiles/{nickname}` con foto o avatar, biografía (≤ 160 caracteres)
   y fecha de ingreso; el correo no se muestra a nadie. `/perfil` permite subir una foto (JPG/PNG/WebP ≤ 2 MB,
@@ -59,8 +59,13 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
   aplicadas al arrancar con bloqueo entre procesos y registradas en `schema_migrations`; `scripts/migrar.py`.
   Migración `001_v1_a_v2`. Prueba completa con Docker: respaldo en un contenedor, restauración en otro limpio y
   restauración de un respaldo real de la v1.
+- **Fase 7 — Pruebas finales:** `scripts/seed_demo.py` (4 cuentas con avatar, publicaciones con imágenes y chats con
+  emojis, stickers y documentos), recorrido completo en el navegador contra el compose levantado desde cero
+  (`tests/despliegue/test_recorrido_compose.py`, capturas en `docs/demo/`), 96 capturas de diseño regeneradas
+  (16 páginas, incluida la del perfil público) y auditoría de cumplimiento actualizada para la v2.0.0.
 
 ### Changed
+- Política de privacidad: el estado «visto» y los documentos del chat (publicar una versión nueva de los términos).
 - La app aplica las migraciones pendientes al arrancar (también en Vercel: `scripts/migraciones` se incluye).
 - `docker-compose.yml`: `ARCHIVO_ENV` permite levantar una segunda instancia con otro archivo de variables.
 - `.env.example` reescrito para el despliegue con Docker Compose (valores de dev, notas `[PROD]` en su propia línea).
