@@ -1,30 +1,30 @@
 {% extends "base.html" %}
-{# CU-18 — Recuperar contraseña: establecer la nueva #}
+{# CU-18 — Recuperar la contraseña (nueva contraseña) #}
 
-{% block title %}Restablecer contraseña{% endblock %}
+{% block title %}{{ t("restablecer.titulo") }}{% endblock %}
 {% block pagina %}restablecer{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
-    <h1 class="h4 mb-3">Nueva contraseña</h1>
+    <h1 class="h4 mb-3">{{ t("restablecer.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-restablecer" novalidate>
       <div class="mb-3">
-        <label class="form-label" for="contrasena">Nueva contraseña</label>
+        <label class="form-label" for="contrasena">{{ t("restablecer.nueva") }}</label>
         <input class="form-control" id="contrasena" name="contrasena" type="password" required minlength="8"
                maxlength="64" autocomplete="new-password" aria-describedby="ayuda-clave">
-        <div class="form-text" id="ayuda-clave">De 8 a 64 caracteres, con al menos una letra y un dígito.</div>
+        <div class="form-text" id="ayuda-clave">{{ t("campos.ayuda_contrasena") }}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="confirmacion">Confirma la contraseña</label>
+        <label class="form-label" for="confirmacion">{{ t("campos.confirmar_contrasena") }}</label>
         <input class="form-control" id="confirmacion" name="confirmacion" type="password" required
                autocomplete="new-password">
       </div>
-      <button class="btn btn-primary" type="submit">Guardar contraseña</button>
+      <button class="btn btn-primary" type="submit">{{ t("restablecer.guardar") }}</button>
     </form>
     <div id="acciones" class="mt-3 small d-none">
-      <a href="/recuperar">Solicitar un nuevo enlace</a>
+      <a href="/recuperar">{{ t("restablecer.nuevo_enlace") }}</a>
     </div>
   </div>
 </div>

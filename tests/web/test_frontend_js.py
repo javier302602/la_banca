@@ -4,6 +4,7 @@ RF-PUB-12 (contador de caracteres), RF-FED-11 (actualizar a demanda), RF-FED-16 
 RF-FED-17 (el filtro se mantiene en las actualizaciones automáticas y manuales) y RF-AUT-45 (Continuar).
 """
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -19,14 +20,19 @@ requiere_node = pytest.mark.skipif(shutil.which("node") is None, reason="node no
 
 
 def _node(script: str, *args: str) -> dict:
-    salida = subprocess.run(["node", "-e", script, *args], capture_output=True, text=True, check=True, timeout=30)
+    """Ejecuta `script` con el catálogo i18n disponible como en la página (<script id="i18n">)."""
+    from app.shared.web.i18n import catalogo_js
+
+    entorno = {**os.environ, "CATALOGO_I18N": json.dumps(catalogo_js())}
+    salida = subprocess.run(["node", "-e", script, *args], capture_output=True, text=True, check=True, timeout=30,
+                            env=entorno)
     return json.loads(salida.stdout)
 
 
 CONTADOR_JS = r"""
 const vm = require("vm"), fs = require("fs");
 const ctx = { console, setInterval: () => 0, Date, URLSearchParams, location: { search: "" },
-              document: { addEventListener() {} } };
+              document: { addEventListener() {}, getElementById: (id) => (id === "i18n" ? { textContent: process.env.CATALOGO_I18N } : null) } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + ";globalThis.Banca = Banca;", ctx);
 const oyentes = {};

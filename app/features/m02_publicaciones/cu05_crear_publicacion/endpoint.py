@@ -45,4 +45,4 @@ async def consultar_cupo(
 async def pagina_crear(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
     if sesion is None:
         return redirigir_a_login(request)
-    return render(request, "m02_publicaciones/crear_publicacion.html", sesion, tipos=[(t.value, t.value.capitalize()) for t in TipoPublicacion])
+    return render(request, "m02_publicaciones/crear_publicacion.html", sesion, tipos=[t.value for t in TipoPublicacion])

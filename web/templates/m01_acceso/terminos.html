@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {# CU-16 — Términos de uso y política de privacidad #}
 
-{% block title %}Términos de uso y política de privacidad{% endblock %}
+{% block title %}{{ t("terminos.titulo") }}{% endblock %}
 {% block pagina %}terminos{% endblock %}
 
 {% block content %}
 <article class="mx-auto" style="max-width: 48rem">
-  <h1 class="h4">Términos de uso y política de privacidad</h1>
-  <p class="text-body-secondary small">Versión {{ terminos.version }} · {{ terminos.fecha }}</p>
+  <h1 class="h4">{{ t("terminos.titulo") }}</h1>
+  <p class="text-body-secondary small">{{ t("terminos.version", version=terminos.version) }} ·
+    <time datetime="{{ terminos.fecha }}" data-fecha>{{ terminos.fecha }}</time></p>
   <div class="contenido-libre">{{ terminos.texto }}</div>
 </article>
 {% endblock %}

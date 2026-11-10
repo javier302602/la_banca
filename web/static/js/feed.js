@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS } = Banca;
+  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -20,9 +20,9 @@
         el("div", { class: "card-body" },
           el("div", { class: "d-flex gap-2 mb-2" },
             el("span", { class: "badge etiqueta-tipo", text: TIPOS[p.tipo] }),
-            p.es_propia ? el("span", { class: "badge etiqueta-propia", text: "Tu publicación" }) : null),
+            p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
-          el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), " · ",
+          el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), t("separador"),
             el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) })))));
 
     const url = (cursor) => {
@@ -49,7 +49,7 @@
         lista.replaceChildren(...items.map(tarjeta));
         vacio.textContent = ultima.mensaje_vacio || "";
         vacio.classList.toggle("d-none", !ultima.mensaje_vacio);
-        centinela.textContent = siguiente ? "Cargando más…" : "";
+        centinela.textContent = siguiente ? t("feed.cargando_mas") : "";
         limpiar(mensajes);
       } catch (error) { if (error.status !== 401) alerta(mensajes, error.message); }
       finally { cargando = false; }
@@ -63,7 +63,7 @@
         lista.append(...r.items.map(tarjeta));
         siguiente = r.siguiente_cursor;
         bloquesCargados += 1;
-        centinela.textContent = siguiente ? "Cargando más…" : "";
+        centinela.textContent = siguiente ? t("feed.cargando_mas") : "";
       } catch (error) { if (error.status !== 401) alerta(mensajes, error.message); }
       finally { cargando = false; }
     }
@@ -105,9 +105,9 @@
       r.dataset.expira = p.fecha_expiracion;
       r.textContent = restante(p.fecha_expiracion);
       document.getElementById("propia").classList.toggle("d-none", !p.es_propia);
-      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder`, text: "Responder" }));
-      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}`, text: "Abrir chat" }));
-      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar`, text: "Reportar" }));
+      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder`, text: t("feed.responder") }));
+      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}`, text: t("feed.abrir_chat") }));
+      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar`, text: t("feed.reportar") }));
       tarjeta.classList.remove("d-none");
     }).catch((error) => {
       if (error.status !== 401) alerta(mensajes, error.message, error.status === 410 ? "secondary" : "danger");  // RF-FED-10

@@ -39,4 +39,4 @@ async def reportar_publicacion(
 async def pagina_reportar(request: Request, publicacion_id: str, sesion: SesionActual | None = Depends(get_sesion_opcional)):
     if sesion is None:
         return redirigir_a_login(request)
-    return render(request, "m05_reportes/reportar.html", sesion, objeto="publicación", motivos=list(MOTIVOS_REPORTE.values()), volver=f"/publicaciones/{publicacion_id}", endpoint_api=f"/api/publicaciones/{publicacion_id}/reportes")
+    return render(request, "m05_reportes/reportar.html", sesion, objeto="publicacion", motivos=list(MOTIVOS_REPORTE.values()), volver=f"/publicaciones/{publicacion_id}", endpoint_api=f"/api/publicaciones/{publicacion_id}/reportes")

@@ -37,6 +37,7 @@ from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
 from app.pruebas.reloj import router as reloj_de_pruebas
 from app.shared.web.https import forzar_https
+from app.shared.web.i18n import t
 from app.shared.web.plantillas import plantillas
 from app.shared.web.validacion import mensaje_en_espanol
 
@@ -61,10 +62,7 @@ async def manejar_error_dominio(_: Request, error: ErrorDominio) -> JSONResponse
     return JSONResponse({"detail": error.mensaje, "codigo": error.codigo, **error.extra}, status_code=error.status)
 
 
-ERRORES_HTTP = {  # RNF-USA-05: reemplaza «Not Found» / «Method Not Allowed» de Starlette
-    404: ("no_encontrado", "Página no encontrada", "La dirección que buscas no existe o ya no está disponible."),
-    405: ("metodo_no_permitido", "Acción no permitida", "Esta dirección no admite la acción solicitada."),
-}
+ERRORES_HTTP = {404: "no_encontrado", 405: "metodo_no_permitido"}  # RNF-USA-05: textos en el catálogo i18n
 PREFIJOS_SIN_PAGINA = ("/api/", "/jobs/", "/static/")
 
 
@@ -73,11 +71,11 @@ async def manejar_http(request: Request, error: StarletteHTTPException):
     """404 y 405 en español: página HTML al navegar, JSON en /api, /jobs y /static. Otros códigos se conservan."""
     if error.status_code not in ERRORES_HTTP:
         return JSONResponse({"detail": error.detail}, status_code=error.status_code, headers=error.headers)
-    codigo, titulo, mensaje = ERRORES_HTTP[error.status_code]
+    codigo, mensaje = ERRORES_HTTP[error.status_code], t(f"error.{error.status_code}.mensaje")
     if request.url.path.startswith(PREFIJOS_SIN_PAGINA) or request.url.path in ("/api", "/jobs"):
         return JSONResponse({"detail": mensaje, "codigo": codigo}, status_code=error.status_code, headers=error.headers)
     return plantillas.TemplateResponse(
-        request, "error.html", {"sesion": None, "codigo": error.status_code, "titulo": titulo, "mensaje": mensaje},
+        request, "error.html", {"sesion": None, "codigo": error.status_code},
         status_code=error.status_code, headers={**(error.headers or {}), "Cache-Control": "no-store"})
 
 

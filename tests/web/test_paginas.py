@@ -149,7 +149,7 @@ def test_utilidades_js_con_node():
     const vm = require("vm");
     const fs = require("fs");
     const ctx = { console, setInterval: () => 0, Date, URLSearchParams, location: { search: "" },
-                  document: { addEventListener() {} }, fetch: async () => ({}) };
+                  document: { addEventListener() {}, getElementById: (id) => (id === "i18n" ? { textContent: process.env.CATALOGO_I18N } : null) }, fetch: async () => ({}) };
     vm.createContext(ctx);
     vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + ";globalThis.Banca = Banca;", ctx);
     const B = ctx.Banca;
@@ -163,8 +163,11 @@ def test_utilidades_js_con_node():
       horaLocal: typeof B.horaHHMM,
     }));
     """
+    from app.shared.web.i18n import catalogo_js
+
     salida = subprocess.run(["node", "-e", script, str(RAIZ / "web/static/js/app.js")],
-                            capture_output=True, text=True, check=True, timeout=30)
+                            capture_output=True, text=True, check=True, timeout=30,
+                            env={**__import__("os").environ, "CATALOGO_I18N": json.dumps(catalogo_js())})
     datos = json.loads(salida.stdout)
     assert datos == {"r1": "9 min", "r2": "2 h 4 min", "r3": "Expirada",
                      "c1": "1 h 25 min", "c2": "2 h", "c3": "40 min", "c4": "menos de 1 min", "c5": "2 h 15 min",

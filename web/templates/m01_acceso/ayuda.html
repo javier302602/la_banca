@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{# Ayuda — WCAG 3.2.6 (ayuda consistente) y Nielsen H10 #}
+
+{% block title %}{{ t("ayuda.titulo") }}{% endblock %}
+{% block pagina %}ayuda{% endblock %}
+
+{% block content %}
+<article class="mx-auto" style="max-width: 48rem">
+  <h1 class="h4">{{ t("ayuda.titulo") }}</h1>
+  <p>{{ t("ayuda.intro") }}</p>
+  {% for tema in ["activar", "publicacion", "chat", "reporte", "contrasena", "datos"] %}
+  <section class="card mb-3" aria-labelledby="ayuda-{{ tema }}">
+    <div class="card-body">
+      <h2 class="h6" id="ayuda-{{ tema }}">{{ t("ayuda.p_" ~ tema) }}</h2>
+      <p class="mb-0">{{ t("ayuda.r_" ~ tema) }}</p>
+    </div>
+  </section>
+  {% endfor %}
+</article>
+{% endblock %}

@@ -3,7 +3,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS } = Banca;
+  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS, t, formatoHora } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -11,8 +11,8 @@
     const texto = document.getElementById("texto").value;
     const original = document.getElementById("imagen").files[0];
     const invalido = (detail) => new Banca.ErrorApi(422, { detail, errores: [{ campo: "texto", mensaje: detail }] });
-    if (texto.trim() && original) throw invalido("Un mensaje lleva texto o una imagen, no ambos");
-    if (!texto.trim() && !original) throw invalido("Escribe un mensaje o adjunta una imagen");
+    if (texto.trim() && original) throw invalido(t("chat.texto_o_imagen"));
+    if (!texto.trim() && !original) throw invalido(t("chat.vacio"));
     const datos = new FormData();
     if (original) datos.append("imagen", await Banca.comprimirImagen(original)); else datos.append("texto", texto);
     return datos;
@@ -46,7 +46,7 @@
         location.href = `/chats/${encodeURIComponent(r.chat_id)}`;
       } catch (error) {
         const extra = error.datos.chat_id  // RF-CHT-23
-          ? [" ", el("a", { class: "alert-link", href: `/chats/${encodeURIComponent(error.datos.chat_id)}`, text: "Abrir el chat" })] : [];
+          ? [" ", el("a", { class: "alert-link", href: `/chats/${encodeURIComponent(error.datos.chat_id)}`, text: t("chat.abrir_chat") })] : [];
         // RNF-USA-03: los errores del contenido van junto al mensaje; los demás, en el aviso general
         if (!extra.length && mostrarErrores(formulario, error, { general: "texto" })) limpiar(mensajes);
         else alerta(mensajes, error.message, "danger", ...extra);
@@ -61,10 +61,10 @@
                                   href: `/chats/${encodeURIComponent(c.id)}` },
       el("div", {},
         el("div", { class: "fw-semibold", text: c.nickname_contraparte }),
-        el("div", { class: "small text-body-secondary", text: `${TIPOS[c.tipo_publicacion]} · ${c.titulo_publicacion}` })),
+        el("div", { class: "small text-body-secondary", text: `${TIPOS[c.tipo_publicacion]}${t("separador")}${c.titulo_publicacion}` })),
       el("div", { class: "text-end" },
-        el("div", { class: "small text-body-secondary", text: c.hora_ultimo_mensaje }),
-        c.no_leidos ? el("span", { class: "badge text-bg-primary", text: "Nuevo" }) : null));  // RF-CHT-21
+        el("div", { class: "small text-body-secondary", text: formatoHora(c.ultimo_mensaje_en) }),
+        c.no_leidos ? el("span", { class: "badge text-bg-primary", text: t("chat.nuevo") }) : null));  // RF-CHT-21
     const cargar = async (automatica = false) => {
       try {
         const r = await api("/api/chats", { automatica });
@@ -93,10 +93,10 @@
       const continua = ladoAnterior === m.es_propio;  // Gestalt: mensajes seguidos del mismo autor se agrupan
       ladoAnterior = m.es_propio;
       const contenido = m.imagen_url
-        ? el("img", { src: m.imagen_url, alt: `Imagen de ${m.nickname_emisor}`, loading: "lazy" })
+        ? el("img", { src: m.imagen_url, alt: t("imagen.alt", { nickname: m.nickname_emisor }), loading: "lazy" })
         : el("div", { class: "contenido-libre", text: m.texto });
       return el("div", { class: `burbuja ${m.es_propio ? "propia" : "ajena"}${continua ? " continua" : ""}` }, contenido,
-        el("div", { class: "hora", text: m.hora }));  // HH:MM en America/Lima, calculada en el servidor (RN-34)
+        el("div", { class: "hora", text: formatoHora(m.fecha_envio) }));  // HH:MM en America/Lima, calculada en el servidor (RN-34)
     }
 
     function agregar(lista) {
@@ -115,7 +115,7 @@
       expirado = true;
       clearTimeout(temporizador);
       mostrarAviso(null);
-      alerta(mensajes, "Este chat expiró", "secondary");
+      alerta(mensajes, t("chat.expiro"), "secondary");
       formulario.querySelectorAll("textarea, input, button").forEach((n) => { n.disabled = true; });
       document.getElementById("reportar").classList.add("disabled");
     }

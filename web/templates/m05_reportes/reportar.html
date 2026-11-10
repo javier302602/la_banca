@@ -1,33 +1,33 @@
 {% extends "base.html" %}
-{# CU-13 — Reportar publicación · CU-14 — Reportar chat #}
+{# CU-13 / CU-14 — Reportar una publicación o un chat #}
 
-{% block title %}Reportar{% endblock %}
+{% block title %}{{ t("reportar.titulo_" ~ objeto) }}{% endblock %}
 {% block pagina %}reportar{% endblock %}
 
 {% block content %}
 <div class="mx-auto" style="max-width: 36rem">
-  <p><a href="{{ volver }}">← Volver</a></p>
-  <h1 class="h4 mb-3">Reportar {{ objeto }}</h1>
+  <p><a href="{{ volver }}">{{ t("reportar.volver") }}</a></p>
+  <h1 class="h4 mb-3">{{ t("reportar.titulo_" ~ objeto) }}</h1>
   <div id="mensajes" aria-live="polite"></div>
   <form id="form-reporte" novalidate>
     <fieldset class="mb-3">
-      <legend class="form-label fs-6">Motivo</legend>
+      <legend class="form-label fs-6">{{ t("reportar.motivo") }}</legend>
       {% for motivo in motivos %}
       <div class="form-check">
         <input class="form-check-input" type="radio" name="codigo_motivo" id="motivo-{{ motivo.codigo.value }}"
                value="{{ motivo.codigo.value }}">
-        <label class="form-check-label" for="motivo-{{ motivo.codigo.value }}">{{ motivo.nombre }}</label>
+        <label class="form-check-label" for="motivo-{{ motivo.codigo.value }}">{{ t("motivos." ~ motivo.codigo.value) }}</label>
       </div>
       {% endfor %}
     </fieldset>
     <div class="mb-3">
       <div class="d-flex justify-content-between">
-        <label class="form-label" for="observacion">Observación (opcional)</label>
+        <label class="form-label" for="observacion">{{ t("reportar.observacion") }}</label>
         <span class="small text-body-secondary" id="contador-observacion"></span>
       </div>
       <textarea class="form-control" id="observacion" name="observacion" rows="3" maxlength="300"></textarea>
     </div>
-    <button class="btn btn-danger" type="submit" disabled id="enviar">Enviar reporte</button>
+    <button class="btn btn-danger" type="submit" disabled id="enviar">{{ t("reportar.enviar") }}</button>
   </form>
 </div>
 <span id="destino" data-url="{{ endpoint_api }}" data-volver="{{ volver }}" hidden></span>

@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {# CU-12 — Mis chats activos #}
 
-{% block title %}Mis chats{% endblock %}
+{% block title %}{{ t("chats.titulo") }}{% endblock %}
 {% block pagina %}mis-chats{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">Mis chats</h1>
+<h1 class="h4 mb-3">{{ t("chats.titulo") }}</h1>
 <div id="mensajes" aria-live="polite"></div>
 <div class="list-group" id="lista"></div>
-<p class="text-body-secondary d-none" id="vacio">No tienes chats activos.</p>
+<p class="text-body-secondary d-none" id="vacio">{{ t("chats.vacio") }}</p>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/chat.js"></script>{% endblock %}

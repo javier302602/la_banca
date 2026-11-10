@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {# CU-06 — Mis publicaciones activas · CU-07 — Cerrar publicación #}
 
-{% block title %}Mis publicaciones{% endblock %}
+{% block title %}{{ t("mias.titulo_pagina") }}{% endblock %}
 {% block pagina %}mis-publicaciones{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">Mis publicaciones activas</h1>
-  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva">Nueva publicación</a>
+<div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">{{ t("mias.titulo") }}</h1>
+  <a class="btn btn-primary btn-sm" href="/publicaciones/nueva">{{ t("mias.nueva") }}</a>
 </div>
 <div id="mensajes" aria-live="polite"></div>
 <ul class="list-group" id="lista"></ul>
-<p class="text-body-secondary d-none" id="vacio">No tienes publicaciones activas.</p>
+<p class="text-body-secondary d-none" id="vacio">{{ t("mias.vacio") }}</p>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/publicaciones.js"></script>{% endblock %}
