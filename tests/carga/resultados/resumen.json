@@ -1,0 +1,159 @@
+{
+  "inicio": "2026-11-10T01:23:55.990701+00:00",
+  "fin": "2026-11-10T01:39:11.282839+00:00",
+  "usuarios": 100,
+  "duracion": "15m",
+  "workers": 4,
+  "cuentas": 10000,
+  "publicaciones_activas": [
+    3000,
+    3030
+  ],
+  "solicitudes": 29135,
+  "fallos": 0,
+  "por_medicion": {
+    "REN-02 feed: primer bloque": {
+      "solicitudes": 899,
+      "fallos": 0,
+      "p50_ms": 67.0,
+      "p95_ms": 680.0,
+      "max_ms": 3538.775799999712
+    },
+    "REN-02 feed: primer bloque con filtro": {
+      "solicitudes": 901,
+      "fallos": 0,
+      "p50_ms": 58.0,
+      "p95_ms": 310.0,
+      "max_ms": 3508.466099998259
+    },
+    "REN-03 entrega de texto al otro participante": {
+      "solicitudes": 1350,
+      "fallos": 0,
+      "p50_ms": 67.0,
+      "p95_ms": 390.0,
+      "max_ms": 6999.869700001
+    },
+    "cerrar publicación": {
+      "solicitudes": 40,
+      "fallos": 0,
+      "p50_ms": 67.0,
+      "p95_ms": 140.0,
+      "max_ms": 163.04950000085228
+    },
+    "crear publicación": {
+      "solicitudes": 70,
+      "fallos": 0,
+      "p50_ms": 98.0,
+      "p95_ms": 2800.0,
+      "max_ms": 3946.8420000011974
+    },
+    "enviar mensaje de texto": {
+      "solicitudes": 1350,
+      "fallos": 0,
+      "p50_ms": 38.0,
+      "p95_ms": 240.0,
+      "max_ms": 6820.223000000624
+    },
+    "iniciar sesión": {
+      "solicitudes": 130,
+      "fallos": 0,
+      "p50_ms": 1900.0,
+      "p95_ms": 4100.0,
+      "max_ms": 4200.229400001263
+    },
+    "responder publicación": {
+      "solicitudes": 30,
+      "fallos": 0,
+      "p50_ms": 74.0,
+      "p95_ms": 3500.0,
+      "max_ms": 4231.255900000178
+    },
+    "sondeo del chat abierto (1 s)": {
+      "solicitudes": 24365,
+      "fallos": 0,
+      "p50_ms": 18.0,
+      "p95_ms": 100.0,
+      "max_ms": 8470.191299998987
+    },
+    "Aggregated": {
+      "solicitudes": 29135,
+      "fallos": 0,
+      "p50_ms": 20.0,
+      "p95_ms": 170.0,
+      "max_ms": 8470.191299998987
+    }
+  },
+  "imagenes_ms": [
+    7582.319799999619,
+    7601.480200000015,
+    7563.841699999605,
+    7627.501199999508,
+    7559.4854999997915,
+    7653.884099999992,
+    7617.097599999816,
+    7559.721600001573,
+    7582.829799998744,
+    7602.704899999503,
+    7568.784299998992,
+    7555.365000000387,
+    7599.939400000593,
+    7588.611599999227,
+    7558.96060000058,
+    7574.268499999442,
+    7581.991200000047,
+    7564.58850000077,
+    7551.078100000151,
+    7555.295300000677
+  ],
+  "registros_p95_ms": 338.48109500149803,
+  "resultados": [
+    {
+      "rnf": "RNF-REN-01",
+      "metrica": "tasa de errores (0/29135)",
+      "valor": 0.0,
+      "limite": 1.0,
+      "cumple": true,
+      "unidad": "%"
+    },
+    {
+      "rnf": "RNF-REN-02",
+      "metrica": "p95 primer bloque del feed (con y sin filtro)",
+      "valor": 0.68,
+      "limite": 3.0,
+      "cumple": true,
+      "unidad": "s"
+    },
+    {
+      "rnf": "RNF-REN-03",
+      "metrica": "p95 entrega de un mensaje de texto",
+      "valor": 0.39,
+      "limite": 2.0,
+      "cumple": true,
+      "unidad": "s"
+    },
+    {
+      "rnf": "RNF-REN-04",
+      "metrica": "p95 imagen de 5 MB visible (incluye red de 10 Mbps)",
+      "valor": 7.629,
+      "limite": 10.0,
+      "cumple": true,
+      "unidad": "s"
+    },
+    {
+      "rnf": "RNF-REN-05",
+      "metrica": "p95 registro → correo entregado al emisor",
+      "valor": 0.338,
+      "limite": 30.0,
+      "cumple": true,
+      "unidad": "s"
+    },
+    {
+      "rnf": "RNF-REN-06",
+      "metrica": "REN-02 y REN-03 con 10000 cuentas y 3000 activas",
+      "valor": 10000.0,
+      "limite": 10000,
+      "cumple": true,
+      "unidad": "cuentas"
+    }
+  ]
+}
