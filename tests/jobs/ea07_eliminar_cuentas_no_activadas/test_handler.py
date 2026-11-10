@@ -132,3 +132,32 @@ def test_repositorio_borra_sesiones_por_ix_sessions_exp():
     corte = datetime(2026, 9, 2, tzinfo=timezone.utc)
     assert asyncio.run(MongoEliminarCuentasRepository(db).eliminar_sesiones_vencidas(corte)) == 4
     assert db.sessions.llamadas == [({"expiresAt": {"$lte": corte}}, {"hint": "ix_sessions_exp"})]
+
+
+def test_sin_el_indice_elimina_igual_sin_hint(caplog):
+    """Si falta el índice (base recién creada), la purga no falla: repite sin hint y lo registra."""
+    from datetime import datetime, timezone
+
+    from pymongo.errors import OperationFailure
+
+    from app.jobs.ea07_eliminar_cuentas_no_activadas.repository import MongoEliminarCuentasRepository
+
+    class Coleccion:
+        name = "accounts"
+
+        def __init__(self):
+            self.llamadas = []
+
+        async def delete_many(self, filtro, **opciones):
+            self.llamadas.append(opciones)
+            if "hint" in opciones:
+                raise OperationFailure("hint provided does not correspond to an existing index", 2)
+            return type("Resultado", (), {"deleted_count": 3})()
+
+    db = type("Db", (), {"accounts": Coleccion(), "sessions": Coleccion()})()
+    repo = MongoEliminarCuentasRepository(db)
+    corte = datetime(2026, 10, 2, tzinfo=timezone.utc)
+    assert asyncio.run(repo.eliminar_no_activadas(corte)) == 3
+    assert asyncio.run(repo.eliminar_sesiones_vencidas(corte)) == 3
+    assert db.accounts.llamadas == [{"hint": "ix_accounts_activation_exp"}, {}]
+    assert "Falta el índice ix_accounts_activation_exp" in caplog.text

@@ -65,6 +65,18 @@ No hay pantalla ni API de administración. Los parámetros se cambian con variab
 python -m app.features.m06_configuracion.cu15_configurar_parametros.endpoint --registrar
 ```
 
+## Entorno de pruebas con reloj controlable (RNF-MAN-02)
+
+Con `ENTORNO=pruebas` la app usa un reloj que se puede adelantar para comprobar los plazos de 24 h y 72 h sin
+esperarlos. Úsalo con **un solo worker**: el desfase vive en la memoria del proceso.
+
+```bash
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" -H "Content-Type: application/json" \
+     -d '{"horas": 24}' http://localhost:8000/pruebas/reloj/avanzar     # también: GET /pruebas/reloj, POST /pruebas/reloj/reiniciar
+```
+
+En cualquier otro entorno esas rutas responden 404.
+
 ## Respaldos (Entregable 2 §8.1)
 
 `scripts/respaldo_mongodb.py` ejecuta `mongodump --gzip --archive` y elimina los respaldos de más de 7 días

@@ -31,9 +31,12 @@ from app.features.m06_configuracion.cu15_configurar_parametros.endpoint import r
 from app.jobs.ea03_limpiar_chats_expirados.endpoint import router as ea03_limpiar_chats_expirados
 from app.jobs.ea05_depurar_contenido_reportado.endpoint import router as ea05_depurar_contenido_reportado
 from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_eliminar_cuentas_no_activadas
+from app.jobs.arranque import programar_al_arrancar
 from app.shared.config.provider import verificar_entorno
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
+from app.pruebas.reloj import router as reloj_de_pruebas
+from app.shared.web.https import forzar_https
 from app.shared.web.plantillas import plantillas
 from app.shared.web.validacion import mensaje_en_espanol
 
@@ -45,10 +48,12 @@ RAIZ = Path(__file__).resolve().parent.parent
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await asegurar_indices_una_vez()
+    programar_al_arrancar()  # RNF-FIA-02: plazos vencidos durante una caída, sin esperar al cron
     yield
 
 
 app = FastAPI(title="La Banca", version="1.0.0", lifespan=lifespan)
+app.middleware("http")(forzar_https)  # RNF-SEG-03: HTTP → HTTPS y HSTS en producción
 
 
 @app.exception_handler(ErrorDominio)
@@ -97,6 +102,7 @@ for router in [
     cu10_responder_publicacion, cu11_enviar_mensaje, cu12_ver_mis_chats,
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,
     ea03_limpiar_chats_expirados, ea05_depurar_contenido_reportado, ea07_eliminar_cuentas_no_activadas,
+    reloj_de_pruebas,  # RNF-MAN-02: solo responde con ENTORNO=pruebas
 ]:
     app.include_router(router)
 
