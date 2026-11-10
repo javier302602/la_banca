@@ -10,9 +10,11 @@ RF: RF-CHT-15, RF-CHT-18, RF-CHT-19, RF-CHT-21, RF-CHT-25
 from datetime import datetime, timedelta
 
 from app.shared.clock import hora_hhmm
-from app.shared.domain.contracts import IChatRepository, IClock, IConfigurationProvider, ImageStorage
+from app.shared.domain.contracts import (IAccountRepository, IChatRepository, IClock, IConfigurationProvider,
+                                        ImageStorage)
 from app.shared.domain.entities import Chat, ClaveParametro
 from app.shared.domain.errors import NoDisponible, NoEncontrado
+from app.shared.domain.perfiles import apariencias
 from app.shared.domain.reglas import minutos_hacia_arriba, segundos_restantes
 
 from .request import (AbrirChatRequest, AvisoExpiracion, ChatDetalleResponse, ChatResumenResponse,
@@ -27,7 +29,8 @@ def url_imagen(chat_id: str, mensaje_id: str) -> str:
 
 class VerMisChatsHandler:
     def __init__(self, chats: IChatRepository, imagenes: ImageStorage, config: IConfigurationProvider,
-                 clock: IClock) -> None:
+                 clock: IClock, cuentas: IAccountRepository | None = None) -> None:
+        self._cuentas = cuentas
         self._chats = chats
         self._imagenes = imagenes
         self._config = config
@@ -37,9 +40,11 @@ class VerMisChatsHandler:
         ahora = self._clock.ahora()
         chats = await self._chats.listar_activos_por_usuario(estudiante_id, ahora)
         chats = sorted((c for c in chats if c.activo(ahora)), key=lambda c: c.ultima_actividad, reverse=True)
+        caras = await apariencias(self._cuentas, dict(c.contraparte(estudiante_id) for c in chats))
         return MisChatsResponse(ahora=ahora, items=[
             ChatResumenResponse(id=c.id, tipo_publicacion=c.tipo_publicacion, titulo_publicacion=c.titulo_publicacion,
                                 nickname_contraparte=c.contraparte(estudiante_id)[1],
+                                apariencia_contraparte=caras[c.contraparte(estudiante_id)[0]],
                                 ultimo_mensaje_en=c.ultima_actividad,
                                 hora_ultimo_mensaje=hora_hhmm(c.ultima_actividad), fecha_expiracion=c.fecha_expiracion,
                                 no_leidos=c.tiene_no_leidos(estudiante_id))
@@ -52,9 +57,12 @@ class VerMisChatsHandler:
         mensajes = await self._chats.listar_mensajes(chat.id, body.despues_de if body else None)
         if mensajes or body is None or body.despues_de is None:
             await self._chats.marcar_leido(chat.id, estudiante_id, ahora)  # RF-CHT-21
+        otro_id, otro_nickname = chat.contraparte(estudiante_id)
+        cara = (await apariencias(self._cuentas, {otro_id: otro_nickname}))[otro_id]
         return ChatDetalleResponse(
             ahora=ahora, id=chat.id, tipo_publicacion=chat.tipo_publicacion,
-            titulo_publicacion=chat.titulo_publicacion, nickname_contraparte=chat.contraparte(estudiante_id)[1],
+            titulo_publicacion=chat.titulo_publicacion, nickname_contraparte=otro_nickname,
+            apariencia_contraparte=cara,
             fecha_expiracion=chat.fecha_expiracion,
             segundos_restantes=segundos_restantes(chat.fecha_expiracion, ahora),
             aviso=self._calcular_aviso(chat, ahora),

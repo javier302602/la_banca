@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{# CU-20 — Ver el perfil de una persona (SRS v2.0, cambio 2.1). Sin correo (RN-04 modificada). #}
+
+{% block title %}{{ t("ver_perfil.titulo") }}{% endblock %}
+{% block pagina %}ver-perfil{% endblock %}
+
+{% block content %}
+<div class="contenedor-estrecho">
+  <p class="mb-3"><a href="/feed" id="volver">{{ t("ver_perfil.volver") }}</a></p>
+  <div id="mensajes" aria-live="polite"></div>
+  <article class="card" id="perfil" data-nickname="{{ nickname }}" hidden>
+    <div class="card-body cabecera-perfil">
+      <span class="avatar avatar-lg" id="perfil-avatar" aria-hidden="true"></span>
+      <h1 class="h4 mb-0" id="perfil-nickname"></h1>
+      <p class="small text-body-secondary mb-1"><i class="bi bi-calendar-check" aria-hidden="true"></i>
+        <span id="perfil-ingreso"></span></p>
+      <p class="biografia mb-2" id="perfil-biografia"></p>
+      <div id="perfil-propio" hidden>
+        <p class="small text-body-secondary mb-2" id="perfil-propio-texto"></p>
+        <a class="btn btn-outline-primary btn-sm" href="/perfil"><i class="bi bi-pencil" aria-hidden="true"></i> {{ t("ver_perfil.editar") }}</a>
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/perfiles.js"></script>{% endblock %}

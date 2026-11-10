@@ -76,7 +76,25 @@
   "perfil": {
     "titulo": "Mi perfil",
     "nickname": "Nickname",
-    "guardar": "Guardar nickname"
+    "guardar": "Guardar nickname",
+    "datos": "Foto, avatar y biografía",
+    "biografia": "Biografía (opcional)",
+    "ayuda_biografia": "Hasta 160 caracteres. La ve quien visite tu perfil.",
+    "foto": "Foto de perfil (opcional)",
+    "ayuda_foto": "JPG, PNG o WebP, hasta 2 MB. Se recorta en cuadrado y se le quitan los metadatos (EXIF), incluida la ubicación.",
+    "subir_foto": "Subir foto",
+    "quitar_foto": "Quitar foto",
+    "avatar": "Avatar",
+    "ayuda_avatar": "Si no tienes foto se muestra el avatar que elijas; si no eliges ninguno, tus iniciales. Solo se guarda el avatar elegido.",
+    "grupos": {
+      "hombre": "Hombre",
+      "mujer": "Mujer",
+      "neutro": "Neutros"
+    },
+    "sin_avatar": "Mis iniciales",
+    "guardar_perfil": "Guardar perfil",
+    "privacidad": "Tu correo institucional no se muestra a nadie.",
+    "ver_publico": "Ver mi perfil público"
   },
   "tipos": {
     "TODOS": "Todos",
@@ -194,7 +212,7 @@
     "separador": " · ",
     "imagen": {
       "danada": "La imagen está dañada o no se puede leer",
-      "no_reducible": "No se pudo reducir la imagen por debajo de 4 MB",
+      "no_reducible": "No se pudo reducir la imagen por debajo de {mb} MB",
       "alt": "Imagen de {nickname}",
       "elegir": "Elegir imagen",
       "ninguna": "Ningún archivo seleccionado"
@@ -240,6 +258,18 @@
       "NECESITO": "bi-life-preserver",
       "OFREZCO": "bi-gift",
       "ACTIVIDAD": "bi-people"
+    },
+    "perfil": {
+      "guardado": "Perfil actualizado",
+      "foto_subida": "Foto actualizada",
+      "foto_quitada": "Foto quitada",
+      "foto_grande": "La foto supera el tamaño máximo de 2 MB",
+      "ingreso": "Se unió el {fecha}",
+      "sin_biografia": "Todavía no escribió su biografía.",
+      "es_propio": "Así ven tu perfil los demás.",
+      "titulo": "@{nickname}",
+      "avatar_alt": "Avatar {n}",
+      "ver": "Perfil de @{nickname}"
     }
   },
   "tema": {
@@ -263,5 +293,10 @@
   "vacio": {
     "publicar": "Crear una publicación",
     "ver_feed": "Ver qué hay ahora"
+  },
+  "ver_perfil": {
+    "titulo": "Perfil",
+    "editar": "Editar mi perfil",
+    "volver": "← Volver"
   }
 }

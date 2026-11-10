@@ -112,6 +112,20 @@ class FakeAccountRepository(IAccountRepository):
     async def eliminar(self, estudiante_id):
         self.cuentas.pop(estudiante_id, None)
 
+    async def buscar_activa_por_nickname(self, nickname):
+        return next((copy.deepcopy(e) for e in self.cuentas.values()
+                     if e.nickname.lower() == nickname.lower() and e.estado is EstadoCuenta.ACTIVA), None)
+
+    async def buscar_varias(self, ids):
+        return {i: copy.deepcopy(self.cuentas[i]) for i in ids if i in self.cuentas}
+
+    async def actualizar_perfil(self, estudiante_id, biografia, avatar):
+        self.cuentas[estudiante_id].biografia = biografia
+        self.cuentas[estudiante_id].avatar = avatar
+
+    async def actualizar_foto(self, estudiante_id, foto):
+        self.cuentas[estudiante_id].foto = foto
+
     async def actualizar_nickname(self, estudiante_id, nickname):
         if await self.existe_por_nickname(nickname, excluir_id=estudiante_id):
             raise Conflicto("nickname duplicado", codigo="nickname_duplicado")

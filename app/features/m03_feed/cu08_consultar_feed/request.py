@@ -7,6 +7,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.shared.domain.entities import TAMANO_BLOQUE_FEED, TipoPublicacion
+from app.shared.domain.perfiles import Apariencia
 
 
 class ConsultarFeedRequest(BaseModel):
@@ -19,6 +20,7 @@ class FeedItemResponse(BaseModel):
     tipo: TipoPublicacion
     titulo: str
     nickname_autor: str
+    apariencia_autor: Apariencia  # foto, avatar o iniciales (SRS v2.0, cambio 2.4)
     fecha_creacion: datetime
     fecha_expiracion: datetime
     segundos_restantes: int

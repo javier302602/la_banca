@@ -44,7 +44,8 @@ def paginas(e):
         (f"/publicaciones/{e['pid']}/responder", "caro@unas.edu.pe", "#form-mensaje"),
         (f"/publicaciones/{e['pid']}/reportar", "ana@unas.edu.pe", "#form-reporte"),
         (f"/chats/{e['chat']}/reportar", "ana@unas.edu.pe", "#form-reporte"),
-        ("/perfil", "ana@unas.edu.pe", "#form-nickname"),
+        ("/perfil", "ana@unas.edu.pe", "#vista-avatar[data-iniciales], #vista-avatar img"),
+        ("/perfiles/beto_9", "ana@unas.edu.pe", "#perfil:not([hidden])"),
     ]
 
 

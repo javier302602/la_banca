@@ -10,6 +10,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
+from app.shared.db.perfiles import MongoPerfilesPublicosRepository
 from app.shared.domain.entities import TipoPublicacion
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.web.plantillas import redirigir, redirigir_a_login, render
@@ -22,7 +23,8 @@ router = APIRouter(tags=["M03 Feed"])
 
 
 def get_handler(db: AsyncDatabase = Depends(get_database)) -> ConsultarFeedHandler:
-    return ConsultarFeedHandler(publicaciones=MongoConsultarFeedRepository(db), clock=get_clock())
+    return ConsultarFeedHandler(publicaciones=MongoConsultarFeedRepository(db), clock=get_clock(),
+                                cuentas=MongoPerfilesPublicosRepository(db))
 
 
 @router.get("/api/feed", response_model=FeedResponse, status_code=200)

@@ -86,8 +86,12 @@ class IEmailSender(ABC):
 class ImageStorage(ABC):
     bucket: str = ""  # nombre del bucket, se guarda en messages.imageAttachment.storageBucket
 
-    async def guardar(self, imagen: bytes, mime_type: str) -> str:
+    async def guardar(self, imagen: bytes, mime_type: str, prefijo: str = "chats") -> str:
         """Almacena la imagen sin metadatos EXIF (RNF-PRI-04) y devuelve su referencia (objectKey)."""
+        raise NotImplementedError
+
+    async def guardar_procesado(self, datos: bytes, mime_type: str, prefijo: str) -> str:
+        """Almacena bytes ya validados y saneados por el slice (foto de perfil, documento) tal cual."""
         raise NotImplementedError
 
     async def copiar_a_retencion(self, referencia: str) -> str:
@@ -104,6 +108,16 @@ class ImageStorage(ABC):
 
 class IAccountRepository(ABC):
     # ESTUDIANTE (accounts)
+    # Perfil (SRS v2.0): solo cuentas ACTIVE; el nickname se compara sin distinguir mayúsculas
+    async def buscar_activa_por_nickname(self, nickname: str) -> Estudiante | None: raise NotImplementedError
+    async def buscar_varias(self, ids: list[str]) -> dict[str, Estudiante]:
+        """Cuentas por id (para pintar la foto o el avatar en el feed, el detalle y el chat)."""
+        raise NotImplementedError
+    async def actualizar_perfil(self, estudiante_id: str, biografia: str, avatar: str | None) -> None:
+        raise NotImplementedError
+    async def actualizar_foto(self, estudiante_id: str, foto: object | None) -> None:
+        """Guarda (o quita, con None) la FotoPerfil de la cuenta."""
+        raise NotImplementedError
     async def buscar_por_correo(self, correo: str) -> Estudiante | None: raise NotImplementedError
     async def buscar_por_id(self, estudiante_id: str) -> Estudiante | None: raise NotImplementedError
     async def existe_por_nickname(self, nickname: str, excluir_id: str | None = None) -> bool: raise NotImplementedError

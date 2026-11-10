@@ -8,6 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from app.shared.domain.entities import TipoPublicacion
+from app.shared.domain.perfiles import Apariencia
 
 
 class AbrirChatRequest(BaseModel):
@@ -27,6 +28,7 @@ class ChatResumenResponse(BaseModel):
     tipo_publicacion: TipoPublicacion
     titulo_publicacion: str
     nickname_contraparte: str
+    apariencia_contraparte: Apariencia  # SRS v2.0, cambio 2.4
     ultimo_mensaje_en: datetime
     hora_ultimo_mensaje: str  # HH:MM en America/Lima (RF-CHT-18, RN-34)
     fecha_expiracion: datetime
@@ -54,6 +56,7 @@ class ChatDetalleResponse(BaseModel):
     tipo_publicacion: TipoPublicacion
     titulo_publicacion: str
     nickname_contraparte: str
+    apariencia_contraparte: Apariencia  # SRS v2.0, cambio 2.4
     fecha_expiracion: datetime
     segundos_restantes: int
     aviso: AvisoExpiracion
