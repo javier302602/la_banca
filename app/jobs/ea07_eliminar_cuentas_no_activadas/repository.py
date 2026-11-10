@@ -8,14 +8,30 @@ La consulta recorre el índice ix_accounts_activation_exp {activation.expiresAt:
   `activation.expiresAt ≤ registradas_antes_de + 72 h + 24 h`.
 Ese límite acota el recorrido del índice; la condición exacta (RN-43) sigue siendo `createdAt ≤ registradas_antes_de`.
 """
+import logging
 from datetime import datetime
 
+from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.database import AsyncDatabase
+from pymongo.errors import OperationFailure
 
 from app.shared.domain.contracts import IAccountRepository
 from app.shared.domain.entities import PLAZO_CUENTA_NO_ACTIVADA, VIGENCIA_ENLACE_ACTIVACION, EstadoCuenta
 
 INDICE = "ix_accounts_activation_exp"
+log = logging.getLogger("la_banca.ea07")
+
+
+async def _borrar_con_indice(coleccion: AsyncCollection, filtro: dict, indice: str) -> int:
+    """delete_many con hint; si el índice no existe (base recién creada o índices sin crear), repite sin hint:
+    el resultado es el mismo y solo cambia el rendimiento, así que la purga nunca queda bloqueada."""
+    try:
+        return (await coleccion.delete_many(filtro, hint=indice)).deleted_count
+    except OperationFailure as error:
+        if "hint" not in str(error).lower():
+            raise
+        log.warning("Falta el índice %s en %s; se elimina sin hint", indice, coleccion.name)
+        return (await coleccion.delete_many(filtro)).deleted_count
 
 
 def filtro_no_activadas(registradas_antes_de: datetime) -> dict:
@@ -31,12 +47,10 @@ class MongoEliminarCuentasRepository(IAccountRepository):
 
     async def eliminar_no_activadas(self, registradas_antes_de):
         # El enlace va embebido en la cuenta y se elimina con ella
-        resultado = await self._db.accounts.delete_many(filtro_no_activadas(registradas_antes_de), hint=INDICE)
-        return resultado.deleted_count
+        return await _borrar_con_indice(self._db.accounts, filtro_no_activadas(registradas_antes_de), INDICE)
 
     async def eliminar_sesiones_vencidas(self, vencidas_antes_de):
         # ix_sessions_exp {expiresAt}. Una sesión cerrada manualmente vence como mucho 72 h (máximo de
         # CFG_HORAS_INACTIVIDAD_SESION) después de su última interacción, así que también entra.
-        resultado = await self._db.sessions.delete_many({"expiresAt": {"$lte": vencidas_antes_de}},
-                                                        hint="ix_sessions_exp")
-        return resultado.deleted_count
+        return await _borrar_con_indice(self._db.sessions, {"expiresAt": {"$lte": vencidas_antes_de}},
+                                        "ix_sessions_exp")
