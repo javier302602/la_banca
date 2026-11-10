@@ -46,8 +46,18 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
   antiguo), descargados como adjunto con `nosniff` solo por los dos participantes y mostrados como tarjeta con
   icono, nombre y tamaño.
 - Los reportes de chat conservan los documentos y los stickers; EA-03 borra los documentos de los chats expirados.
+- **Fase 5 — Despliegue portable:** `docker-compose.yml` con la app (gunicorn + workers de uvicorn), MongoDB 7
+  como replica set con volumen, MinIO (bucket privado creado al arrancar), Caddy con HTTPS automático, un servicio
+  `tareas` que ejecuta EA-03/EA-05/EA-07 y, en el perfil `dev`, Mailpit; perfil `prod` para dominio y SMTP reales
+  y perfil opcional `tunel` (Cloudflare Tunnel). `Dockerfile`, `.env.example` completo y comentado,
+  `docs/DESPLIEGUE.md` paso a paso (incluye Cloudflare Tunnel y Tailscale), `scripts/crear_usuario.py` y
+  `scripts/verificar_despliegue.py`.
+- `SMTP_TLS` (`starttls`, `ssl` o `ninguno`; `ninguno` no se permite en producción).
 
 ### Changed
+- `.env.example` reescrito para el despliegue con Docker Compose (valores de dev, notas `[PROD]` en su propia línea).
+- S3 con endpoint propio usa direcciones por ruta (`STORAGE_ESTILO_DIRECCION` lo puede forzar).
+- El validador `$jsonSchema` de `accounts` incluye `bio` (≤ 160), `avatar` (del catálogo) y `photo`.
 - `GET /api/chats/{id}` devuelve `visto_hasta`; los mensajes incluyen `sticker`, `sticker_url` y `documento`.
 - El chat expone al otro participante cuándo se leyó su mensaje (la política de privacidad lo informa).
 - `POST /api/publicaciones` acepta también `multipart/form-data` (campo `imagenes`); el JSON de v1 sigue

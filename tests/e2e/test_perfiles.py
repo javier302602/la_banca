@@ -38,6 +38,11 @@ def test_perfil_foto_avatar_y_apariencia_en_feed_detalle_y_chat(db):
         doc = db.accounts.find_one({"nickname": "perfil_a"})
         assert doc["bio"] == "Hola, curso Sistemas" and doc["avatar"] == "avatar-06"
         assert not {"gender", "genero", "avatarGroup"} & set(doc)
+        # El validador $jsonSchema de accounts también lo impide en la base (biografía > 160, avatar fuera del catálogo)
+        from pymongo.errors import WriteError
+        for cambio in ({"bio": "x" * 161}, {"avatar": "mujer"}, {"photo": {"objectKey": 1}}):
+            with pytest.raises(WriteError):
+                db.accounts.update_one({"_id": doc["_id"]}, {"$set": cambio})
 
         # Foto: ≤ 2 MB, cuadrada, sin EXIF
         r = a.put("/api/cuentas/me/foto", files={"foto": ("yo.jpg", jpeg_con_gps(), "image/jpeg")})
