@@ -1,4 +1,5 @@
 """CU-09 — Ver detalle de una publicación. DTOs Pydantic."""
+from dataclasses import dataclass
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -21,3 +22,10 @@ class DetallePublicacionResponse(BaseModel):
     puede_responder: bool
     puede_reportar: bool
     chat_existente_id: str | None = None  # RF-CHT-23: ofrecer abrir el chat activo existente
+    imagenes: list[str] = []  # galería: URLs de hasta 3 imágenes (SRS v2.0, cambio 3.1)
+
+
+@dataclass(frozen=True)
+class ImagenDescargada:
+    contenido: bytes
+    mime_type: str

@@ -224,6 +224,14 @@ class FakePublicationRepository(IPublicationRepository):
     async def contar_activas_por_usuario(self, autor_id, ahora):
         return sum(1 for p in self._activas(ahora) if p.autor_id == autor_id)
 
+    async def retirar_imagenes_vencidas(self, ahora):
+        claves = []
+        for p in self.publicaciones.values():
+            if p.imagenes and not p.activa(ahora):
+                claves += [i.referencia for i in p.imagenes]
+                p.imagenes = []
+        return claves
+
     async def crear(self, publicacion):
         publicacion = copy.deepcopy(publicacion)
         publicacion.id = publicacion.id or nuevo_id()

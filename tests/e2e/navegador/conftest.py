@@ -166,7 +166,43 @@ def iniciar_sesion(contexto, correo: str) -> None:
     assert r.ok, r.text()
 
 
-def publicar(contexto, titulo: str = "Apuntes de cálculo", tipo: str = "OFREZCO") -> str:
+def png(color=(60, 120, 200), tamano=(480, 320)) -> bytes:
+    import io
+
+    from PIL import Image
+
+    salida = io.BytesIO()
+    Image.new("RGB", tamano, color).save(salida, format="PNG")
+    return salida.getvalue()
+
+
+def multipart(campos, archivos) -> tuple[bytes, str]:
+    """Cuerpo multipart/form-data con campos repetidos (la opción multipart= de Playwright usa un dict)."""
+    import uuid
+
+    limite = uuid.uuid4().hex
+    crlf = "\r\n"
+    partes = []
+    for nombre, valor in campos:
+        partes.append(f'--{limite}{crlf}Content-Disposition: form-data; name="{nombre}"{crlf}{crlf}{valor}{crlf}'
+                      .encode())
+    for nombre, archivo, contenido in archivos:
+        cabecera = (f'--{limite}{crlf}Content-Disposition: form-data; name="{nombre}"; filename="{archivo}"{crlf}'
+                    f"Content-Type: application/octet-stream{crlf}{crlf}")
+        partes.append(cabecera.encode() + contenido + crlf.encode())
+    partes.append(f"--{limite}--{crlf}".encode())
+    return b"".join(partes), f"multipart/form-data; boundary={limite}"
+
+
+def publicar(contexto, titulo: str = "Apuntes de cálculo", tipo: str = "OFREZCO", imagenes: int = 0) -> str:
+    if imagenes:  # SRS v2.0: multipart con hasta 3 imágenes (el campo «imagenes» se repite)
+        campos = [("tipo", tipo), ("titulo", titulo), ("descripcion", "Los presto")]
+        colores = [(60, 120, 200), (200, 90, 60), (60, 160, 90)]
+        archivos = [("imagenes", f"foto{i}.png", png(colores[i % 3])) for i in range(imagenes)]
+        cuerpo, tipo_contenido = multipart(campos, archivos)
+        r = contexto.request.post("/api/publicaciones", data=cuerpo, headers={"Content-Type": tipo_contenido})
+        assert r.ok, r.text()
+        return r.json()["id"]
     r = contexto.request.post("/api/publicaciones", data={"tipo": tipo, "titulo": titulo, "descripcion": "Los presto"})
     assert r.ok, r.text()
     return r.json()["id"]

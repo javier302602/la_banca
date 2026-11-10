@@ -1,11 +1,12 @@
 """CU-09 — Ver detalle de una publicación. Controlador MVC (APIRouter), sin lógica de negocio."""
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
 from app.shared.db.perfiles import MongoPerfilesPublicosRepository
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
+from app.shared.storage.image_storage import get_image_storage
 from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import VerDetallePublicacionHandler
@@ -21,6 +22,7 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerDetallePublicac
         chats=MongoChatExistenteRepository(db),
         clock=get_clock(),
         cuentas=MongoPerfilesPublicosRepository(db),
+        imagenes=get_image_storage(),
     )
 
 
@@ -31,6 +33,18 @@ async def ver_detalle_publicacion(
     handler: VerDetallePublicacionHandler = Depends(get_handler),
 ) -> DetallePublicacionResponse:
     return await handler.handle(sesion.estudiante_id, publicacion_id)
+
+
+@router.get("/api/publicaciones/{publicacion_id}/imagenes/{indice}", status_code=200)
+async def ver_imagen(
+    publicacion_id: str,
+    indice: int,
+    sesion: SesionActual = Depends(get_sesion_actual),
+    handler: VerDetallePublicacionHandler = Depends(get_handler),
+) -> Response:
+    imagen = await handler.imagen(publicacion_id, indice)
+    return Response(imagen.contenido, media_type=imagen.mime_type,
+                    headers={"Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/publicaciones/{publicacion_id}", include_in_schema=False)

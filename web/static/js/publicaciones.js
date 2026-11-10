@@ -3,7 +3,7 @@
 
 (() => {
   const { api, alerta, el, limpiar, contador, ocupado, restante, refrescarRestantes, mostrarErrores, limpiarErrores,
-          errorEnCampo, TIPOS, t, icono, etiquetaTipo } = Banca;
+          errorEnCampo, TIPOS, t, icono, etiquetaTipo, comprimirImagen } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -29,6 +29,37 @@
     };
     cargarCupo();
 
+    /* Imágenes (SRS v2.0): hasta 3; se ven antes de publicar y cada una se puede quitar. El <input> real se
+     * vacía y la lista elegida vive en `elegidas`, así quitar una no obliga a elegir todas de nuevo. */
+    const MAX_IMAGENES = 3;
+    const entrada = document.getElementById("imagenes");
+    const vista = document.getElementById("vista-previa");
+    const nombre = document.getElementById("nombre-imagenes");
+    let elegidas = [];
+    const urls = new Map();
+    const pintarVista = () => {
+      urls.forEach((url, archivo) => { if (!elegidas.includes(archivo)) { URL.revokeObjectURL(url); urls.delete(archivo); } });
+      vista.replaceChildren(...elegidas.map((archivo) => {
+        if (!urls.has(archivo)) urls.set(archivo, URL.createObjectURL(archivo));
+        return el("li", {}, el("img", { src: urls.get(archivo), alt: archivo.name }),
+          el("button", { type: "button", class: "btn btn-danger btn-sm", "aria-label": t("publicaciones.quitar_imagen", { nombre: archivo.name }),
+                         onclick: () => { elegidas = elegidas.filter((a) => a !== archivo); pintarVista(); entrada.focus(); } },
+             icono("bi-x")));
+      }));
+      nombre.textContent = elegidas.length ? t("publicaciones.imagenes_elegidas", { n: elegidas.length }) : t("publicaciones.ninguna_imagen");
+    };
+    entrada.addEventListener("change", (evento) => {
+      evento.stopImmediatePropagation();  // el nombre lo pinta pintarVista, no el selector genérico
+      limpiarErrores(formulario);
+      const nuevas = Array.from(entrada.files);
+      if (elegidas.length + nuevas.length > MAX_IMAGENES) {
+        errorEnCampo(formulario, "imagenes", t("publicaciones.demasiadas_imagenes"));
+      }
+      elegidas = elegidas.concat(nuevas).slice(0, MAX_IMAGENES);
+      entrada.value = "";
+      pintarVista();
+    }, true);
+
     formulario.addEventListener("submit", async (evento) => {
       evento.preventDefault();
       const boton = formulario.querySelector("[type=submit]");
@@ -40,9 +71,17 @@
       }
       ocupado(boton, true);
       try {
-        const p = await api("/api/publicaciones", { metodo: "POST", cuerpo: {
-          tipo: tipo.value, titulo: document.getElementById("titulo").value,
-          descripcion: document.getElementById("descripcion").value } });
+        const campos = { tipo: tipo.value, titulo: document.getElementById("titulo").value,
+                         descripcion: document.getElementById("descripcion").value };
+        let p;
+        if (elegidas.length) {  // multipart; cada imagen se comprime en el navegador si supera 4 MB
+          const datos = new FormData();
+          Object.entries(campos).forEach(([clave, valor]) => datos.append(clave, valor));
+          for (const archivo of elegidas) datos.append("imagenes", await comprimirImagen(archivo));
+          p = await api("/api/publicaciones", { metodo: "POST", formulario: datos });
+        } else {
+          p = await api("/api/publicaciones", { metodo: "POST", cuerpo: campos });
+        }
         location.href = `/publicaciones/${encodeURIComponent(p.id)}`;
       } catch (error) {
         if (mostrarErrores(formulario, error)) limpiar(mensajes); else alerta(mensajes, error.message);

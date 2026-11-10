@@ -37,6 +37,17 @@
         </div>
         <textarea class="form-control" id="descripcion" name="descripcion" rows="5" maxlength="500" required></textarea>
       </div>
+      <div class="mb-3">
+        <label class="form-label" for="imagenes">{{ t("publicar.imagenes") }}</label>
+        <div class="selector-archivo">
+          <input class="entrada-archivo" type="file" id="imagenes" name="imagenes" multiple
+                 accept="image/jpeg,image/png,image/webp" aria-describedby="nombre-imagenes ayuda-imagenes">
+          <span class="btn btn-outline-secondary btn-sm boton-archivo" aria-hidden="true">{{ t("publicar.elegir_imagenes") }}</span>
+          <span class="small text-body-secondary nombre-archivo" id="nombre-imagenes">{{ t("js.publicaciones.ninguna_imagen") }}</span>
+        </div>
+        <div class="form-text" id="ayuda-imagenes">{{ t("publicar.ayuda_imagenes") }}</div>
+        <ul class="vista-previa list-unstyled d-flex flex-wrap gap-2 mt-2 mb-0" id="vista-previa"></ul>
+      </div>
       <p class="small text-body-secondary">{{ t("publicar.duracion") }}</p>
       <button class="btn btn-primary" type="submit"><i class="bi bi-send" aria-hidden="true"></i> {{ t("publicar.boton") }}</button>
     </form>

@@ -155,6 +155,10 @@ class IAccountRepository(ABC):
 
 
 class IPublicationRepository(ABC):
+    async def retirar_imagenes_vencidas(self, ahora: datetime) -> list[str]:
+        """SRS v2.0: vacía las imágenes de las publicaciones vencidas o cerradas; devuelve sus referencias."""
+        raise NotImplementedError
+
     async def contar_activas_por_usuario(self, autor_id: str, ahora: datetime) -> int: raise NotImplementedError
     async def crear(self, publicacion: Publicacion) -> str: raise NotImplementedError
     async def crear_si_hay_cupo(self, publicacion: Publicacion, maximo: int, ahora: datetime) -> str | None:

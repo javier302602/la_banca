@@ -47,9 +47,11 @@ def test_sin_funciones_de_gestion_de_reportes():
     # Ninguna ruta permite leer, modificar ni borrar reportes o su contenido conservado
     assert not any(m & {"PUT", "PATCH", "DELETE"} for p, m in con_reportes)
     assert not any(p.startswith(("/api/reportes", "/reportes", "/admin")) for p, _ in _rutas())
-    # La única ruta que entrega imágenes resuelve mensajes de un chat, no claves del área de retención
-    imagenes = [p for p, _ in _rutas() if "imagen" in p]
-    assert imagenes == ["/api/chats/{chat_id}/mensajes/{mensaje_id}/imagen"]
+    # Las rutas que entregan imágenes resuelven un mensaje de un chat o una posición de la galería de una
+    # publicación activa (SRS v2.0) o la foto de un perfil; ninguna acepta claves del área de retención
+    imagenes = sorted({p for p, _ in _rutas() if "imagen" in p or "foto" in p})
+    assert imagenes == ["/api/chats/{chat_id}/mensajes/{mensaje_id}/imagen", "/api/cuentas/me/foto",
+                        "/api/perfiles/{nickname}/foto", "/api/publicaciones/{publicacion_id}/imagenes/{indice}"]
 
 
 def _vistas_publicacion(pubs, chats, reloj, usuario, pid):

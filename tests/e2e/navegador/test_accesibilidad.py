@@ -19,7 +19,7 @@ def escenario(navegador, servidor, usuarios):
     try:
         iniciar_sesion(autor, "beto@unas.edu.pe")
         iniciar_sesion(lector, "ana@unas.edu.pe")
-        pid = publicar(autor, "Busco grupo de estudio de física para el examen del viernes", "NECESITO")
+        pid = publicar(autor, "Busco grupo de estudio de física para el examen del viernes", "NECESITO", imagenes=2)
         chat = responder(lector, pid, "Me apunto, ¿dónde se juntan?")
         publicar(lector, "Ofrezco clases de cálculo", "OFREZCO")
         return {"pid": pid, "chat": chat}

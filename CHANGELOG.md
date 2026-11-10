@@ -34,8 +34,15 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
   `GET /api/perfiles/{nickname}/foto` (con sesión, `nosniff`). Los DTO del feed, el detalle y los chats incluyen
   `apariencia_autor` / `apariencia_contraparte`.
 - Tokens `--lb-color-avatar-1…6` (claro y oscuro) para el fondo de las iniciales.
+- **Fase 3 — Imágenes en publicaciones:** hasta 3 imágenes JPG/PNG/WebP de hasta 5 MB por publicación,
+  validadas por contenido, re-codificadas sin EXIF y comprimidas en el navegador si superan 4 MB; vista previa con
+  botón para quitar cada una; miniatura y cantidad en el feed; galería con miniaturas en el detalle.
+- Al reportar una publicación, sus imágenes se copian al área de retención (EA-05 las borra al vencer el plazo).
+- EA-03 borra además las imágenes de las publicaciones vencidas o cerradas.
 
 ### Changed
+- `POST /api/publicaciones` acepta también `multipart/form-data` (campo `imagenes`); el JSON de v1 sigue
+  funcionando igual.
 - Términos y política de privacidad: declaran la foto, el avatar, la biografía y la fecha de ingreso como datos
   tratados y que los demás los ven (RN-31). **Hay que subir `TERMINOS_VERSION`** al desplegar.
 - `/` sin sesión muestra la portada (antes redirigía al inicio de sesión).

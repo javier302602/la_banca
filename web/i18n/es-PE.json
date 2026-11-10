@@ -116,7 +116,10 @@
     "campo_titulo": "Título",
     "campo_descripcion": "Descripción",
     "duracion": "Tu publicación estará activa durante 24 horas",
-    "boton": "Publicar"
+    "boton": "Publicar",
+    "imagenes": "Imágenes (opcional)",
+    "ayuda_imagenes": "Hasta 3 imágenes JPG, PNG o WebP de hasta 5 MB cada una. Se les quitan los metadatos (EXIF), incluida la ubicación.",
+    "elegir_imagenes": "Elegir imágenes"
   },
   "mias": {
     "titulo_pagina": "Mis publicaciones",
@@ -134,7 +137,8 @@
     "titulo_pagina": "Publicación",
     "volver": "← Volver al feed",
     "por": "Por",
-    "tiempo_restante": "Tiempo restante:"
+    "tiempo_restante": "Tiempo restante:",
+    "galeria": "Imágenes de la publicación"
   },
   "chats": {
     "titulo": "Mis chats",
@@ -249,7 +253,11 @@
       "tiempo_restante": "Tiempo restante: ",
       "cerrar": "Cerrar",
       "confirmar_cierre": "¿Cerrar esta publicación? No podrás reactivarla",
-      "cerrada": "Publicación cerrada"
+      "cerrada": "Publicación cerrada",
+      "demasiadas_imagenes": "Puedes adjuntar hasta 3 imágenes",
+      "imagenes_elegidas": "{n} de 3 imágenes elegidas",
+      "ninguna_imagen": "Ninguna imagen elegida",
+      "quitar_imagen": "Quitar {nombre}"
     },
     "reportes": {
       "volver": "Volver"
@@ -270,6 +278,13 @@
       "titulo": "@{nickname}",
       "avatar_alt": "Avatar {n}",
       "ver": "Perfil de @{nickname}"
+    },
+    "galeria": {
+      "alt": "Imagen {n} de {total} de la publicación «{titulo}»",
+      "miniatura": "Ver imagen {n} de {total}",
+      "num_imagenes": "{n} imágenes",
+      "una_imagen": "1 imagen",
+      "miniatura_alt": "Primera imagen de «{titulo}»"
     }
   },
   "tema": {
