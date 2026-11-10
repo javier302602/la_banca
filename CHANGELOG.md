@@ -53,8 +53,16 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
   `docs/DESPLIEGUE.md` paso a paso (incluye Cloudflare Tunnel y Tailscale), `scripts/crear_usuario.py` y
   `scripts/verificar_despliegue.py`.
 - `SMTP_TLS` (`starttls`, `ssl` o `ninguno`; `ninguno` no se permite en producción).
+- **Fase 6 — Migración de datos:** `scripts/backup.sh` (mongodump comprimido + copia del bucket de MinIO +
+  manifiesto, en un paquete fechado con rotación de 7 días) y `scripts/restore.sh` (reemplaza base y bucket; acepta
+  también los volcados de la v1). Migraciones versionadas en `scripts/migraciones/NNN_descripcion.py`, idempotentes,
+  aplicadas al arrancar con bloqueo entre procesos y registradas en `schema_migrations`; `scripts/migrar.py`.
+  Migración `001_v1_a_v2`. Prueba completa con Docker: respaldo en un contenedor, restauración en otro limpio y
+  restauración de un respaldo real de la v1.
 
 ### Changed
+- La app aplica las migraciones pendientes al arrancar (también en Vercel: `scripts/migraciones` se incluye).
+- `docker-compose.yml`: `ARCHIVO_ENV` permite levantar una segunda instancia con otro archivo de variables.
 - `.env.example` reescrito para el despliegue con Docker Compose (valores de dev, notas `[PROD]` en su propia línea).
 - S3 con endpoint propio usa direcciones por ruta (`STORAGE_ESTILO_DIRECCION` lo puede forzar).
 - El validador `$jsonSchema` de `accounts` incluye `bio` (≤ 160), `avatar` (del catálogo) y `photo`.

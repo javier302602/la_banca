@@ -166,14 +166,49 @@ Para acceso público sin abrir puertos usa la opción A (o `tailscale funnel`, q
 
 ## 9. Respaldos y migraciones
 
-- `scripts/backup.sh` crea un paquete fechado `respaldos/la-banca-AAAAMMDD-HHMMSS.tar.gz` con el volcado
-  comprimido de MongoDB (`mongodump --archive --gzip`) y una copia del bucket de MinIO.
-- `scripts/restore.sh respaldos/<paquete>.tar.gz` lo restaura (también en un servidor limpio, y también un
-  respaldo de la versión 1).
-- Las migraciones de esquema (`scripts/migraciones/NNN_descripcion.py`) se aplican solas al arrancar y quedan
-  registradas en la colección `schema_migrations`.
+### Respaldar
 
-Programa el respaldo diario con cron en el servidor, p. ej.: `0 3 * * * cd /ruta/la_banca && scripts/backup.sh`.
+```bash
+scripts/backup.sh
+```
+
+Crea **un** paquete fechado `respaldos/la-banca-AAAAMMDD-HHMMSSZ.tar.gz` con:
+
+- `mongo.archive.gz`: volcado comprimido de la base (`mongodump --archive --gzip`);
+- `archivos/`: copia del bucket de MinIO (imágenes, fotos de perfil y documentos);
+- `MANIFIESTO.txt`: versión de la app, fecha, base, bucket, documentos por colección y número de archivos.
+
+Borra los paquetes de más de 7 días (`RETENCION_RESPALDOS_DIAS`, máximo 7: el contenido reportado no puede
+sobrevivir en las copias más de ese plazo). Programa uno diario con cron, p. ej.
+`0 3 * * * cd /ruta/la_banca && scripts/backup.sh >> respaldos/registro.txt 2>&1`, y copia la carpeta
+`respaldos/` **fuera del servidor**: contiene datos personales, guárdala cifrada.
+
+### Restaurar (en el mismo servidor o en uno nuevo)
+
+```bash
+docker compose up -d                                   # en un servidor nuevo: pasos 1 a 4 de esta guía
+scripts/restore.sh respaldos/la-banca-AAAAMMDD-HHMMSSZ.tar.gz
+```
+
+Pide confirmar (o usa `--si`), detiene la app, **reemplaza** la base completa y el bucket por los del paquete y
+vuelve a levantar la app, que aplica las migraciones pendientes.
+
+**Respaldo de la versión 1.** También acepta los volcados de la v1 (`la_banca_db-AAAAMMDDTHHMMSSZ.archive.gz`,
+de `scripts/respaldo_mongodb.py` o del workflow de GitHub; si está cifrado, primero
+`gpg --decrypt archivo.archive.gz.gpg > archivo.archive.gz`). Esos volcados solo traen la base: las imágenes de
+chat de la v1 siguen en el almacenamiento que usaba entonces. Al arrancar, la migración 001 agrega a esos datos
+los campos de la v2 (perfil, imágenes de publicación, adjuntos).
+
+### Migraciones
+
+Los cambios de esquema están en `scripts/migraciones/NNN_descripcion.py` (numeradas, idempotentes). La app
+aplica las pendientes al arrancar, en orden, y las registra en la colección `schema_migrations`; si arrancan
+varios procesos a la vez, solo uno migra. Para ver su estado o aplicarlas a mano:
+
+```bash
+docker compose exec app python -m scripts.migrar --estado
+docker compose exec app python -m scripts.migrar
+```
 
 ## 10. Problemas frecuentes
 

@@ -37,6 +37,7 @@ from app.jobs.arranque import programar_al_arrancar
 from app.salud import router as salud
 from app.shared.config.provider import verificar_entorno
 from app.shared.version import VERSION
+from app.shared.db.migraciones import aplicar_al_arrancar as aplicar_migraciones_al_arrancar
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
 from app.pruebas.reloj import router as reloj_de_pruebas
@@ -53,6 +54,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await asegurar_indices_una_vez()
+    await aplicar_migraciones_al_arrancar()  # SRS v2.0: scripts/migraciones/NNN_*.py pendientes, en orden
     programar_al_arrancar()  # RNF-FIA-02: plazos vencidos durante una caída, sin esperar al cron
     yield
 

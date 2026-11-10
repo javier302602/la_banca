@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/index.py": { "includeFiles": "{app,web}/**" }
+    "api/index.py": { "includeFiles": "{app/**,web/**,scripts/migraciones/**,VERSION}" }
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
