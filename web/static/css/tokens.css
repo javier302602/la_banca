@@ -1,30 +1,44 @@
-/* La Banca — tokens de diseño (fuente única de colores, tipografía, espaciado y radios).
+/* La Banca — tokens de diseño (fuente única de colores, tipografía, espaciado, radios y sombras).
  *
- * Convención: --lb-<categoría>-<nombre>. scripts/exportar_tokens.py los exporta a
- * docs/investigacion/tokens.json en el formato de Tokens Studio para Figma; un test comprueba que ambos coinciden.
+ * Convención: --lb-<categoría>-<nombre>. El bloque :root define el modo claro y los tokens que no dependen del
+ * modo; [data-bs-theme="dark"] redefine los colores y sombras del modo oscuro con los mismos nombres.
+ * scripts/exportar_tokens.py los exporta a docs/investigacion/tokens.json (Tokens Studio para Figma) en tres
+ * conjuntos: «global», «claro» y «oscuro», con los temas Claro y Oscuro; un test comprueba que coinciden.
  * Categorías → tipo de Tokens Studio: color → color · fuente-familia → fontFamilies · fuente-tamano → fontSizes ·
  * fuente-peso → fontWeights · interlineado → lineHeights · espacio → spacing · radio → borderRadius ·
- * punto → sizing (puntos de quiebre; las media queries no admiten variables y repiten estos valores).
- * Contrastes indicados sobre el fondo en que se usan (WCAG 1.4.3, ≥ 4,5:1).
+ * sombra → boxShadow · punto → sizing (puntos de quiebre; las media queries repiten estos valores).
+ * Contrastes indicados sobre el fondo en que se usan (WCAG 1.4.3, ≥ 4,5:1), verificados con axe en ambos modos.
  */
 :root {
-  /* Marca y estados */
-  --lb-color-primario: #0a58ca;            /* 5,6:1 sobre fondo, 6,3:1 sobre superficie */
-  --lb-color-primario-fuerte: #084298;
-  --lb-color-primario-suave: #cfe2ff;
-  --lb-color-peligro: #b02a37;             /* 6,4:1 con texto blanco */
-  --lb-color-secundario: #565e64;
-  --lb-color-foco: #0a58ca;
+  /* Marca */
+  --lb-color-primario: #4f3cc9;            /* 7,4:1 sobre superficie · 6,8:1 sobre fondo */
+  --lb-color-primario-fuerte: #3a2a9e;
+  --lb-color-primario-suave: #e4defd;      /* burbuja propia; texto 13:1 */
+  --lb-color-sobre-primario: #ffffff;      /* texto sobre el primario: 7,4:1 */
+  --lb-color-acento: #c2410c;              /* fondo de la llamada a la acción; texto blanco 5,2:1 */
+  --lb-color-acento-fuerte: #b4350f;       /* acento como texto: 6,1:1 */
+  --lb-color-sobre-acento: #ffffff;
+  --lb-color-peligro: #b02a37;             /* 6,5:1 */
+  --lb-color-sobre-peligro: #ffffff;
+  --lb-color-secundario: #565b6e;          /* 6,1:1 */
+  --lb-color-foco: #4f3cc9;
 
   /* Neutros */
-  --lb-color-texto: #212529;
-  --lb-color-texto-secundario: #5c636a;    /* 5,5:1 sobre fondo */
-  --lb-color-texto-hora: #4a5056;
-  --lb-color-texto-invertido: #ffffff;
-  --lb-color-fondo: #f3f4f6;
+  --lb-color-texto: #1d1b2e;               /* 15:1 */
+  --lb-color-texto-secundario: #5b5f73;    /* 5,7:1 sobre fondo */
+  --lb-color-texto-hora: #4a4e60;          /* 7:1 sobre el fondo del chat */
+  --lb-color-fondo: #f4f3fb;
   --lb-color-superficie: #ffffff;
-  --lb-color-borde: #dee2e6;
-  --lb-color-fondo-chat: #eef1f5;
+  --lb-color-borde: #dcd9ea;
+  --lb-color-fondo-chat: #edeaf8;
+  --lb-color-burbuja-propia: #e4defd;
+  --lb-color-burbuja-ajena: #ffffff;
+  --lb-color-avatar-1: #d6e4ff;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-2: #cfeedd;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-3: #ffe8b3;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-4: #e4defd;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-5: #ffd6d1;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-6: #d1f0f5;             /* fondo de iniciales; texto ≥ 12:1 */
 
   /* Tipos de publicación (similitud, Gestalt): fondo de etiqueta · texto (≥ 7:1) · borde de tarjeta */
   --lb-color-necesito-fondo: #ffe8b3;
@@ -37,6 +51,10 @@
   --lb-color-actividad-texto: #0b2a66;
   --lb-color-actividad-borde: #3b6fd8;
 
+  /* Sombras */
+  --lb-sombra-tarjeta: 0 1px 2px rgba(29, 27, 46, 0.06), 0 4px 14px rgba(29, 27, 46, 0.08);
+  --lb-sombra-elevada: 0 6px 20px rgba(29, 27, 46, 0.14);
+
   /* Tipografía */
   --lb-fuente-familia-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --lb-fuente-tamano-xs: 0.75rem;          /* 12 px: horas, insignias */
@@ -44,8 +62,10 @@
   --lb-fuente-tamano-base: 1rem;           /* 16 px: texto y campos */
   --lb-fuente-tamano-lg: 1.25rem;          /* 20 px: títulos de página (móvil) */
   --lb-fuente-tamano-xl: 1.5rem;           /* 24 px: títulos de página (≥ 768 px) */
+  --lb-fuente-tamano-xxl: 2rem;            /* 32 px: lema de la portada */
   --lb-fuente-peso-regular: 400;
   --lb-fuente-peso-semibold: 600;
+  --lb-fuente-peso-negrita: 700;
   --lb-interlineado-base: 1.5;
   --lb-interlineado-ajustado: 1.25;
 
@@ -57,11 +77,13 @@
   --lb-espacio-5: 1.25rem;
   --lb-espacio-6: 1.5rem;
   --lb-espacio-8: 2rem;
+  --lb-espacio-12: 3rem;
 
   /* Radios */
   --lb-radio-sm: 0.25rem;
   --lb-radio-md: 0.5rem;
   --lb-radio-lg: 1rem;
+  --lb-radio-xl: 1.25rem;
   --lb-radio-pildora: 50rem;
 
   /* Tamaños */
@@ -69,4 +91,47 @@
   --lb-punto-tableta: 768px;
   --lb-punto-escritorio: 1024px;
   --lb-punto-objetivo-minimo: 24px;        /* WCAG 2.5.8 */
+}
+
+[data-bs-theme="dark"] {
+  --lb-color-primario: #a99dff;            /* 7,2:1 sobre superficie · 7,9:1 sobre fondo */
+  --lb-color-primario-fuerte: #c4bbff;
+  --lb-color-primario-suave: #342c78;
+  --lb-color-sobre-primario: #14102e;      /* 7,8:1 */
+  --lb-color-acento: #ff9b6b;
+  --lb-color-acento-fuerte: #ff9b6b;       /* 8,1:1 sobre superficie */
+  --lb-color-sobre-acento: #1a0d06;        /* 9,2:1 */
+  --lb-color-peligro: #ff8a93;             /* 7,4:1 */
+  --lb-color-sobre-peligro: #1a0a0c;       /* 8,5:1 */
+  --lb-color-secundario: #c3c1d6;          /* 9,5:1 */
+  --lb-color-foco: #a99dff;
+
+  --lb-color-texto: #ecebf5;               /* 15,7:1 */
+  --lb-color-texto-secundario: #b0aec4;    /* 7,7:1 sobre superficie */
+  --lb-color-texto-hora: #c9c6dc;
+  --lb-color-fondo: #13121c;
+  --lb-color-superficie: #1d1c2a;
+  --lb-color-borde: #34324a;
+  --lb-color-fondo-chat: #171624;
+  --lb-color-burbuja-propia: #342c78;      /* texto 10,4:1 */
+  --lb-color-burbuja-ajena: #262536;
+  --lb-color-avatar-1: #2b3f6b;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-2: #1f4a38;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-3: #5a4413;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-4: #3a2f7a;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-5: #6b2a2a;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-6: #1e4a52;             /* fondo de iniciales; texto ≥ 7,8:1 */
+
+  --lb-color-necesito-fondo: #47330a;      /* texto 9,3:1 */
+  --lb-color-necesito-texto: #ffe08a;
+  --lb-color-necesito-borde: #e0a82e;
+  --lb-color-ofrezco-fondo: #113a26;       /* texto 9,6:1 */
+  --lb-color-ofrezco-texto: #a8efc8;
+  --lb-color-ofrezco-borde: #3fbf7f;
+  --lb-color-actividad-fondo: #1e2f66;     /* texto 8,8:1 */
+  --lb-color-actividad-texto: #c9d6ff;
+  --lb-color-actividad-borde: #6f95ff;
+
+  --lb-sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.35);
+  --lb-sombra-elevada: 0 6px 20px rgba(0, 0, 0, 0.55);
 }

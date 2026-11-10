@@ -14,7 +14,7 @@ def escenario(navegador, servidor, usuarios):
     try:
         iniciar_sesion(autor, "beto@unas.edu.pe")
         iniciar_sesion(lector, "ana@unas.edu.pe")
-        pid = publicar(autor, "Busco grupo de estudio de física", "NECESITO")
+        pid = publicar(autor, "Busco grupo de estudio de física", "NECESITO", imagenes=2)
         chat = responder(lector, pid, "Me apunto")
         publicar(lector, "Ofrezco clases de cálculo", "OFREZCO")
         return {"pid": pid, "chat": chat}
@@ -24,7 +24,8 @@ def escenario(navegador, servidor, usuarios):
 
 
 def todas(e):
-    return paginas(e) + [("/ayuda", None, "article"), ("/ayuda", "ana@unas.edu.pe", "article")]
+    return paginas(e) + [("/ayuda", None, "article"), ("/ayuda", "ana@unas.edu.pe", "article"),
+                         ("/", None, ".portada")]
 
 
 def _abrir(navegador, servidor, ruta, correo, listo, **opciones):
@@ -42,15 +43,19 @@ def test_axe_wcag22aa_sin_violaciones(navegador, servidor, escenario):
     from axe_playwright_python.sync_playwright import Axe
 
     axe, hallazgos = Axe(), []
-    for ruta, correo, listo in todas(escenario):
-        for ancho in (360, 1366):
-            contexto, pagina = _abrir(navegador, servidor, ruta, correo, listo, viewport={"width": ancho, "height": 900})
-            try:
-                resultado = axe.run(pagina, options={"runOnly": {"type": "tag", "values": TAGS_WCAG}})
-                for v in resultado.response["violations"]:
-                    hallazgos.append((ruta, ancho, v["id"], v["impact"], [n["target"] for n in v["nodes"]][:3]))
-            finally:
-                contexto.close()
+    for modo, tema in (("light", "light"), ("dark", "dark")):  # modo claro y oscuro (prefers-color-scheme)
+        for ruta, correo, listo in todas(escenario):
+            for ancho in (360, 1366):
+                contexto, pagina = _abrir(navegador, servidor, ruta, correo, listo,
+                                          viewport={"width": ancho, "height": 900}, color_scheme=modo)
+                try:
+                    assert pagina.evaluate("document.documentElement.dataset.bsTheme") == tema
+                    resultado = axe.run(pagina, options={"runOnly": {"type": "tag", "values": TAGS_WCAG}})
+                    for v in resultado.response["violations"]:
+                        hallazgos.append((modo, ruta, ancho, v["id"], v["impact"],
+                                          [n["target"] for n in v["nodes"]][:3]))
+                finally:
+                    contexto.close()
     assert not hallazgos, hallazgos
 
 
@@ -104,6 +109,8 @@ def test_2_4_11_el_foco_no_queda_oculto(navegador, servidor, escenario):
             vistos = set()
             for _ in range(40):
                 pagina.keyboard.press("Tab")
+                # WebKit desplaza hasta el elemento con foco de forma asíncrona: se mide tras dos cuadros pintados
+                pagina.evaluate("() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo)))")
                 estado = pagina.evaluate(FOCO_VISIBLE_JS)
                 if estado is None or estado["id"] in vistos:
                     continue
@@ -174,14 +181,15 @@ def test_i18n_selector_de_imagen_y_hora_en_lima(navegador, servidor, escenario, 
         p = contexto.new_page()
         p.goto(f"/chats/{escenario['chat']}")
         p.locator("#historial .burbuja").first.wait_for()
-        assert p.inner_text(".boton-archivo") == "Elegir imagen"
-        assert p.inner_text("#nombre-archivo") == "Ningún archivo seleccionado"
+        # SRS v2.0: los botones de adjuntar y el adjunto elegido usan el catálogo, no el idioma del navegador
+        assert p.inner_text("label[for=imagen]").strip() == "Imagen"
+        assert p.inner_text("label[for=documento]").strip() == "Documento"
         imagen = tmp_path / "foto.png"
         imagen.write_bytes(bytes.fromhex("89504e470d0a1a0a"))
         p.set_input_files("#imagen", str(imagen))
-        assert p.inner_text("#nombre-archivo") == "foto.png"
+        assert p.inner_text("#adjunto-elegido").startswith("Adjunto: foto.png (8 B)")
         esperado = contexto.request.get(f"/api/chats/{escenario['chat']}").json()["mensajes"][0]["hora"]  # Lima
-        assert p.inner_text("#historial .burbuja .hora") == esperado
+        assert p.inner_text("#historial .burbuja .hora").startswith(esperado)  # «HH:MM · Visto»
         assert p.evaluate("document.documentElement.lang") == "es-PE"
     finally:
         contexto.close()

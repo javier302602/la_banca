@@ -14,10 +14,10 @@
         <div class="fw-semibold" id="contraparte"></div>
         <div class="small text-body-secondary"><span id="tipo"></span>{{ t("js.separador") }}<span id="titulo"></span></div>
       </div>
-      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar">{{ t("chat.reportar") }}</a>
+      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar"><i class="bi bi-flag" aria-hidden="true"></i> {{ t("chat.reportar") }}</a>
     </header>
     <div class="alert alert-warning rounded-0 mb-0 d-none aviso-expiracion" id="aviso" role="status"></div>
-    <div class="card-body chat-mensajes" id="historial" aria-live="polite"></div>
+    <div class="card-body chat-mensajes" id="historial" role="log" aria-live="polite" aria-label="{{ t('chat.historial') }}"></div>
     <footer class="card-footer">
       <form id="form-mensaje" class="d-flex flex-column gap-2" novalidate>
         <div>
@@ -28,18 +28,24 @@
           <textarea class="form-control" id="texto" name="texto" rows="2" maxlength="500"
                     placeholder="{{ t('chat.placeholder') }}"></textarea>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-end">
-          <div class="flex-grow-1">
-            <label class="form-label mb-1 small" for="imagen">{{ t("chat.imagen") }}</label>
-            <div class="selector-archivo">
-            <input class="entrada-archivo" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
-                   aria-describedby="nombre-archivo">
-            <span class="btn btn-outline-secondary btn-sm boton-archivo" aria-hidden="true">{{ t("js.imagen.elegir") }}</span>
-            <span class="small text-body-secondary nombre-archivo" id="nombre-archivo">{{ t("js.imagen.ninguna") }}</span>
-          </div>
-          </div>
-          <button class="btn btn-primary" type="submit">{{ t("chat.enviar") }}</button>
+        {# SRS v2.0 (Fase 4): emojis, stickers, imagen o documento. Cada control tiene su etiqueta visible. #}
+        <div class="barra-adjuntos d-flex flex-wrap gap-2 align-items-center">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="boton-emojis" aria-expanded="false"
+                  aria-controls="panel-emojis"><i class="bi bi-emoji-smile" aria-hidden="true"></i> {{ t("chat.emojis") }}</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="boton-stickers" aria-expanded="false"
+                  aria-controls="panel-stickers"><i class="bi bi-sticky" aria-hidden="true"></i> {{ t("chat.stickers") }}</button>
+          <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="imagen"><i class="bi bi-image" aria-hidden="true"></i> {{ t("chat.imagen_corto") }}
+            <input class="entrada-oculta" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
+                   aria-describedby="ayuda-adjuntos"></label>
+          <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="documento"><i class="bi bi-paperclip" aria-hidden="true"></i> {{ t("chat.documento") }}
+            <input class="entrada-oculta" type="file" id="documento" name="documento" aria-describedby="ayuda-adjuntos"
+                   accept=".pdf,.docx,.xlsx,.pptx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation"></label>
+          <button class="btn btn-primary ms-auto" type="submit"><i class="bi bi-send" aria-hidden="true"></i> {{ t("chat.enviar") }}</button>
         </div>
+        <div class="form-text mt-0" id="ayuda-adjuntos">{{ t("chat.ayuda_adjuntos") }}</div>
+        <div class="adjunto-elegido d-none" id="adjunto-elegido"></div>
+        <div class="panel-selector panel-emojis" id="panel-emojis" role="group" aria-labelledby="boton-emojis" hidden></div>
+        <div class="panel-selector panel-stickers" id="panel-stickers" role="group" aria-labelledby="boton-stickers" hidden></div>
       </form>
     </footer>
   </section>

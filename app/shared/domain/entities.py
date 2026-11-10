@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 
+from app.shared.domain.perfiles import FotoPerfil
+
 # --- Constantes fijas (SRS §3.3) ----------------------------------------------
 DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
@@ -31,6 +33,8 @@ LONGITUD_MENSAJE = 500
 LONGITUD_OBSERVACION = 300
 FORMATOS_IMAGEN = ("image/jpeg", "image/png", "image/webp")
 TAMANO_MAX_IMAGEN = 5 * 1024 * 1024  # 5 242 880 bytes
+MAX_IMAGENES_PUBLICACION = 3        # SRS v2.0, cambio 3.1
+STICKERS = tuple(f"sticker-{n:02d}" for n in range(1, 21))  # SRS v2.0, cambio 4.3: paquete propio de 20
 
 
 # --- Enumeraciones (valores = CHECK IN del Entregable 2) --------------------
@@ -150,6 +154,14 @@ class Estudiante:
     activacion: EnlaceUnUso = field(default_factory=EnlaceUnUso)
     recuperacion: EnlaceUnUso = field(default_factory=EnlaceUnUso)
     fecha_activacion: datetime | None = None
+    # Perfil (SRS v2.0, cambio 2.1): lo que ven los demás junto al nickname; nunca el correo
+    biografia: str = ""
+    avatar: str | None = None       # avatar-NN elegido; no se guarda ningún grupo ni género
+    foto: FotoPerfil | None = None
+
+    @property
+    def fecha_ingreso(self) -> datetime:
+        return self.fecha_activacion or self.fecha_registro
 
     def pendiente_vencida(self, ahora: datetime) -> bool:
         """EA-07 evaluado al consultar: cuenta pendiente con más de 72 h ya no existe (RN-43)."""
@@ -212,6 +224,7 @@ class Publicacion:
     fecha_expiracion: datetime  # fecha_creacion + DURACION_PUBLICACION (RN-09)
     estado: EstadoPublicacion = EstadoPublicacion.ACTIVE
     fecha_cierre: datetime | None = None
+    imagenes: list[ImagenAdjunta] = field(default_factory=list)  # 0..3 (SRS v2.0, cambio 3.1)
 
     def activa(self, ahora: datetime) -> bool:
         """EA-02 evaluado al consultar."""
@@ -258,7 +271,8 @@ class Chat:
 
 @dataclass
 class Mensaje:
-    """6. MENSAJE — colección messages (Tabla 6.6). Texto o imagen, no ambos (RN-19)."""
+    """6. MENSAJE — colección messages (Tabla 6.6). Exactamente un contenido: texto, imagen, sticker o
+    documento (RN-19 modificada por el SRS v2.0)."""
 
     id: str
     chat_id: str
@@ -267,6 +281,25 @@ class Mensaje:
     fecha_envio: datetime
     texto: str | None = None
     imagen: ImagenAdjunta | None = None
+    sticker: str | None = None                 # sticker-NN
+    documento: DocumentoAdjunto | None = None
+
+    @property
+    def archivos(self) -> list[str]:
+        """Objetos del almacenamiento que pertenecen al mensaje (imagen o documento)."""
+        return [a.referencia for a in (self.imagen, self.documento) if a is not None]
+
+
+@dataclass(frozen=True)
+class DocumentoAdjunto:
+    """Subdocumento documentAttachment de MENSAJE (SRS v2.0, cambio 4.4)."""
+
+    referencia: str    # objectKey (prefijo documentos/)
+    mime_type: str
+    tamano_bytes: int  # 1 .. TAMANO_MAX_DOCUMENTO
+    nombre: str        # saneado, con la extensión del tipo detectado por contenido
+    tipo: str          # pdf | docx | xlsx | pptx | txt
+    bucket: str | None = None
 
 
 @dataclass

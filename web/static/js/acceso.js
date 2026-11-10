@@ -91,7 +91,10 @@
     enviar(document.getElementById("form-nickname"), async () => {
       const r = await api("/api/cuentas/me/nickname", { metodo: "PATCH", cuerpo: { nickname: valor("nickname") } });
       const nav = document.getElementById("nav-nickname");
-      if (nav) nav.textContent = `@${r.nickname}`;
+      if (nav) nav.replaceChildren(Banca.icono("bi-person-circle"), ` @${r.nickname}`);
+      document.getElementById("vista-nickname").textContent = `@${r.nickname}`;
+      document.getElementById("enlace-publico").href = Banca.urlPerfil(r.nickname);
+      document.dispatchEvent(new CustomEvent("banca:nickname", { detail: r.nickname }));  // perfiles.js
       alerta(mensajes, t("acceso.nickname_actualizado"), "success");
     });
   }

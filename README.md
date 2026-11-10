@@ -87,6 +87,11 @@ En cualquier otro entorno esas rutas responden 404.
 
 ## Respaldos (Entregable 2 §8.1)
 
+Con Docker Compose (v2.0): `scripts/backup.sh` y `scripts/restore.sh` respaldan y restauran la base **y** los
+archivos de MinIO en un solo paquete fechado; `restore.sh` también acepta los volcados de la v1. Ver
+[docs/DESPLIEGUE.md §9](docs/DESPLIEGUE.md#9-respaldos-y-migraciones). Lo que sigue es el respaldo de la v1
+(MongoDB Atlas + Vercel), que sigue disponible.
+
 `scripts/respaldo_mongodb.py` ejecuta `mongodump --gzip --archive` y elimina los respaldos de más de 7 días
 (PA-37, RNF-PRI-02; la retención no puede superar 7 días). Requiere MongoDB Database Tools en el PATH:
 
@@ -103,6 +108,12 @@ artifact con retención de 7 días. Se activa al crear estos secrets del reposit
   restaurar.
 
 Para restaurar: `gpg --decrypt <archivo>.gpg > dump.archive.gz` y `mongorestore --gzip --archive=dump.archive.gz --uri ...`.
+
+## Despliegue en un servidor propio (Docker Compose)
+
+`docker compose up -d` levanta la app (gunicorn + uvicorn), MongoDB 7 (replica set), MinIO, Caddy con HTTPS
+automático, el planificador de automatismos y, en el perfil `dev`, Mailpit. Guía paso a paso para alguien que no
+conoce el proyecto: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md). Variables: [.env.example](.env.example).
 
 ## Despliegue en Vercel
 

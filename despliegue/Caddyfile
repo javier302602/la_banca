@@ -1,0 +1,19 @@
+# Proxy inverso con HTTPS automático.
+# - SITIO=un dominio real (p. ej. banca.unas.edu.pe): certificado de Let's Encrypt (puertos 80 y 443 abiertos y el
+#   DNS apuntando al servidor).
+# - SITIO=localhost: certificado de la CA interna de Caddy (el navegador avisa la primera vez).
+{
+	http_port {$PUERTO_HTTP:80}
+	https_port {$PUERTO_HTTPS:443}
+	email {$ACME_EMAIL}
+}
+
+{$SITIO:localhost} {
+	encode zstd gzip
+	request_body {
+		max_size 25MB
+	}
+	# Caddy envía X-Forwarded-Proto/For/Host; la app redirige a HTTPS y añade HSTS en producción
+	reverse_proxy app:8000
+	header -Server
+}

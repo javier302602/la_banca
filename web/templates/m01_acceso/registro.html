@@ -5,8 +5,9 @@
 {% block pagina %}registro{% endblock %}
 
 {% block content %}
-<div class="contenedor-estrecho">
-    <h1 class="h4 mb-3">{{ t("registro.titulo") }}</h1>
+<div class="contenedor-estrecho card tarjeta-formulario">
+  <div class="card-body">
+    <h1 class="h4 mb-3"><i class="bi bi-person-plus icono-titulo" aria-hidden="true"></i>{{ t("registro.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-registro" novalidate>
       <div class="mb-3">
@@ -37,9 +38,10 @@
           {{ t("registro.acepto") }} <a href="/terminos" target="_blank" rel="noopener">{{ t("registro.terminos") }}</a>
         </label>
       </div>
-      <button class="btn btn-primary w-100" type="submit">{{ t("registro.boton") }}</button>
+      <button class="btn btn-acento w-100" type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i> {{ t("registro.boton") }}</button>
     </form>
     <p class="mt-3 small">{{ t("registro.ya_tienes") }} <a href="/login">{{ t("registro.inicia_sesion") }}</a></p>
+  </div>
 </div>
 {% endblock %}
 

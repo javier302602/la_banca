@@ -6,11 +6,14 @@ from datetime import datetime
 
 from bson import ObjectId
 
+from app.shared.domain.perfiles import FotoPerfil
+
 from app.shared.domain.entities import (
     AceptacionTerminos,
     VENTANA_ENLACES,
     Chat,
     CodigoMotivo,
+    DocumentoAdjunto,
     ContenidoReportado,
     EnlaceUnUso,
     EstadoChat,
@@ -61,6 +64,9 @@ def estudiante_a_doc(e: Estudiante) -> dict:
         "passwordReset": enlace_a_doc(e.recuperacion),
         "createdAt": e.fecha_registro,
         "activatedAt": e.fecha_activacion,
+        "bio": e.biografia,
+        "avatar": e.avatar,
+        "photo": foto_a_doc(e.foto),
     }
     if e.aceptacion:
         doc["termsAcceptance"] = {"version": e.aceptacion.version, "acceptedAt": e.aceptacion.fecha}
@@ -82,7 +88,22 @@ def doc_a_estudiante(doc: dict) -> Estudiante:
         activacion=doc_a_enlace(doc.get("activation")),
         recuperacion=doc_a_enlace(doc.get("passwordReset")),
         fecha_activacion=doc.get("activatedAt"),
+        biografia=doc.get("bio") or "",
+        avatar=doc.get("avatar"),
+        foto=doc_a_foto(doc.get("photo")),
     )
+
+
+def foto_a_doc(foto: FotoPerfil | None) -> dict | None:
+    if foto is None:
+        return None
+    return {"objectKey": foto.referencia, "mimeType": foto.mime_type, "updatedAt": foto.actualizada_en}
+
+
+def doc_a_foto(doc: dict | None) -> FotoPerfil | None:
+    if not doc or not doc.get("objectKey"):
+        return None
+    return FotoPerfil(doc["objectKey"], doc.get("mimeType", "image/webp"), doc["updatedAt"])
 
 
 # --- login_attempts ---------------------------------------------------------------
@@ -115,17 +136,28 @@ def doc_a_sesion(doc: dict) -> Sesion:
 
 
 # --- publications -----------------------------------------------------------------
+def imagen_a_doc(i: ImagenAdjunta) -> dict:
+    return {"objectKey": i.referencia, "mimeType": i.mime_type, "sizeBytes": i.tamano_bytes,
+            "storageBucket": i.bucket}
+
+
+def doc_a_imagen(d: dict) -> ImagenAdjunta:
+    return ImagenAdjunta(d["objectKey"], d["mimeType"], d["sizeBytes"], d.get("storageBucket"))
+
+
 def publicacion_a_doc(p: Publicacion) -> dict:
     return {"authorId": ObjectId(p.autor_id), "authorNickname": p.nickname_autor, "type": p.tipo.value,
             "title": p.titulo, "description": p.descripcion, "createdAt": p.fecha_creacion,
-            "expiresAt": p.fecha_expiracion, "closedAt": p.fecha_cierre, "status": p.estado.value}
+            "expiresAt": p.fecha_expiracion, "closedAt": p.fecha_cierre, "status": p.estado.value,
+            "images": [imagen_a_doc(i) for i in p.imagenes]}
 
 
 def doc_a_publicacion(doc: dict) -> Publicacion:
     return Publicacion(id=_s(doc["_id"]), autor_id=_s(doc["authorId"]), nickname_autor=doc["authorNickname"],
                        tipo=TipoPublicacion(doc["type"]), titulo=doc["title"], descripcion=doc["description"],
                        fecha_creacion=doc["createdAt"], fecha_expiracion=doc["expiresAt"],
-                       estado=EstadoPublicacion(doc["status"]), fecha_cierre=doc.get("closedAt"))
+                       estado=EstadoPublicacion(doc["status"]), fecha_cierre=doc.get("closedAt"),
+                       imagenes=[doc_a_imagen(d) for d in doc.get("images") or []])
 
 
 # --- chats / messages -----------------------------------------------------------------
@@ -156,10 +188,14 @@ def doc_a_chat(doc: dict) -> Chat:
 
 def mensaje_a_doc(m: Mensaje) -> dict:
     doc = {"chatId": ObjectId(m.chat_id), "senderId": ObjectId(m.emisor_id), "senderNickname": m.nickname_emisor,
-           "text": m.texto, "imageAttachment": None, "sentAt": m.fecha_envio}
+           "text": m.texto, "imageAttachment": None, "sentAt": m.fecha_envio,
+           "sticker": m.sticker, "documentAttachment": None}
     if m.imagen:
-        doc["imageAttachment"] = {"objectKey": m.imagen.referencia, "mimeType": m.imagen.mime_type,
-                                  "sizeBytes": m.imagen.tamano_bytes, "storageBucket": m.imagen.bucket}
+        doc["imageAttachment"] = imagen_a_doc(m.imagen)
+    if m.documento:
+        d = m.documento
+        doc["documentAttachment"] = {"objectKey": d.referencia, "mimeType": d.mime_type, "sizeBytes": d.tamano_bytes,
+                                     "fileName": d.nombre, "kind": d.tipo, "storageBucket": d.bucket}
     return doc
 
 
@@ -167,8 +203,15 @@ def doc_a_mensaje(doc: dict) -> Mensaje:
     adj = doc.get("imageAttachment")
     return Mensaje(id=_s(doc["_id"]), chat_id=_s(doc["chatId"]), emisor_id=_s(doc["senderId"]),
                    nickname_emisor=doc.get("senderNickname", ""), fecha_envio=doc["sentAt"], texto=doc.get("text"),
-                   imagen=ImagenAdjunta(adj["objectKey"], adj["mimeType"], adj["sizeBytes"], adj.get("storageBucket"))
-                   if adj else None)
+                   imagen=doc_a_imagen(adj) if adj else None, sticker=doc.get("sticker"),
+                   documento=doc_a_documento(doc.get("documentAttachment")))
+
+
+def doc_a_documento(d: dict | None) -> DocumentoAdjunto | None:
+    if not d:
+        return None
+    return DocumentoAdjunto(d["objectKey"], d["mimeType"], d["sizeBytes"], d["fileName"], d["kind"],
+                            d.get("storageBucket"))
 
 
 # --- reports ---------------------------------------------------------------------------

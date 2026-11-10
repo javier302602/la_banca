@@ -28,11 +28,16 @@ from app.features.m04_chat.cu12_ver_mis_chats.endpoint import router as cu12_ver
 from app.features.m05_reportes.cu13_reportar_publicacion.endpoint import router as cu13_reportar_publicacion
 from app.features.m05_reportes.cu14_reportar_chat.endpoint import router as cu14_reportar_chat
 from app.features.m06_configuracion.cu15_configurar_parametros.endpoint import router as cu15_configurar_parametros
+from app.features.m07_perfiles.cu19_editar_perfil.endpoint import router as cu19_editar_perfil
+from app.features.m07_perfiles.cu20_ver_perfil.endpoint import router as cu20_ver_perfil
 from app.jobs.ea03_limpiar_chats_expirados.endpoint import router as ea03_limpiar_chats_expirados
 from app.jobs.ea05_depurar_contenido_reportado.endpoint import router as ea05_depurar_contenido_reportado
 from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_eliminar_cuentas_no_activadas
 from app.jobs.arranque import programar_al_arrancar
+from app.salud import router as salud
 from app.shared.config.provider import verificar_entorno
+from app.shared.version import VERSION
+from app.shared.db.migraciones import aplicar_al_arrancar as aplicar_migraciones_al_arrancar
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
 from app.pruebas.reloj import router as reloj_de_pruebas
@@ -49,11 +54,12 @@ RAIZ = Path(__file__).resolve().parent.parent
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await asegurar_indices_una_vez()
+    await aplicar_migraciones_al_arrancar()  # SRS v2.0: scripts/migraciones/NNN_*.py pendientes, en orden
     programar_al_arrancar()  # RNF-FIA-02: plazos vencidos durante una caída, sin esperar al cron
     yield
 
 
-app = FastAPI(title="La Banca", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="La Banca", version=VERSION, lifespan=lifespan)
 app.middleware("http")(forzar_https)  # RNF-SEG-03: HTTP → HTTPS y HSTS en producción
 
 
@@ -99,8 +105,10 @@ for router in [
     cu08_consultar_feed, cu09_ver_detalle_publicacion,
     cu10_responder_publicacion, cu11_enviar_mensaje, cu12_ver_mis_chats,
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,
+    cu19_editar_perfil, cu20_ver_perfil,
     ea03_limpiar_chats_expirados, ea05_depurar_contenido_reportado, ea07_eliminar_cuentas_no_activadas,
     reloj_de_pruebas,  # RNF-MAN-02: solo responde con ENTORNO=pruebas
+    salud,
 ]:
     app.include_router(router)
 
