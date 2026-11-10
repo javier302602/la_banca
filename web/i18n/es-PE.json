@@ -21,7 +21,8 @@
   },
   "pie": {
     "terminos": "Términos de uso y política de privacidad",
-    "ayuda": "Ayuda"
+    "ayuda": "Ayuda",
+    "version": "Versión {version}"
   },
   "campos": {
     "correo_institucional": "Correo institucional",
