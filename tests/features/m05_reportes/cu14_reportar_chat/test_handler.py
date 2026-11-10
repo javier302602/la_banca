@@ -36,7 +36,8 @@ def test_snapshot_de_textos_e_imagenes_retenidas():
     assert r.tipo_objeto is TipoObjetoReportado.CHAT and r.contenido.usuario_reportado_id == "autor"
     assert r.contenido.capturado_en == reloj.ahora()
     assert r.contenido.datos_publicacion == {"publicationId": "p1", "type": "NECESITO", "title": "Apuntes"}
-    assert set(r.contenido.mensajes[0]) == {"messageId", "senderId", "senderNickname", "text", "imageKey", "sentAt"}
+    assert set(r.contenido.mensajes[0]) == {"messageId", "senderId", "senderNickname", "text", "imageKey", "sticker",
+                                            "document", "sentAt"}  # + sticker y documento (SRS v2.0)
     textos = [m["text"] for m in r.contenido.mensajes]
     assert textos == ["hola", None]  # RF-REP-17
     [copia] = r.contenido.snapshot_imagenes

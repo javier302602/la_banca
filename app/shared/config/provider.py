@@ -85,6 +85,8 @@ def verificar_entorno(entorno: Mapping[str, str] | None = None) -> None:
     if correo != "smtp":
         errores.append(f"EMAIL_SENDER={correo} no está permitido en producción (no se enviarían los enlaces): "
                        "usa EMAIL_SENDER=smtp")
+    if correo == "smtp" and (entorno.get("SMTP_TLS") or "starttls").strip().lower() == "ninguno":
+        errores.append("SMTP_TLS=ninguno no está permitido en producción: usa starttls o ssl")
     # RN-31 / RNF-LEG-01–03: la política publicada debe tener versión, fecha y canal ARCO
     for nombre in ("TERMINOS_VERSION", "TERMINOS_FECHA", "CANAL_ARCO"):
         if not (entorno.get(nombre) or "").strip():

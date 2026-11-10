@@ -38,6 +38,7 @@ class PublicacionResponse(BaseModel):
     fecha_creacion: datetime
     fecha_expiracion: datetime
     segundos_restantes: int
+    imagenes: list[str] = []  # URLs de la galería (SRS v2.0, cambio 3.1)
 
 
 class CupoResponse(BaseModel):

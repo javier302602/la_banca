@@ -109,6 +109,42 @@ const Banca = (() => {
 
   function limpiar(contenedor) { if (contenedor) contenedor.replaceChildren(); }
 
+  /* Iconos de Bootstrap Icons: siempre decorativos (aria-hidden); el texto visible da el nombre accesible. */
+  function icono(nombre) { return el("i", { class: `bi ${nombre}`, "aria-hidden": "true" }); }
+
+  function etiquetaTipo(tipo) { return [icono(t(`iconos_tipo.${tipo}`)), ` ${TIPOS[tipo]}`]; }
+
+  /* Perfiles (SRS v2.0): foto, avatar elegido o iniciales sobre un color. Es decorativo (aria-hidden): el
+   * nickname visible al lado ya nombra a la persona. */
+  function avatar(apariencia, tamano = "") {
+    const clases = `avatar${tamano ? ` avatar-${tamano}` : ""}`;
+    if (apariencia && apariencia.url) {
+      return el("span", { class: clases, "aria-hidden": "true" },
+                el("img", { src: apariencia.url, alt: "", loading: "lazy", decoding: "async" }));
+    }
+    const color = apariencia ? apariencia.color : 1;
+    // Las iniciales van en un atributo y se pintan con CSS: no ensucian el texto del nickname de al lado
+    return el("span", { class: `${clases} avatar-color-${color}`, "aria-hidden": "true",
+                        "data-iniciales": apariencia ? apariencia.iniciales : "?" });
+  }
+
+  function pintarAvatar(nodo, apariencia) {  // reemplaza un <span class="avatar …"> que ya está en la plantilla
+    if (!nodo) return;
+    const nuevo = avatar(apariencia);
+    nodo.className = nodo.className.split(" ").filter((c) => c === "avatar" || /^avatar-(sm|md|lg)$/.test(c))
+      .concat(nuevo.className.split(" ").filter((c) => c.startsWith("avatar-color-"))).join(" ");
+    if (nuevo.dataset.iniciales) nodo.dataset.iniciales = nuevo.dataset.iniciales; else delete nodo.dataset.iniciales;
+    nodo.replaceChildren(...nuevo.childNodes);
+  }
+
+  function urlPerfil(nickname) { return `/perfiles/${encodeURIComponent(nickname)}`; }
+
+  function autor(nickname, apariencia, { tamano = "", enlace = true } = {}) {
+    const hijos = [avatar(apariencia, tamano), el("span", { class: "nombre-autor", text: nickname })];
+    return enlace ? el("a", { class: "autor", href: urlPerfil(nickname) }, ...hijos)
+                  : el("span", { class: "autor" }, ...hijos);
+  }
+
   /* RNF-USA-03: el mensaje de un dato inválido se muestra junto al campo, enlazado con aria-describedby.
    * El servidor indica el campo en `errores[].campo` (validación) o en `campo` (errores de dominio). */
   function limpiarErrores(formulario) {
@@ -210,7 +246,7 @@ const Banca = (() => {
     } finally {
       if (mapa.close) mapa.close();
     }
-    throw new ErrorApi(422, { detail: t("imagen.no_reducible") });
+    throw new ErrorApi(422, { detail: t("imagen.no_reducible", { mb: Math.round(limite / 1048576) }) });
   }
 
   setInterval(() => refrescarRestantes(), 30000);
@@ -241,7 +277,40 @@ const Banca = (() => {
     });
   }
 
+  /* Modo claro/oscuro: el <head> ya aplicó la preferencia guardada o la del sistema (prefers-color-scheme).
+   * El interruptor (role="switch") alterna y recuerda la elección en este navegador; sin elección guardada,
+   * la página sigue los cambios del sistema. */
+  const CLAVE_TEMA = "banca.tema";
+  function temaActual() { return document.documentElement.getAttribute("data-bs-theme") === "dark" ? "oscuro" : "claro"; }
+  function aplicarTema(tema) {
+    document.documentElement.setAttribute("data-bs-theme", tema === "oscuro" ? "dark" : "light");
+    const boton = document.getElementById("boton-tema");
+    if (!boton) return;
+    boton.setAttribute("aria-checked", String(tema === "oscuro"));
+    const icono = boton.querySelector(".bi");
+    if (icono) icono.className = `bi ${tema === "oscuro" ? "bi-sun" : "bi-moon-stars"}`;
+  }
+  function prepararTema() {
+    const boton = document.getElementById("boton-tema");
+    if (!boton) return;
+    aplicarTema(temaActual());
+    boton.addEventListener("click", () => {
+      const nuevo = temaActual() === "oscuro" ? "claro" : "oscuro";
+      try { localStorage.setItem(CLAVE_TEMA, nuevo); } catch (e) { /* sin almacenamiento: solo esta página */ }
+      aplicarTema(nuevo);
+    });
+    const sistema = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    if (sistema && sistema.addEventListener) {
+      sistema.addEventListener("change", (e) => {
+        let guardado = null;
+        try { guardado = localStorage.getItem(CLAVE_TEMA); } catch (err) { /* */ }
+        if (!guardado) aplicarTema(e.matches ? "oscuro" : "claro");
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    prepararTema();
     // Fechas visibles formateadas con Intl en America/Lima (p. ej. la versión de los términos)
     document.querySelectorAll("time[data-fecha]").forEach((n) => { n.textContent = formatoFecha(n.getAttribute("datetime")); });
     prepararSelectorArchivo();
@@ -265,7 +334,7 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, t, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
+  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, avatar, pintarAvatar, autor, urlPerfil, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
            alerta, limpiar, contador,
            limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };

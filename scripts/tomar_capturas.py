@@ -1,10 +1,11 @@
-"""Capturas de las 15 páginas de La Banca en los anchos de diseño (360, 768 y 1024 px) con Playwright.
+"""Capturas de las 16 páginas de La Banca en los anchos de diseño (360, 768 y 1024 px) con Playwright.
 
     python scripts/tomar_capturas.py --mongo-uri "mongodb://localhost:27017/?replicaSet=rs0&directConnection=true"
 
 Vacía la base `la_banca_capturas`, arranca la app con uvicorn, siembra datos de ejemplo (tres cuentas,
-publicaciones de los tres tipos y un chat con mensajes) y guarda una captura de página completa por página y
-ancho en docs/investigacion/capturas/<nn>-<página>-<ancho>.png. Requiere Playwright con Chromium.
+publicaciones de los tres tipos y un chat con mensajes) y guarda una captura de página completa por página, ancho
+y modo en docs/investigacion/capturas/<modo>/<nn>-<página>-<ancho>.png (modos: claro y oscuro, emulando
+prefers-color-scheme). Requiere Playwright con Chromium.
 """
 import argparse
 import os
@@ -20,10 +21,14 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
 
 ANCHOS = (360, 768, 1024)
+TEMAS = {"claro": "light", "oscuro": "dark"}
 ALTO = 800
 CLAVE = "clave123"
 CUENTAS = {"ana": ("ana@unas.edu.pe", "ana_07"), "beto": ("beto@unas.edu.pe", "beto_9"),
            "caro": ("caro@unas.edu.pe", "caro_3")}
+PDF_EJEMPLO = b"%PDF-1.4\n%%EOF\n"
+AVATARES = {"ana": "avatar-06", "beto": "avatar-02", "caro": None}  # caro: iniciales sobre un color
+BIOGRAFIAS = {"ana": "Sistemas, 7.º ciclo.", "beto": "Agronomía. Me gusta estudiar en grupo y el vóley.", "caro": ""}
 
 
 def paginas(d: dict) -> list[tuple[str, str, str | None, str]]:
@@ -43,7 +48,8 @@ def paginas(d: dict) -> list[tuple[str, str, str | None, str]]:
         ("chat", f"/chats/{d['chat']}", "ana", "#historial .burbuja"),
         ("responder", f"/publicaciones/{d['para_responder']}/responder", "ana", "#form-mensaje"),
         ("reportar", f"/publicaciones/{d['ajena']}/reportar", "ana", "#form-reporte"),
-        ("perfil", "/perfil", "ana", "#form-nickname"),
+        ("perfil", "/perfil", "ana", "#vista-avatar img"),
+        ("perfil-publico", "/perfiles/beto_9", "ana", "#perfil:not([hidden])"),
     ]
 
 
@@ -74,6 +80,18 @@ def arrancar(uri: str, base: str, registro: Path) -> tuple[subprocess.Popen, str
     raise RuntimeError(f"la app no arrancó; ver {registro}")
 
 
+def _imagen(fondo, figura) -> bytes:
+    import io
+
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (800, 600), fondo)
+    ImageDraw.Draw(img).ellipse((250, 150, 550, 450), fill=figura)
+    salida = io.BytesIO()
+    img.save(salida, format="JPEG", quality=85)
+    return salida.getvalue()
+
+
 def sembrar(db, url: str, navegador) -> dict:
     from app.shared.db.mapeo import estudiante_a_doc
     from app.shared.domain.entities import AceptacionTerminos, EnlaceUnUso, EstadoCuenta, Estudiante
@@ -81,23 +99,29 @@ def sembrar(db, url: str, navegador) -> dict:
 
     ahora = datetime.now(timezone.utc)
     hash_ = BcryptPasswordHasher(costo=4).hash(CLAVE)
-    for correo, nick in CUENTAS.values():
+    for clave, (correo, nick) in CUENTAS.items():
         db.accounts.insert_one(estudiante_a_doc(Estudiante(
             "", correo, hash_, nick, EstadoCuenta.ACTIVA, ahora, AceptacionTerminos("1.0", ahora),
-            activacion=EnlaceUnUso(None, None, [ahora]), fecha_activacion=ahora)))
+            activacion=EnlaceUnUso(None, None, [ahora]), fecha_activacion=ahora,
+            avatar=AVATARES[clave], biografia=BIOGRAFIAS[clave])))
     sesiones = {}
     for clave, (correo, _) in CUENTAS.items():
         sesiones[clave] = navegador.new_context(base_url=url)
         sesiones[clave].request.post("/api/sesiones", data={"correo": correo, "contrasena": CLAVE})
 
-    def publicar(quien, tipo, titulo, descripcion):
-        r = sesiones[quien].request.post("/api/publicaciones", data={"tipo": tipo, "titulo": titulo,
-                                                                     "descripcion": descripcion})
+    def publicar(quien, tipo, titulo, descripcion, imagen=None):
+        campos = {"tipo": tipo, "titulo": titulo, "descripcion": descripcion}
+        if imagen:  # SRS v2.0: publicación con imagen (multipart)
+            r = sesiones[quien].request.post("/api/publicaciones", multipart={
+                **campos, "imagenes": {"name": "foto.jpg", "mimeType": "image/jpeg", "buffer": imagen}})
+        else:
+            r = sesiones[quien].request.post("/api/publicaciones", data=campos)
         return r.json()["id"]
 
     publicar("ana", "OFREZCO", "Presto calculadora científica", "Una Casio fx-991, en la biblioteca hasta las 6 pm.")
     ajena = publicar("beto", "NECESITO", "Busco grupo para estudiar Física II",
-                     "Examen el viernes. Somos dos, nos falta una persona para resolver la práctica 4.")
+                     "Examen el viernes. Somos dos, nos falta una persona para resolver la práctica 4.",
+                     imagen=_imagen((214, 228, 255), (59, 111, 216)))
     para_responder = publicar("caro", "ACTIVIDAD", "Partido de vóley en la loza deportiva",
                               "Faltan 3 personas, empezamos a las 5:30 pm. Traigan agua.")
     publicar("beto", "OFREZCO", "Apuntes de Diseño Detallado de Software",
@@ -107,12 +131,17 @@ def sembrar(db, url: str, navegador) -> dict:
     for quien, texto in (("beto", "¡Genial! En la sala 2 de la biblioteca."), ("beto", "A las 4 pm, ¿te parece?"),
                          ("ana", "Perfecto, allí estaré."), ("ana", "Llevo la práctica impresa.")):
         sesiones[quien].request.post(f"/api/chats/{chat}/mensajes", multipart={"texto": texto})
+    # SRS v2.0: sticker y documento en el chat
+    sesiones["beto"].request.post(f"/api/chats/{chat}/mensajes", multipart={"sticker": "sticker-17"})
+    sesiones["beto"].request.post(f"/api/chats/{chat}/mensajes", multipart={"documento": {
+        "name": "Práctica 4.pdf", "mimeType": "application/pdf", "buffer": PDF_EJEMPLO}})
     for contexto in sesiones.values():
         contexto.close()
     return {"ajena": ajena, "para_responder": para_responder, "chat": chat}
 
 
-def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_capturas") -> list[Path]:
+def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_capturas",
+             temas=tuple(TEMAS)) -> list[Path]:
     from playwright.sync_api import sync_playwright
     from pymongo import MongoClient
 
@@ -125,17 +154,20 @@ def capturar(uri: str, salida: Path, anchos=ANCHOS, base: str = "la_banca_captur
         with sync_playwright() as p:
             navegador = p.chromium.launch()
             datos = sembrar(cliente[base], url, navegador)
-            for ancho in anchos:
+            for tema, esquema in ((t, TEMAS[t]) for t in temas):
+              (salida / tema).mkdir(parents=True, exist_ok=True)
+              for ancho in anchos:
                 for n, (nombre, ruta, cuenta, listo) in enumerate(paginas(datos), start=1):
                     contexto = navegador.new_context(base_url=url, viewport={"width": ancho, "height": ALTO},
-                                                     locale="es-PE", timezone_id="America/Lima")
+                                                     locale="es-PE", timezone_id="America/Lima",
+                                                     color_scheme=esquema)
                     if cuenta:
                         contexto.request.post("/api/sesiones", data={"correo": CUENTAS[cuenta][0], "contrasena": CLAVE})
                     pagina = contexto.new_page()
                     pagina.goto(ruta)
                     pagina.locator(listo).first.wait_for(timeout=15_000)
                     pagina.wait_for_timeout(300)  # fin de transiciones
-                    archivo = salida / f"{n:02d}-{nombre}-{ancho}.png"
+                    archivo = salida / tema / f"{n:02d}-{nombre}-{ancho}.png"
                     pagina.screenshot(path=str(archivo), full_page=True)
                     archivos.append(archivo)
                     contexto.close()
@@ -154,8 +186,10 @@ def main() -> int:
         "E2E_MONGO_URI", "mongodb://localhost:27017/?replicaSet=rs0&directConnection=true"))
     parser.add_argument("--salida", default=str(RAIZ / "docs" / "investigacion" / "capturas"))
     parser.add_argument("--anchos", default=",".join(map(str, ANCHOS)))
+    parser.add_argument("--temas", default=",".join(TEMAS))
     args = parser.parse_args()
-    archivos = capturar(args.mongo_uri, Path(args.salida), tuple(int(a) for a in args.anchos.split(",")))
+    archivos = capturar(args.mongo_uri, Path(args.salida), tuple(int(a) for a in args.anchos.split(",")),
+                        temas=tuple(args.temas.split(",")))
     print(f"{len(archivos)} capturas en {args.salida}")
     return 0
 

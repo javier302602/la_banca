@@ -1,0 +1,151 @@
+# La Banca — despliegue portable con Docker Compose.
+#
+#   cp .env.example .env    # y completar los valores (ver docs/DESPLIEGUE.md)
+#   docker compose up -d
+#
+# Perfiles (variable COMPOSE_PROFILES en .env):
+#   dev   → todo local: Mailpit recibe los correos (http://localhost:8025) y Caddy usa un certificado local.
+#   prod  → dominio real (SITIO) con certificado de Let's Encrypt y SMTP real; sin Mailpit.
+#   tunel → (opcional, junto con dev o prod) Cloudflare Tunnel para publicar sin abrir puertos.
+# Los servicios sin «profiles» se levantan siempre.
+
+name: la-banca
+
+x-reinicio: &reinicio
+  restart: unless-stopped
+
+services:
+  mongo:
+    <<: *reinicio
+    image: ${MONGO_IMAGEN:-mongo:7}
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo-datos:/data/db
+    # El healthcheck inicia el replica set la primera vez (las transacciones lo requieren) y luego lo verifica
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval",
+             "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}).ok }"]
+      interval: 5s
+      timeout: 10s
+      start_period: 30s
+      retries: 30
+
+  minio:
+    <<: *reinicio
+    # Compilación comunitaria de MinIO (AGPLv3): la imagen oficial dejó de publicarse en Docker Hub.
+    # Se puede reemplazar por cualquier imagen de MinIO con MINIO_IMAGEN.
+    image: ${MINIO_IMAGEN:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:?Define STORAGE_ACCESS_KEY en .env}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:?Define STORAGE_SECRET_KEY en .env (mínimo 8 caracteres)}
+    volumes:
+      - minio-datos:/data
+    ports:
+      - "127.0.0.1:${PUERTO_CONSOLA_MINIO:-9001}:9001"   # consola web, solo desde el propio servidor
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      start_period: 10s
+      retries: 20
+
+  # Crea el bucket privado si no existe y termina
+  minio-init:
+    image: ${MINIO_IMAGEN:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MC_HOST_local: http://${STORAGE_ACCESS_KEY}:${STORAGE_SECRET_KEY}@minio:9000
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-la-banca}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["mc mb --ignore-existing local/$$STORAGE_BUCKET && mc anonymous set none local/$$STORAGE_BUCKET"]
+    restart: "no"
+
+  app:
+    <<: *reinicio
+    build: .
+    image: la-banca-app:${VERSION_IMAGEN:-local}
+    env_file: ${ARCHIVO_ENV:-.env}   # otro archivo para levantar una segunda instancia (pruebas)
+    environment:
+      # Dentro de la red de Compose los servicios se llaman por su nombre
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/?replicaSet=rs0}
+      IMAGE_STORAGE: s3
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://minio:9000}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-la-banca}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  # Automatismos EA-03, EA-05 y EA-07 (en Vercel los lanza su cron): llama a /jobs/* cada INTERVALO_TAREAS s
+  tareas:
+    <<: *reinicio
+    image: curlimages/curl:8.23.0
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      CRON_SECRET: ${CRON_SECRET:?Define CRON_SECRET en .env}
+      INTERVALO_TAREAS: ${INTERVALO_TAREAS:-3600}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          for job in ea03-limpiar-chats-expirados ea05-depurar-contenido-reportado ea07-eliminar-cuentas-no-activadas; do
+            curl -fsS -m 120 -H "Authorization: Bearer $$CRON_SECRET" -H "X-Forwarded-Proto: https" \
+              "http://app:8000/jobs/$$job" || echo "tareas: falló $$job"
+            echo
+          done
+          sleep "$$INTERVALO_TAREAS"
+        done
+
+  caddy:
+    <<: *reinicio
+    image: caddy:2.11.9
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      SITIO: ${SITIO:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@${SITIO:-localhost}}
+      PUERTO_HTTP: ${PUERTO_HTTP:-80}
+      PUERTO_HTTPS: ${PUERTO_HTTPS:-443}
+    ports:
+      - "${PUERTO_HTTP:-80}:${PUERTO_HTTP:-80}"
+      - "${PUERTO_HTTPS:-443}:${PUERTO_HTTPS:-443}"
+      - "${PUERTO_HTTPS:-443}:${PUERTO_HTTPS:-443}/udp"   # HTTP/3
+    volumes:
+      - ./despliegue/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-datos:/data
+      - caddy-config:/config
+      # Tailscale (docs/DESPLIEGUE.md §8, opción B): certificados de *.ts.net desde el tailscaled del servidor
+      # - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+
+  # Solo perfil dev: recibe todos los correos (activación, recuperación) y los muestra en http://localhost:8025
+  mailpit:
+    <<: *reinicio
+    profiles: ["dev"]
+    image: axllent/mailpit:v1.33.1
+    ports:
+      - "127.0.0.1:${PUERTO_MAILPIT:-8025}:8025"
+
+  # Opcional: publicar sin abrir puertos (ver docs/DESPLIEGUE.md, «Acceso sin abrir puertos»)
+  cloudflared:
+    <<: *reinicio
+    profiles: ["tunel"]
+    image: cloudflare/cloudflared:2026.10.7
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  mongo-datos:
+  minio-datos:
+  caddy-datos:
+  caddy-config:

@@ -19,7 +19,12 @@ from app.shared.domain.contracts import ImageStorage
 from app.shared.domain.errors import ErrorValidacion
 
 _FORMATO_PIL = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
-_EXTENSION = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+_EXTENSION = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+              # Documentos del chat (SRS v2.0): la clave conserva la extensión del tipo detectado por contenido
+              "application/pdf": "pdf", "text/plain": "txt",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx"}
 MAX_PIXELES = 40_000_000  # defensa ante «bombas de descompresión»
 
 
@@ -52,6 +57,21 @@ def recodificar_sin_metadatos(contenido: bytes, mime_type: str) -> bytes:
         raise ErrorValidacion("La imagen está dañada o no se puede leer") from None
 
 
+def foto_cuadrada(contenido: bytes, mime_type: str, lado: int) -> bytes:
+    """Foto de perfil (cambio 2.2): valida y limpia como cualquier imagen, recorta al cuadrado central,
+    la reduce a `lado` px como máximo y la guarda en WebP (sin EXIF, XMP ni ICC)."""
+    limpia = recodificar_sin_metadatos(contenido, mime_type)
+    with Image.open(io.BytesIO(limpia)) as imagen:
+        imagen.load()
+        if imagen.mode not in ("RGB", "RGBA"):
+            imagen = imagen.convert("RGBA" if "A" in imagen.getbands() or imagen.mode == "P" else "RGB")
+        corte = min(imagen.size)
+        cuadrada = ImageOps.fit(imagen, (min(corte, lado),) * 2, method=Image.Resampling.LANCZOS)
+        salida = io.BytesIO()
+        cuadrada.save(salida, format="WEBP", quality=85)
+        return salida.getvalue()
+
+
 def _nueva_clave(prefijo: str, mime_type: str) -> str:
     return f"{prefijo}/{uuid.uuid4().hex}.{_EXTENSION.get(mime_type, 'bin')}"
 
@@ -67,9 +87,12 @@ class MemoryImageStorage(ImageStorage):
     def __init__(self) -> None:
         self.objetos: dict[str, bytes] = {}
 
-    async def guardar(self, imagen: bytes, mime_type: str) -> str:
-        clave = _nueva_clave("chats", mime_type)
-        self.objetos[clave] = recodificar_sin_metadatos(imagen, mime_type)
+    async def guardar(self, imagen: bytes, mime_type: str, prefijo: str = "chats") -> str:
+        return await self.guardar_procesado(recodificar_sin_metadatos(imagen, mime_type), mime_type, prefijo)
+
+    async def guardar_procesado(self, datos: bytes, mime_type: str, prefijo: str) -> str:
+        clave = _nueva_clave(prefijo, mime_type)
+        self.objetos[clave] = datos
         return clave
 
     async def copiar_a_retencion(self, referencia: str) -> str:
@@ -90,15 +113,22 @@ class S3ImageStorage(ImageStorage):
     def __init__(self, bucket: str, endpoint: str | None, access_key: str | None, secret_key: str | None,
                  region: str | None = None) -> None:
         import boto3
+        from botocore.config import Config
 
         self._bucket = self.bucket = bucket
+        # MinIO y otros compatibles con S3 en un host propio usan direcciones por ruta (http://minio:9000/bucket);
+        # AWS S3 sin endpoint propio, las virtuales. STORAGE_ESTILO_DIRECCION=path|virtual|auto lo fuerza.
+        estilo = variable("STORAGE_ESTILO_DIRECCION") or ("path" if endpoint else "auto")
         self._s3 = boto3.client("s3", endpoint_url=endpoint, aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key, region_name=region)
+                                aws_secret_access_key=secret_key, region_name=region,
+                                config=Config(signature_version="s3v4", s3={"addressing_style": estilo}))
 
-    async def guardar(self, imagen: bytes, mime_type: str) -> str:
-        limpia = recodificar_sin_metadatos(imagen, mime_type)
-        clave = _nueva_clave("chats", mime_type)
-        await asyncio.to_thread(self._s3.put_object, Bucket=self._bucket, Key=clave, Body=limpia,
+    async def guardar(self, imagen: bytes, mime_type: str, prefijo: str = "chats") -> str:
+        return await self.guardar_procesado(recodificar_sin_metadatos(imagen, mime_type), mime_type, prefijo)
+
+    async def guardar_procesado(self, datos: bytes, mime_type: str, prefijo: str) -> str:
+        clave = _nueva_clave(prefijo, mime_type)
+        await asyncio.to_thread(self._s3.put_object, Bucket=self._bucket, Key=clave, Body=datos,
                                 ContentType=mime_type)
         return clave
 
@@ -142,11 +172,12 @@ def mime_de_referencia(referencia: str) -> str:
     return _mime_de_clave(referencia)
 
 
-async def leer_imagen_subida(archivo) -> bytes | None:
-    """Lee un UploadFile de FastAPI sin cargar más de 5 MB + 1 byte. None si no se adjuntó archivo."""
+async def leer_imagen_subida(archivo, limite: int | None = None) -> bytes | None:
+    """Lee un UploadFile de FastAPI sin cargar más de `limite` (5 MB por omisión) + 1 byte.
+    None si no se adjuntó archivo."""
     from app.shared.domain.entities import TAMANO_MAX_IMAGEN
 
     if archivo is None or not getattr(archivo, "filename", ""):
         return None
-    contenido = await archivo.read(TAMANO_MAX_IMAGEN + 1)
+    contenido = await archivo.read((limite or TAMANO_MAX_IMAGEN) + 1)
     return contenido or None

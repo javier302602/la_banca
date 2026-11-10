@@ -1,34 +1,105 @@
 /* La Banca — estilos complementarios a Bootstrap 5.
  *
  * Mobile-first: las reglas base son para 360 px; se amplían con min-width 768 px (tableta) y 1024 px
- * (escritorio). Todos los colores, tamaños y espacios salen de tokens.css (variables --lb-*): este archivo
- * no tiene colores literales (lo comprueba tests/web/test_tokens.py).
+ * (escritorio). Todos los colores, tamaños, espacios y sombras salen de tokens.css (variables --lb-*), que define
+ * el modo claro y el oscuro: este archivo no tiene colores literales (lo comprueba tests/web/test_tokens.py).
  */
 
-/* --- Base: Bootstrap usa los tokens ------------------------------------------------------------------- */
-:root {
+/* --- Base: Bootstrap usa los tokens (en ambos modos) -------------------------------------------------------- */
+:root, [data-bs-theme="dark"] {
   --bs-body-font-family: var(--lb-fuente-familia-base);
   --bs-body-color: var(--lb-color-texto);
-  --bs-secondary-color: var(--lb-color-texto-secundario);   /* RNF-USA-04: ≥ 4,5:1 sobre el fondo gris */
+  --bs-body-bg: var(--lb-color-superficie);                 /* superficies y campos; el fondo de página va en body */
+  --bs-emphasis-color: var(--lb-color-texto);
+  --bs-secondary-color: var(--lb-color-texto-secundario);
   --bs-border-color: var(--lb-color-borde);
-  --bs-link-color: var(--lb-color-primario);                /* #0d6efd de Bootstrap daba 4,08:1 sobre el fondo */
-  --bs-link-color-rgb: 10, 88, 202;
+  --bs-link-color: var(--lb-color-primario);
   --bs-link-hover-color: var(--lb-color-primario-fuerte);
-  --bs-link-hover-color-rgb: 8, 66, 152;
 }
+a { color: var(--lb-color-primario); }
+a:hover { color: var(--lb-color-primario-fuerte); }
 
-/* Gestalt — figura-fondo y región común: fondo gris y contenido sobre superficies blancas */
-body { background: var(--lb-color-fondo); line-height: var(--lb-interlineado-base); }
-.card, .list-group-item { background: var(--lb-color-superficie); }
+/* Gestalt — figura-fondo y región común: fondo de página y contenido sobre superficies */
+body { background: var(--lb-color-fondo); color: var(--lb-color-texto); line-height: var(--lb-interlineado-base); }
 /* «main h1.h4» supera en especificidad al tamaño fluido de .h4 de Bootstrap: la escala la fijan los tokens */
-main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--lb-interlineado-ajustado); }
+main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--lb-interlineado-ajustado);
+                      font-weight: var(--lb-fuente-peso-negrita); }
 .contenido-libre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.bi { line-height: 1; vertical-align: -0.125em; }
 
-/* --- Disposición (mobile-first) --------------------------------------------------------------------------
+/* --- Barra de navegación ------------------------------------------------------------------------------------ */
+.barra { background: var(--lb-color-superficie); border-bottom: 1px solid var(--lb-color-borde);
+         box-shadow: var(--lb-sombra-tarjeta); }
+.barra .navbar-brand { color: var(--lb-color-texto); font-weight: var(--lb-fuente-peso-negrita); }
+.barra .navbar-brand .bi { color: var(--lb-color-acento-fuerte); }
+.barra .nav-link { color: var(--lb-color-texto-secundario); }
+.barra .nav-link:hover, .barra .nav-link:focus-visible, .barra .nav-link[aria-current="page"] { color: var(--lb-color-primario); }
+.barra .navbar-toggler { color: var(--lb-color-texto); border-color: var(--lb-color-borde); }
+.boton-tema { min-width: 2.5rem; }
+.barra .nav-link { white-space: nowrap; }
+
+/* --- Superficies: tarjetas y listas con sombra y bordes redondeados ------------------------------------------- */
+.card { --bs-card-bg: var(--lb-color-superficie); --bs-card-border-color: var(--lb-color-borde);
+        --bs-card-cap-bg: var(--lb-color-superficie); --bs-card-border-radius: var(--lb-radio-xl);
+        --bs-card-inner-border-radius: var(--lb-radio-xl); box-shadow: var(--lb-sombra-tarjeta); }
+.list-group { --bs-list-group-bg: var(--lb-color-superficie); --bs-list-group-border-color: var(--lb-color-borde);
+              --bs-list-group-border-radius: var(--lb-radio-xl); --bs-list-group-action-hover-bg: var(--lb-color-fondo);
+              --bs-list-group-color: var(--lb-color-texto); --bs-list-group-action-color: var(--lb-color-texto);
+              box-shadow: var(--lb-sombra-tarjeta); border-radius: var(--lb-radio-xl); }
+.list-group-item { background: var(--lb-color-superficie); }
+.tarjeta-formulario > .card-body { padding: var(--lb-espacio-6); }
+.icono-titulo { color: var(--lb-color-primario); margin-right: var(--lb-espacio-2); }
+
+/* --- Botones (contraste ≥ 4,5:1 en ambos modos) -------------------------------------------------------------- */
+.btn-primary { --bs-btn-bg: var(--lb-color-primario); --bs-btn-border-color: var(--lb-color-primario);
+               --bs-btn-color: var(--lb-color-sobre-primario); --bs-btn-hover-bg: var(--lb-color-primario-fuerte);
+               --bs-btn-hover-border-color: var(--lb-color-primario-fuerte); --bs-btn-hover-color: var(--lb-color-sobre-primario);
+               --bs-btn-active-bg: var(--lb-color-primario-fuerte); --bs-btn-active-color: var(--lb-color-sobre-primario);
+               --bs-btn-disabled-bg: var(--lb-color-primario); --bs-btn-disabled-border-color: var(--lb-color-primario);
+               --bs-btn-disabled-color: var(--lb-color-sobre-primario); }
+.btn-acento { --bs-btn-bg: var(--lb-color-acento); --bs-btn-border-color: var(--lb-color-acento);
+              --bs-btn-color: var(--lb-color-sobre-acento); --bs-btn-hover-bg: var(--lb-color-acento-fuerte);
+              --bs-btn-hover-border-color: var(--lb-color-acento-fuerte); --bs-btn-hover-color: var(--lb-color-sobre-acento);
+              --bs-btn-active-bg: var(--lb-color-acento-fuerte); --bs-btn-active-color: var(--lb-color-sobre-acento);
+              font-weight: var(--lb-fuente-peso-semibold); }
+.btn-danger { --bs-btn-bg: var(--lb-color-peligro); --bs-btn-border-color: var(--lb-color-peligro);
+              --bs-btn-color: var(--lb-color-sobre-peligro); --bs-btn-hover-bg: var(--lb-color-peligro);
+              --bs-btn-hover-color: var(--lb-color-sobre-peligro); --bs-btn-disabled-bg: var(--lb-color-peligro);
+              --bs-btn-disabled-border-color: var(--lb-color-peligro); --bs-btn-disabled-color: var(--lb-color-sobre-peligro); }
+.btn-outline-secondary { --bs-btn-color: var(--lb-color-secundario); --bs-btn-border-color: var(--lb-color-secundario);
+                         --bs-btn-hover-bg: var(--lb-color-secundario); --bs-btn-hover-border-color: var(--lb-color-secundario);
+                         --bs-btn-hover-color: var(--lb-color-superficie); --bs-btn-active-bg: var(--lb-color-secundario);
+                         --bs-btn-active-color: var(--lb-color-superficie); }
+.btn-outline-danger { --bs-btn-color: var(--lb-color-peligro); --bs-btn-border-color: var(--lb-color-peligro);
+                      --bs-btn-hover-bg: var(--lb-color-peligro); --bs-btn-hover-border-color: var(--lb-color-peligro);
+                      --bs-btn-hover-color: var(--lb-color-sobre-peligro); --bs-btn-active-bg: var(--lb-color-peligro);
+                      --bs-btn-active-color: var(--lb-color-sobre-peligro); }
+.btn-outline-primary { --bs-btn-color: var(--lb-color-primario); --bs-btn-border-color: var(--lb-color-primario);
+                       --bs-btn-hover-bg: var(--lb-color-primario); --bs-btn-hover-border-color: var(--lb-color-primario);
+                       --bs-btn-hover-color: var(--lb-color-sobre-primario); --bs-btn-active-bg: var(--lb-color-primario);
+                       --bs-btn-active-color: var(--lb-color-sobre-primario); }
+.btn-link { --bs-btn-color: var(--lb-color-primario); --bs-btn-hover-color: var(--lb-color-primario-fuerte); }
+.btn { border-radius: var(--lb-radio-md); }
+.form-check-input:checked { background-color: var(--lb-color-primario); border-color: var(--lb-color-primario); }
+
+/* --- Disposición (mobile-first) --------------------------------------------------------------------------------
  * 360 px: una columna a todo el ancho. 768 px: formularios y lecturas centrados con ancho máximo.
  * 1024 px: feed en tres columnas y contenedores algo más anchos. */
 .contenedor-estrecho, .contenedor-medio, .contenedor-ancho { width: 100%; margin-inline: auto; }
 .rejilla-feed { display: grid; grid-template-columns: 1fr; gap: var(--lb-espacio-5); }
+
+/* --- Portada -------------------------------------------------------------------------------------------------- */
+.portada { display: grid; gap: var(--lb-espacio-8); align-items: center; padding-block: var(--lb-espacio-4); }
+.portada .lema { font-size: var(--lb-fuente-tamano-xl); font-weight: var(--lb-fuente-peso-negrita);
+                 line-height: var(--lb-interlineado-ajustado); }
+.portada .lema span { color: var(--lb-color-acento-fuerte); }
+.portada img { width: 100%; max-width: 22rem; justify-self: center; }
+.ventajas { display: grid; gap: var(--lb-espacio-4); }
+.ventajas .bi { font-size: var(--lb-fuente-tamano-xl); }
+
+/* --- Estados vacíos con ilustración ---------------------------------------------------------------------------- */
+.estado-vacio { text-align: center; padding: var(--lb-espacio-6) var(--lb-espacio-4); color: var(--lb-color-texto-secundario); }
+.estado-vacio img { width: 100%; max-width: 12rem; margin-bottom: var(--lb-espacio-3); }
 
 @media (min-width: 768px) {
   main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-xl); }
@@ -36,45 +107,106 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--
   .contenedor-medio { max-width: 40rem; }
   .contenedor-ancho { max-width: 48rem; }
   .rejilla-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .portada { grid-template-columns: 1.2fr 1fr; }
+  .portada .lema { font-size: var(--lb-fuente-tamano-xxl); }
+  .ventajas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  /* Tableta: el menú expandido no cabe con iconos; quedan los textos y «Cerrar sesión» solo con icono */
+  .barra .navbar-nav .nav-link .bi { display: none; }
+  .barra .texto-cerrar { display: none; }
+  .barra #nav-nickname { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; }
 }
 
 @media (min-width: 1024px) {
+  .barra .navbar-nav .nav-link .bi { display: inline-block; }
+  .barra .texto-cerrar { display: inline; }
+  .barra #nav-nickname { max-width: 12rem; }
   .contenedor-medio { max-width: 44rem; }
   .rejilla-feed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* --- Gestalt — similitud por tipo de publicación ----------------------------------------------------------- */
+/* --- Gestalt — similitud por tipo de publicación ------------------------------------------------------------- */
 .tipo-NECESITO { --tipo-fondo: var(--lb-color-necesito-fondo); --tipo-texto: var(--lb-color-necesito-texto);
                  --tipo-borde: var(--lb-color-necesito-borde); }
 .tipo-OFREZCO { --tipo-fondo: var(--lb-color-ofrezco-fondo); --tipo-texto: var(--lb-color-ofrezco-texto);
                 --tipo-borde: var(--lb-color-ofrezco-borde); }
 .tipo-ACTIVIDAD { --tipo-fondo: var(--lb-color-actividad-fondo); --tipo-texto: var(--lb-color-actividad-texto);
                   --tipo-borde: var(--lb-color-actividad-borde); }
-.badge.etiqueta-tipo { background: var(--tipo-fondo, var(--lb-color-borde)); color: var(--tipo-texto, var(--lb-color-texto)); }
-.badge.etiqueta-propia { background: var(--lb-color-superficie); color: var(--lb-color-actividad-texto);
-                         border: 1px solid var(--lb-color-actividad-borde); font-size: var(--lb-fuente-tamano-xs); }
+.badge.etiqueta-tipo { background: var(--tipo-fondo, var(--lb-color-borde)); color: var(--tipo-texto, var(--lb-color-texto));
+                       border-radius: var(--lb-radio-pildora); padding: var(--lb-espacio-1) var(--lb-espacio-2); }
+.badge.etiqueta-propia { background: var(--lb-color-superficie); color: var(--lb-color-primario);
+                         border: 1px solid var(--lb-color-primario); font-size: var(--lb-fuente-tamano-xs);
+                         border-radius: var(--lb-radio-pildora); }
 
-/* --- Gestalt — proximidad dentro de la tarjeta del feed ----------------------------------------------------- */
+/* --- Gestalt — proximidad dentro de la tarjeta del feed ------------------------------------------------------- */
 .tarjeta-publicacion { border-left: var(--lb-espacio-1) solid var(--tipo-borde, var(--lb-color-borde));
-                       transition: box-shadow .15s ease; }
-.tarjeta-publicacion:hover, .tarjeta-publicacion:focus-visible { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12); }
+                       transition: box-shadow .15s ease, transform .15s ease; }
+.tarjeta-publicacion:hover, .tarjeta-publicacion:focus-visible { box-shadow: var(--lb-sombra-elevada); transform: translateY(-2px); }
 .tarjeta-publicacion .card-body { display: flex; flex-direction: column; gap: var(--lb-espacio-2);
                                   padding: var(--lb-espacio-4); }
 .tarjeta-publicacion .card-body > * { margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-publicacion, .tarjeta-publicacion:hover { transition: none; transform: none; }
+}
 
-/* --- Chat — proximidad, figura-fondo y continuidad ---------------------------------------------------------- */
+/* Publicar: el tipo se elige en mosaicos. El radio real va dentro de su etiqueta y la cubre, transparente:
+ * clic, teclado y lector de pantalla actúan sobre el control nativo; el estado y el foco se pintan con :has(). */
+.opciones-tipo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--lb-espacio-2); }
+.mosaico-tipo { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--lb-espacio-1);
+                padding: var(--lb-espacio-3) var(--lb-espacio-2); text-align: center; border: 1px solid var(--lb-color-borde);
+                border-radius: var(--lb-radio-lg); background: var(--lb-color-superficie); cursor: pointer; }
+.mosaico-tipo .bi { font-size: var(--lb-fuente-tamano-xl); color: var(--lb-color-primario); }
+.mosaico-tipo .entrada-mosaico { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.mosaico-tipo:has(.entrada-mosaico:checked) { border: 2px solid var(--lb-color-primario); background: var(--lb-color-primario-suave); }
+.mosaico-tipo:has(.entrada-mosaico:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+
+/* --- Chat — proximidad, figura-fondo y continuidad ------------------------------------------------------------- */
 .chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0;
                  background: var(--lb-color-fondo-chat); padding: var(--lb-espacio-3); }
+/* Estilo Messenger (SRS v2.0): cada mensaje es una fila; las ajenas llevan la foto o el avatar de la otra persona
+ * en el último mensaje de cada grupo (los mensajes seguidos del mismo autor se agrupan: proximidad) */
+.fila-mensaje { display: flex; align-items: flex-end; gap: var(--lb-espacio-2); margin-top: var(--lb-espacio-4); }
+.fila-mensaje:first-child { margin-top: 0; }
+.fila-mensaje.continua { margin-top: var(--lb-espacio-1); }
+.fila-mensaje.propia { justify-content: flex-end; }
+.fila-mensaje .avatar { width: 1.75rem; height: 1.75rem; }
+.fila-mensaje .avatar.oculto { visibility: hidden; }
 .burbuja { max-width: 85%; padding: var(--lb-espacio-2) var(--lb-espacio-3); border-radius: var(--lb-radio-lg);
-           overflow-wrap: anywhere; margin-top: var(--lb-espacio-4); box-shadow: 0 1px 1px rgba(0, 0, 0, .06); }
-.burbuja:first-child { margin-top: 0; }
-.burbuja.continua { margin-top: var(--lb-espacio-1); }
-.burbuja.propia { align-self: flex-end; background: var(--lb-color-primario-suave); border-bottom-right-radius: var(--lb-radio-sm); }
-.burbuja.ajena { align-self: flex-start; background: var(--lb-color-superficie); border-bottom-left-radius: var(--lb-radio-sm); }
+           overflow-wrap: anywhere; box-shadow: var(--lb-sombra-tarjeta); color: var(--lb-color-texto); }
+.burbuja.propia { background: var(--lb-color-burbuja-propia); border-bottom-right-radius: var(--lb-radio-sm); }
+.burbuja.ajena { background: var(--lb-color-burbuja-ajena); border-bottom-left-radius: var(--lb-radio-sm); }
 .burbuja.propia.continua { border-top-right-radius: var(--lb-radio-sm); }
 .burbuja.ajena.continua { border-top-left-radius: var(--lb-radio-sm); }
 .burbuja img { max-width: 100%; max-height: 40vh; border-radius: var(--lb-radio-md); display: block; }
 .burbuja .hora { font-size: var(--lb-fuente-tamano-xs); color: var(--lb-color-texto-hora); text-align: right; }
+.burbuja .estado-mensaje .bi { margin-right: 2px; }
+.burbuja.sticker { background: transparent; box-shadow: none; padding: 0; }
+.burbuja.sticker img { width: 7.5rem; height: 7.5rem; }
+.tarjeta-documento { display: flex; align-items: center; gap: var(--lb-espacio-3); min-width: 12rem; padding: var(--lb-espacio-2);
+                     border: 1px solid var(--lb-color-borde); border-radius: var(--lb-radio-md); background: var(--lb-color-superficie);
+                     color: var(--lb-color-texto); text-decoration: none; }
+.tarjeta-documento:hover .nombre-documento { text-decoration: underline; }
+.tarjeta-documento > .bi { font-size: var(--lb-fuente-tamano-xl); color: var(--lb-color-primario); }
+.tarjeta-documento .nombre-documento { font-weight: var(--lb-fuente-peso-negrita); overflow-wrap: anywhere; display: block; }
+.tarjeta-documento .tamano-documento { font-size: var(--lb-fuente-tamano-xs); color: var(--lb-color-texto-secundario); }
+
+/* Barra de adjuntos: el <input type=file> real cubre su etiqueta (transparente) y recibe el foco */
+.adjunto { position: relative; }
+.adjunto .entrada-oculta { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.adjunto:has(.entrada-oculta:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.adjunto-elegido { display: flex; align-items: center; gap: var(--lb-espacio-2); font-size: var(--lb-fuente-tamano-sm); }
+.panel-selector { border: 1px solid var(--lb-color-borde); border-radius: var(--lb-radio-md); padding: var(--lb-espacio-2);
+                  background: var(--lb-color-superficie); max-height: 14rem; overflow-y: auto; }
+.panel-emojis { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr)); gap: var(--lb-espacio-1); }
+.panel-emojis button { font-size: 1.375rem; line-height: 1; min-height: 2.5rem; border: 0; background: none; border-radius: var(--lb-radio-sm); }
+.panel-emojis button:hover { background: var(--lb-color-primario-suave); }
+.panel-stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: var(--lb-espacio-2); }
+.panel-stickers button { border: 0; background: none; padding: var(--lb-espacio-1); border-radius: var(--lb-radio-md); }
+.panel-stickers button:hover { background: var(--lb-color-primario-suave); }
+.panel-stickers img { width: 4rem; height: 4rem; display: block; margin: 0 auto; }
+.panel-selector button:focus-visible { outline: 3px solid var(--lb-color-foco); outline-offset: 1px; }
 
 @media (min-width: 768px) {
   .chat-mensajes { height: 60vh; padding: var(--lb-espacio-4); }
@@ -88,22 +220,11 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--
 @keyframes latido { 50% { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { .aviso-expiracion { animation: none; } }
 
-/* --- Botones con contraste ≥ 4,5:1 sobre el fondo gris (RNF-USA-04) ---------------------------------------- */
-.btn-outline-secondary { --bs-btn-color: var(--lb-color-secundario); --bs-btn-border-color: var(--lb-color-secundario);
-                         --bs-btn-hover-bg: var(--lb-color-secundario); --bs-btn-hover-border-color: var(--lb-color-secundario);
-                         --bs-btn-active-bg: var(--lb-color-secundario); }
-.btn-outline-danger { --bs-btn-color: var(--lb-color-peligro); --bs-btn-border-color: var(--lb-color-peligro);
-                      --bs-btn-hover-bg: var(--lb-color-peligro); --bs-btn-hover-border-color: var(--lb-color-peligro);
-                      --bs-btn-active-bg: var(--lb-color-peligro); }
-.btn-outline-primary { --bs-btn-color: var(--lb-color-primario); --bs-btn-border-color: var(--lb-color-primario);
-                       --bs-btn-hover-bg: var(--lb-color-primario); --bs-btn-hover-border-color: var(--lb-color-primario);
-                       --bs-btn-active-bg: var(--lb-color-primario); }
-
-/* Insignia de chats con mensajes nuevos (blanco sobre peligro: 6,4:1) */
-.contador-no-leidos { background: var(--lb-color-peligro); color: var(--lb-color-texto-invertido);
+/* Insignia de chats con mensajes nuevos */
+.contador-no-leidos { background: var(--lb-color-peligro); color: var(--lb-color-sobre-peligro);
                       font-size: var(--lb-fuente-tamano-xs); vertical-align: text-top; }
 
-/* --- WCAG 2.5.8: objetivos de al menos 24 × 24 px ----------------------------------------------------------- */
+/* --- WCAG 2.5.8: objetivos de al menos 24 × 24 px ------------------------------------------------------------- */
 .form-check { display: flex; align-items: center; gap: var(--lb-espacio-2); padding-left: 0; min-height: 1.75rem; }
 .form-check-inline { display: inline-flex; margin-right: var(--lb-espacio-5); }
 .form-check .form-check-input { float: none; margin: 0; width: var(--lb-punto-objetivo-minimo);
@@ -113,9 +234,60 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--
 p > a:only-child, .list-group-item a:not(.btn), .card-header a:not(.btn) {
   display: inline-block; min-height: var(--lb-punto-objetivo-minimo); line-height: var(--lb-punto-objetivo-minimo); }
 
-/* --- Selector de imagen con textos del catálogo (i18n; WCAG 2.4.7 y 2.4.11) ---------------------------------- */
+/* --- Selector de imagen con textos del catálogo (i18n; WCAG 2.4.7 y 2.4.11) ------------------------------------ */
 .selector-archivo { position: relative; display: flex; align-items: center; gap: var(--lb-espacio-2); min-height: 2.25rem; }
 .selector-archivo .entrada-archivo { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .selector-archivo:focus-within .boton-archivo { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
 .selector-archivo .boton-archivo { pointer-events: none; }
 .nombre-archivo { overflow-wrap: anywhere; }
+
+/* --- Perfiles (SRS v2.0, Fase 2): foto, avatar o iniciales junto al nickname ------------------------------------- */
+.avatar { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2rem; height: 2rem;
+          border-radius: 50%; overflow: hidden; vertical-align: middle; background: var(--lb-color-primario-suave);
+          color: var(--lb-color-texto); font-weight: var(--lb-fuente-peso-negrita); font-size: var(--lb-fuente-tamano-xs);
+          line-height: 1; user-select: none; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar[data-iniciales]::before { content: attr(data-iniciales); }
+.avatar-md { width: 2.5rem; height: 2.5rem; font-size: var(--lb-fuente-tamano-sm); }
+.avatar-lg { width: 6rem; height: 6rem; font-size: var(--lb-fuente-tamano-xxl); box-shadow: var(--lb-sombra-tarjeta); }
+.avatar-color-1 { background: var(--lb-color-avatar-1); }
+.avatar-color-2 { background: var(--lb-color-avatar-2); }
+.avatar-color-3 { background: var(--lb-color-avatar-3); }
+.avatar-color-4 { background: var(--lb-color-avatar-4); }
+.avatar-color-5 { background: var(--lb-color-avatar-5); }
+.avatar-color-6 { background: var(--lb-color-avatar-6); }
+.autor { display: inline-flex; align-items: center; gap: var(--lb-espacio-2); }
+a.autor { color: inherit; text-decoration: none; min-height: var(--lb-punto-objetivo-minimo); }
+a.autor:hover .nombre-autor, a.autor:focus-visible .nombre-autor { text-decoration: underline; }
+.cabecera-perfil { display: flex; flex-direction: column; align-items: center; gap: var(--lb-espacio-2); text-align: center; }
+.biografia { overflow-wrap: anywhere; }
+
+/* Elegir avatar: mosaicos de radio agrupados (hombre / mujer / neutro) — la agrupación es solo visual */
+.grupo-avatares { border: 0; padding: 0; margin: 0 0 var(--lb-espacio-3); }
+.grupo-avatares legend { font-size: var(--lb-fuente-tamano-sm); color: var(--lb-color-texto-secundario); margin-bottom: var(--lb-espacio-1); }
+.opciones-avatar { display: flex; flex-wrap: wrap; gap: var(--lb-espacio-2); }
+.opcion-avatar { position: relative; display: inline-flex; border-radius: 50%; padding: 3px; border: 2px solid transparent; cursor: pointer; }
+.opcion-avatar img { width: 3rem; height: 3rem; border-radius: 50%; display: block; }
+.opcion-avatar .entrada-mosaico { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opcion-avatar:has(.entrada-mosaico:checked) { border-color: var(--lb-color-primario); background: var(--lb-color-primario-suave); }
+.opcion-avatar:has(.entrada-mosaico:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.opcion-iniciales { display: inline-flex; align-items: center; gap: var(--lb-espacio-2); border-radius: var(--lb-radio-xl);
+                    padding: 3px var(--lb-espacio-3) 3px 3px; }
+
+/* --- Imágenes en publicaciones (SRS v2.0, Fase 3) ---------------------------------------------------------------- */
+.miniatura-publicacion { width: 100%; height: 9rem; object-fit: cover; display: block;
+                         border-top-left-radius: var(--lb-radio-xl); border-top-right-radius: var(--lb-radio-xl); }
+.cantidad-imagenes { background: var(--lb-color-primario-suave); color: var(--lb-color-texto); }
+.galeria-principal { margin: 0; background: var(--lb-color-fondo); border-radius: var(--lb-radio-lg); overflow: hidden;
+                     display: flex; align-items: center; justify-content: center; }
+.galeria-principal img { max-width: 100%; max-height: 60vh; display: block; }
+.galeria-miniaturas button { padding: 0; border: 2px solid transparent; border-radius: var(--lb-radio-md); overflow: hidden;
+                             background: none; line-height: 0; }
+.galeria-miniaturas button[aria-current="true"] { border-color: var(--lb-color-primario); }
+.galeria-miniaturas button:focus-visible { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.galeria-miniaturas img { width: 4rem; height: 4rem; object-fit: cover; display: block; }
+.vista-previa li { position: relative; }
+.vista-previa img { width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: var(--lb-radio-md); display: block;
+                    border: 1px solid var(--lb-color-borde); }
+.vista-previa button { position: absolute; top: -.5rem; right: -.5rem; width: var(--lb-punto-objetivo-minimo);
+                       height: var(--lb-punto-objetivo-minimo); padding: 0; border-radius: 50%; line-height: 1; }

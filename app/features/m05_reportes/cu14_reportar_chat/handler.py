@@ -38,13 +38,19 @@ class ReportarChatHandler:
         try:
             snapshot_mensajes = []
             for m in await self._chats.listar_mensajes(chat.id):
-                retenida = None
+                retenida = documento = None
                 if m.imagen is not None:
                     retenida = await self._imagenes.copiar_a_retencion(m.imagen.referencia)
                     copias.append(retenida)
+                if m.documento is not None:  # SRS v2.0, cambio 4.5: los documentos también se conservan
+                    clave = await self._imagenes.copiar_a_retencion(m.documento.referencia)
+                    copias.append(clave)
+                    documento = {"key": clave, "fileName": m.documento.nombre, "kind": m.documento.tipo,
+                                 "sizeBytes": m.documento.tamano_bytes}
                 snapshot_mensajes.append({"messageId": m.id, "senderId": m.emisor_id,  # Entregable 2 §5.3
                                           "senderNickname": m.nickname_emisor, "text": m.texto,
-                                          "imageKey": retenida, "sentAt": m.fecha_envio})
+                                          "imageKey": retenida, "sticker": m.sticker, "document": documento,
+                                          "sentAt": m.fecha_envio})
             dias = self._config.entero(ClaveParametro.DIAS_RETENCION_REPORTES)
             await self._reportes.crear(Reporte(
                 id="", reportante_id=estudiante_id, tipo_objeto=TipoObjetoReportado.CHAT, objeto_id=chat.id,

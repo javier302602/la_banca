@@ -21,7 +21,8 @@
   },
   "pie": {
     "terminos": "Términos de uso y política de privacidad",
-    "ayuda": "Ayuda"
+    "ayuda": "Ayuda",
+    "version": "Versión {version}"
   },
   "campos": {
     "correo_institucional": "Correo institucional",
@@ -75,7 +76,25 @@
   "perfil": {
     "titulo": "Mi perfil",
     "nickname": "Nickname",
-    "guardar": "Guardar nickname"
+    "guardar": "Guardar nickname",
+    "datos": "Foto, avatar y biografía",
+    "biografia": "Biografía (opcional)",
+    "ayuda_biografia": "Hasta 160 caracteres. La ve quien visite tu perfil.",
+    "foto": "Foto de perfil (opcional)",
+    "ayuda_foto": "JPG, PNG o WebP, hasta 2 MB. Se recorta en cuadrado y se le quitan los metadatos (EXIF), incluida la ubicación.",
+    "subir_foto": "Subir foto",
+    "quitar_foto": "Quitar foto",
+    "avatar": "Avatar",
+    "ayuda_avatar": "Si no tienes foto se muestra el avatar que elijas; si no eliges ninguno, tus iniciales. Solo se guarda el avatar elegido.",
+    "grupos": {
+      "hombre": "Hombre",
+      "mujer": "Mujer",
+      "neutro": "Neutros"
+    },
+    "sin_avatar": "Mis iniciales",
+    "guardar_perfil": "Guardar perfil",
+    "privacidad": "Tu correo institucional no se muestra a nadie.",
+    "ver_publico": "Ver mi perfil público"
   },
   "tipos": {
     "TODOS": "Todos",
@@ -97,7 +116,10 @@
     "campo_titulo": "Título",
     "campo_descripcion": "Descripción",
     "duracion": "Tu publicación estará activa durante 24 horas",
-    "boton": "Publicar"
+    "boton": "Publicar",
+    "imagenes": "Imágenes (opcional)",
+    "ayuda_imagenes": "Hasta 3 imágenes JPG, PNG o WebP de hasta 5 MB cada una. Se les quitan los metadatos (EXIF), incluida la ubicación.",
+    "elegir_imagenes": "Elegir imágenes"
   },
   "mias": {
     "titulo_pagina": "Mis publicaciones",
@@ -115,7 +137,8 @@
     "titulo_pagina": "Publicación",
     "volver": "← Volver al feed",
     "por": "Por",
-    "tiempo_restante": "Tiempo restante:"
+    "tiempo_restante": "Tiempo restante:",
+    "galeria": "Imágenes de la publicación"
   },
   "chats": {
     "titulo": "Mis chats",
@@ -128,7 +151,13 @@
     "mensaje": "Mensaje",
     "placeholder": "Escribe un mensaje",
     "imagen": "O una imagen (JPG, PNG o WebP, hasta 5 MB)",
-    "enviar": "Enviar"
+    "enviar": "Enviar",
+    "imagen_corto": "Imagen",
+    "documento": "Documento",
+    "emojis": "Emojis",
+    "stickers": "Stickers",
+    "ayuda_adjuntos": "Imagen JPG, PNG o WebP de hasta 5 MB. Documento PDF, DOCX, XLSX, PPTX o TXT de hasta 10 MB (sin macros).",
+    "historial": "Mensajes"
   },
   "responder": {
     "titulo": "Responder",
@@ -193,7 +222,7 @@
     "separador": " · ",
     "imagen": {
       "danada": "La imagen está dañada o no se puede leer",
-      "no_reducible": "No se pudo reducir la imagen por debajo de 4 MB",
+      "no_reducible": "No se pudo reducir la imagen por debajo de {mb} MB",
       "alt": "Imagen de {nickname}",
       "elegir": "Elegir imagen",
       "ninguna": "Ningún archivo seleccionado"
@@ -220,7 +249,17 @@
       "vacio": "Escribe un mensaje o adjunta una imagen",
       "nuevo": "Nuevo",
       "expiro": "Este chat expiró",
-      "abrir_chat": "Abrir el chat"
+      "abrir_chat": "Abrir el chat",
+      "vacio_v2": "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker",
+      "un_contenido": "Un mensaje lleva texto, una imagen, un sticker o un documento: solo uno",
+      "enviado": "Enviado",
+      "visto": "Visto",
+      "descargar": "Descargar",
+      "quitar_adjunto": "Quitar adjunto",
+      "adjunto": "Adjunto: {nombre} ({tamano})",
+      "documento_grande": "El documento supera el tamaño máximo de 10 MB",
+      "panel_emojis": "Elegir un emoji",
+      "panel_stickers": "Enviar un sticker"
     },
     "publicaciones": {
       "cupo": "Publicaciones activas: {activas} de {maximo}",
@@ -230,10 +269,99 @@
       "tiempo_restante": "Tiempo restante: ",
       "cerrar": "Cerrar",
       "confirmar_cierre": "¿Cerrar esta publicación? No podrás reactivarla",
-      "cerrada": "Publicación cerrada"
+      "cerrada": "Publicación cerrada",
+      "demasiadas_imagenes": "Puedes adjuntar hasta 3 imágenes",
+      "imagenes_elegidas": "{n} de 3 imágenes elegidas",
+      "ninguna_imagen": "Ninguna imagen elegida",
+      "quitar_imagen": "Quitar {nombre}"
     },
     "reportes": {
       "volver": "Volver"
+    },
+    "iconos_tipo": {
+      "NECESITO": "bi-life-preserver",
+      "OFREZCO": "bi-gift",
+      "ACTIVIDAD": "bi-people"
+    },
+    "perfil": {
+      "guardado": "Perfil actualizado",
+      "foto_subida": "Foto actualizada",
+      "foto_quitada": "Foto quitada",
+      "foto_grande": "La foto supera el tamaño máximo de 2 MB",
+      "ingreso": "Se unió el {fecha}",
+      "sin_biografia": "Todavía no escribió su biografía.",
+      "es_propio": "Así ven tu perfil los demás.",
+      "titulo": "@{nickname}",
+      "avatar_alt": "Avatar {n}",
+      "ver": "Perfil de @{nickname}"
+    },
+    "galeria": {
+      "alt": "Imagen {n} de {total} de la publicación «{titulo}»",
+      "miniatura": "Ver imagen {n} de {total}",
+      "num_imagenes": "{n} imágenes",
+      "una_imagen": "1 imagen",
+      "miniatura_alt": "Primera imagen de «{titulo}»"
+    },
+    "tamano": {
+      "kb": "{n} KB",
+      "mb": "{n} MB",
+      "bytes": "{n} B"
+    },
+    "stickers": {
+      "sticker-01": "Cara feliz",
+      "sticker-02": "Cara riendo",
+      "sticker-03": "Cara triste",
+      "sticker-04": "Cara sorprendida",
+      "sticker-05": "Cara guiñando un ojo",
+      "sticker-06": "Cara enamorada",
+      "sticker-07": "Cara pensativa",
+      "sticker-08": "Taza de café",
+      "sticker-09": "Libro abierto",
+      "sticker-10": "Lápiz",
+      "sticker-11": "Calculadora",
+      "sticker-12": "Reloj",
+      "sticker-13": "Bombilla: ¡idea!",
+      "sticker-14": "Cohete",
+      "sticker-15": "Corazón",
+      "sticker-16": "Estrella",
+      "sticker-17": "Pulgar arriba",
+      "sticker-18": "Fiesta",
+      "sticker-19": "Mochila",
+      "sticker-20": "Visto bueno"
+    },
+    "iconos_documento": {
+      "pdf": "bi-file-earmark-pdf",
+      "docx": "bi-file-earmark-word",
+      "xlsx": "bi-file-earmark-excel",
+      "pptx": "bi-file-earmark-ppt",
+      "txt": "bi-file-earmark-text"
     }
+  },
+  "tema": {
+    "oscuro": "Modo oscuro"
+  },
+  "portada": {
+    "titulo_pagina": "Bienvenida",
+    "lema_1": "¿Tienes un hueco de 1 hora o más?",
+    "lema_2": "Mira qué hay.",
+    "descripcion": "La Banca reúne lo que pasa ahora en tu universidad: alguien necesita algo, alguien lo ofrece, alguien arma una actividad. Todo dura 24 horas.",
+    "crear_cuenta": "Crear cuenta",
+    "iniciar_sesion": "Ya tengo cuenta",
+    "necesito": "Pide apuntes, un cargador o compañía para estudiar.",
+    "ofrezco": "Presta, regala o enseña lo que tengas a mano.",
+    "actividad": "Arma un partido, un grupo de estudio o un café.",
+    "como_funciona": "Cómo funciona",
+    "paso_1": "Publica lo que necesitas u ofreces: dura 24 horas.",
+    "paso_2": "Responde a una publicación y conversa en un chat privado.",
+    "paso_3": "Pónganse de acuerdo: el chat se borra solo tras 24 horas sin mensajes."
+  },
+  "vacio": {
+    "publicar": "Crear una publicación",
+    "ver_feed": "Ver qué hay ahora"
+  },
+  "ver_perfil": {
+    "titulo": "Perfil",
+    "editar": "Editar mi perfil",
+    "volver": "← Volver"
   }
 }

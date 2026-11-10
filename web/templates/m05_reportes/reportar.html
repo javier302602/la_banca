@@ -7,7 +7,7 @@
 {% block content %}
 <div class="contenedor-estrecho">
   <p><a href="{{ volver }}">{{ t("reportar.volver") }}</a></p>
-  <h1 class="h4 mb-3">{{ t("reportar.titulo_" ~ objeto) }}</h1>
+  <h1 class="h4 mb-3"><i class="bi bi-flag icono-titulo" aria-hidden="true"></i>{{ t("reportar.titulo_" ~ objeto) }}</h1>
   <div id="mensajes" aria-live="polite"></div>
   <form id="form-reporte" novalidate>
     <fieldset class="mb-3">

@@ -1,0 +1,5 @@
+# Servidor propio (docker-compose): gunicorn con workers de uvicorn. Vercel solo usa requirements.txt.
+-r requirements.txt
+gunicorn==26.1.0
+uvicorn==0.38.0
+uvicorn-worker==0.4.0

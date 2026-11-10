@@ -1,5 +1,6 @@
 """Fase 8 — Frontend: vistas Jinja2 que extienden base.html y JS con Fetch API."""
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -89,7 +90,9 @@ def test_login_y_registro_con_sesion_van_al_feed(cliente):
         assert cliente.get(ruta).headers["location"] == "/feed"
     assert cliente.get("/").headers["location"] == "/feed"
     sin_sesion()
-    assert cliente.get("/").headers["location"] == "/login"
+    portada = cliente.get("/")  # sin sesión: portada con lema y llamada a la acción (cambio 1.2)
+    assert portada.status_code == 200 and "¿Tienes un hueco de 1 hora o más?" in portada.text
+    assert 'href="/registro"' in portada.text and 'href="/login"' in portada.text
 
 
 def test_nickname_se_escapa(cliente):
@@ -108,7 +111,9 @@ def test_registro_casilla_desmarcada(cliente):
 def test_crear_publicacion_sin_duracion_ni_tipo_preseleccionado(cliente):
     con_sesion()
     html = cliente.get("/publicaciones/nueva").text
-    assert "duracion" not in html.lower() and "checked" not in html  # RF-PUB-02 / RF-PUB-14
+    radios = re.findall(r'<input[^>]*type="radio"[^>]*>', html)
+    assert len(radios) == 3 and not any("checked" in r for r in radios)  # RF-PUB-02: sin tipo preseleccionado
+    assert "duracion" not in html.lower()  # RF-PUB-14
     for tipo in ("NECESITO", "OFREZCO", "ACTIVIDAD"):
         assert f'value="{tipo}"' in html
 
@@ -212,7 +217,9 @@ def test_comprime_imagenes_de_mas_de_4mb(soporte, tipo, extension):
 
 def test_chat_comprime_antes_de_subir(cliente):
     js = cliente.get("/static/js/chat.js").text
-    assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 2
+    # Responder (primer mensaje) y chat abierto (SRS v2.0: el adjunto elegido puede ser imagen o documento)
+    assert "await Banca.comprimirImagen(original)" in js and js.count("await datosMensaje()") == 1
+    assert "await Banca.comprimirImagen(adjunto.archivo)" in js
 
 
 @pytest.mark.parametrize("ruta,campos", [("/chats/c1", ["texto", "imagen"]), ("/feed", ["filtro-tipo"]),

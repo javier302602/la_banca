@@ -5,8 +5,9 @@
 {% block pagina %}activar{% endblock %}
 
 {% block content %}
-<div class="contenedor-estrecho">
-    <h1 class="h4 mb-3">{{ t("activar.titulo") }}</h1>
+<div class="contenedor-estrecho card tarjeta-formulario">
+  <div class="card-body">
+    <h1 class="h4 mb-3"><i class="bi bi-envelope-check icono-titulo" aria-hidden="true"></i>{{ t("activar.titulo") }}</h1>
     <div id="mensajes" aria-live="polite">
       {% if token %}<div class="alert alert-info" role="status">{{ t("activar.activando") }}</div>{% endif %}
     </div>
@@ -24,6 +25,7 @@
         <button class="btn btn-outline-primary" type="submit">{{ t("activar.enviar") }}</button>
       </form>
     </section>
+  </div>
 </div>
 <span id="token" data-token="{{ token or '' }}" hidden></span>
 {% endblock %}

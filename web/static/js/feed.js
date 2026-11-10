@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t } = Banca;
+  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo, autor } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -16,12 +16,17 @@
 
     const tarjeta = (p) => el("a", { class: `card h-100 text-decoration-none text-body tarjeta-publicacion tipo-${p.tipo}`,
                 href: `/publicaciones/${encodeURIComponent(p.id)}` },
+        p.miniatura ? el("img", { class: "miniatura-publicacion", src: p.miniatura, loading: "lazy",
+                                  alt: t("galeria.miniatura_alt", { titulo: p.titulo }) }) : null,
         el("div", { class: "card-body" },
-          el("div", { class: "d-flex gap-2 mb-2" },
-            el("span", { class: "badge etiqueta-tipo", text: TIPOS[p.tipo] }),
-            p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null),
+          el("div", { class: "d-flex flex-wrap gap-2 mb-2" },
+            el("span", { class: "badge etiqueta-tipo" }, ...etiquetaTipo(p.tipo)),
+            p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null,
+            p.num_imagenes ? el("span", { class: "badge cantidad-imagenes" }, icono("bi-images"),
+              ` ${p.num_imagenes === 1 ? t("galeria.una_imagen") : t("galeria.num_imagenes", { n: p.num_imagenes })}`) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
-          el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), t("separador"),
+          el("p", { class: "small text-body-secondary mb-0 d-flex align-items-center flex-wrap" },
+            autor(p.nickname_autor, p.apariencia_autor, { enlace: false }), t("separador"),
             el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))));
 
     const url = (cursor) => {
@@ -46,7 +51,7 @@
         siguiente = cursor;
         bloquesCargados = Math.ceil(items.length / ultima.tamano_bloque) || 1;
         lista.replaceChildren(...items.map(tarjeta));
-        vacio.textContent = ultima.mensaje_vacio || "";
+        document.getElementById("vacio-texto").textContent = ultima.mensaje_vacio || "";
         vacio.classList.toggle("d-none", !ultima.mensaje_vacio);
         centinela.textContent = siguiente ? t("feed.cargando_mas") : "";
         limpiar(mensajes);
@@ -93,20 +98,41 @@
     const acciones = document.getElementById("acciones");
     const enlaceId = encodeURIComponent(id);
 
+    /* Galería (SRS v2.0): imagen grande y miniaturas; la miniatura activa lleva aria-current. */
+    function mostrarGaleria(p) {
+      if (!p.imagenes || !p.imagenes.length) return;
+      const total = p.imagenes.length;
+      const grande = document.getElementById("galeria-imagen");
+      const miniaturas = document.getElementById("galeria-miniaturas");
+      const ver = (i) => {
+        grande.src = p.imagenes[i];
+        grande.alt = t("galeria.alt", { n: i + 1, total, titulo: p.titulo });
+        miniaturas.querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", String(i === j)));
+      };
+      if (total > 1) {
+        miniaturas.replaceChildren(...p.imagenes.map((url, i) => el("button", {
+          type: "button", "aria-label": t("galeria.miniatura", { n: i + 1, total }), onclick: () => ver(i) },
+          el("img", { src: url, alt: "", loading: "lazy" }))));
+      }
+      ver(0);
+      document.getElementById("galeria").hidden = false;
+    }
+
     api(`/api/publicaciones/${enlaceId}`).then((p) => {
       const tipo = document.getElementById("tipo");
-      tipo.textContent = TIPOS[p.tipo];
+      tipo.replaceChildren(...etiquetaTipo(p.tipo));
       tipo.classList.add(`tipo-${p.tipo}`);  // Gestalt: mismo color que en el feed (similitud)
       document.getElementById("titulo").textContent = p.titulo;
       document.getElementById("descripcion").textContent = p.descripcion;
-      document.getElementById("autor").textContent = p.nickname_autor;
+      mostrarGaleria(p);
+      document.getElementById("autor").replaceChildren(autor(p.nickname_autor, p.apariencia_autor));  // enlace al perfil
       const r = document.getElementById("restante");
       r.dataset.expira = p.fecha_expiracion;
       r.textContent = restante(p.fecha_expiracion);
       document.getElementById("propia").classList.toggle("d-none", !p.es_propia);
-      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder`, text: t("feed.responder") }));
-      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}`, text: t("feed.abrir_chat") }));
-      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar`, text: t("feed.reportar") }));
+      if (p.puede_responder) acciones.append(el("a", { class: "btn btn-primary", href: `/publicaciones/${enlaceId}/responder` }, icono("bi-reply"), ` ${t("feed.responder")}`));
+      if (p.chat_existente_id) acciones.append(el("a", { class: "btn btn-primary", href: `/chats/${encodeURIComponent(p.chat_existente_id)}` }, icono("bi-chat-text"), ` ${t("feed.abrir_chat")}`));
+      if (p.puede_reportar) acciones.append(el("a", { class: "btn btn-outline-danger", href: `/publicaciones/${enlaceId}/reportar` }, icono("bi-flag"), ` ${t("feed.reportar")}`));
       tarjeta.classList.remove("d-none");
     }).catch((error) => {
       if (error.status !== 401) alerta(mensajes, error.message, error.status === 410 ? "secondary" : "danger");  // RF-FED-10

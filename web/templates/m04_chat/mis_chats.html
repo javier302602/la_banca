@@ -5,10 +5,14 @@
 {% block pagina %}mis-chats{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-3">{{ t("chats.titulo") }}</h1>
+<h1 class="h4 mb-3"><i class="bi bi-chat-dots icono-titulo" aria-hidden="true"></i>{{ t("chats.titulo") }}</h1>
 <div id="mensajes" aria-live="polite"></div>
 <div class="list-group" id="lista"></div>
-<p class="text-body-secondary d-none" id="vacio">{{ t("chats.vacio") }}</p>
+<div class="estado-vacio d-none" id="vacio">
+  <img src="/static/img/vacio-chats.svg" alt="">
+  <p class="mb-3">{{ t("chats.vacio") }}</p>
+  <a class="btn btn-primary btn-sm" href="/feed"><i class="bi bi-lightning-charge" aria-hidden="true"></i> {{ t("vacio.ver_feed") }}</a>
+</div>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/chat.js"></script>{% endblock %}

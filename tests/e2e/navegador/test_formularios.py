@@ -85,7 +85,7 @@ def test_chat_error_junto_al_mensaje_y_etiquetas_visibles(navegador, servidor, u
         # RNF-USA-07: etiquetas visibles del mensaje y de la imagen
         assert pagina.locator("label[for=texto]").is_visible() and pagina.locator("label[for=imagen]").is_visible()
         pagina.click("#form-mensaje button[type=submit]")
-        assert _error_del_campo(pagina, "texto") == "Escribe un mensaje o adjunta una imagen"
+        assert _error_del_campo(pagina, "texto") == "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker"
     finally:
         autor.close()
         lector.close()
