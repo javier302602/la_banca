@@ -151,7 +151,13 @@
     "mensaje": "Mensaje",
     "placeholder": "Escribe un mensaje",
     "imagen": "O una imagen (JPG, PNG o WebP, hasta 5 MB)",
-    "enviar": "Enviar"
+    "enviar": "Enviar",
+    "imagen_corto": "Imagen",
+    "documento": "Documento",
+    "emojis": "Emojis",
+    "stickers": "Stickers",
+    "ayuda_adjuntos": "Imagen JPG, PNG o WebP de hasta 5 MB. Documento PDF, DOCX, XLSX, PPTX o TXT de hasta 10 MB (sin macros).",
+    "historial": "Mensajes"
   },
   "responder": {
     "titulo": "Responder",
@@ -243,7 +249,17 @@
       "vacio": "Escribe un mensaje o adjunta una imagen",
       "nuevo": "Nuevo",
       "expiro": "Este chat expiró",
-      "abrir_chat": "Abrir el chat"
+      "abrir_chat": "Abrir el chat",
+      "vacio_v2": "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker",
+      "un_contenido": "Un mensaje lleva texto, una imagen, un sticker o un documento: solo uno",
+      "enviado": "Enviado",
+      "visto": "Visto",
+      "descargar": "Descargar",
+      "quitar_adjunto": "Quitar adjunto",
+      "adjunto": "Adjunto: {nombre} ({tamano})",
+      "documento_grande": "El documento supera el tamaño máximo de 10 MB",
+      "panel_emojis": "Elegir un emoji",
+      "panel_stickers": "Enviar un sticker"
     },
     "publicaciones": {
       "cupo": "Publicaciones activas: {activas} de {maximo}",
@@ -285,6 +301,40 @@
       "num_imagenes": "{n} imágenes",
       "una_imagen": "1 imagen",
       "miniatura_alt": "Primera imagen de «{titulo}»"
+    },
+    "tamano": {
+      "kb": "{n} KB",
+      "mb": "{n} MB",
+      "bytes": "{n} B"
+    },
+    "stickers": {
+      "sticker-01": "Cara feliz",
+      "sticker-02": "Cara riendo",
+      "sticker-03": "Cara triste",
+      "sticker-04": "Cara sorprendida",
+      "sticker-05": "Cara guiñando un ojo",
+      "sticker-06": "Cara enamorada",
+      "sticker-07": "Cara pensativa",
+      "sticker-08": "Taza de café",
+      "sticker-09": "Libro abierto",
+      "sticker-10": "Lápiz",
+      "sticker-11": "Calculadora",
+      "sticker-12": "Reloj",
+      "sticker-13": "Bombilla: ¡idea!",
+      "sticker-14": "Cohete",
+      "sticker-15": "Corazón",
+      "sticker-16": "Estrella",
+      "sticker-17": "Pulgar arriba",
+      "sticker-18": "Fiesta",
+      "sticker-19": "Mochila",
+      "sticker-20": "Visto bueno"
+    },
+    "iconos_documento": {
+      "pdf": "bi-file-earmark-pdf",
+      "docx": "bi-file-earmark-word",
+      "xlsx": "bi-file-earmark-excel",
+      "pptx": "bi-file-earmark-ppt",
+      "txt": "bi-file-earmark-text"
     }
   },
   "tema": {

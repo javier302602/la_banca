@@ -184,7 +184,7 @@ class IChatRepository(ABC):
         """Atómico (RNF-FIA-03). Lanza Conflicto si ya existe un chat del respondedor sobre la publicación."""
         raise NotImplementedError
     async def eliminar_chat(self, chat_id: str) -> list[str]:
-        """Elimina el chat y sus mensajes; devuelve las referencias de imagen a borrar."""
+        """Elimina el chat y sus mensajes; devuelve las referencias de imágenes y documentos a borrar."""
         raise NotImplementedError
     async def listar_activos_por_usuario(self, usuario_id: str, ahora: datetime) -> list[Chat]: raise NotImplementedError
     async def buscar_por_id(self, chat_id: str) -> Chat | None: raise NotImplementedError

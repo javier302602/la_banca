@@ -91,6 +91,28 @@ vencidas o cerradas y borra los objetos (`imagenes_de_publicaciones_eliminadas`)
 | 4.3 | Documentos adjuntos: PDF, DOCX, XLSX, PPTX y TXT de hasta 10 MB. Tipo validado por contenido; se rechazan ejecutables y Office con macros (`.docm`, `.xlsm`, `.pptm`). Se sirven solo a los dos participantes con `Content-Disposition: attachment` y `X-Content-Type-Options: nosniff`, y se muestran como tarjeta con icono, nombre y tamaño | **RN-19** y **RF-CHT-10** («no debe permitir … archivos que no sean imágenes»), RNF-SEG-04, RNF-REN-04 | **Modifica** | Compartir apuntes y prácticas es un caso de uso frecuente. Controles: validación por contenido y descarga forzada para impedir la ejecución en el navegador. |
 | 4.4 | Los reportes de chat conservan también los documentos | RF-REP-17, RN-24 | Amplía | Evidencia completa del chat reportado. |
 
+**Implementación (Fase 4).** `POST /api/chats/{id}/mensajes` acepta `texto`, `imagen`, `sticker` (`sticker-01`…`20`)
+o `documento`: exactamente uno (`app/shared/domain/reglas.validar_contenido_chat`). La validación de documentos está
+en `app/shared/domain/documentos.py`: PDF por la firma `%PDF-`; DOCX/XLSX/PPTX como ZIP con `[Content_Types].xml` y
+una sola parte principal; macros detectadas por `vbaProject.bin` o un tipo «macroEnabled»; ejecutables PE, ELF,
+Mach-O y `#!` rechazados aunque se renombren; Office antiguo (OLE) rechazado; TXT solo UTF-8 sin caracteres de
+control. El nombre se sanea y lleva la extensión del tipo detectado. Campos nuevos en `messages`: `sticker` y
+`documentAttachment` (`objectKey` con prefijo `documentos/`, `mimeType`, `sizeBytes`, `fileName`, `kind`,
+`storageBucket`). `GET /api/chats/{id}/mensajes/{m}/documento` responde con `Content-Disposition: attachment`
+(RFC 6266/5987), `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store` y
+`Content-Security-Policy: default-src 'none'; sandbox`. `GET /api/chats/{id}` devuelve `visto_hasta` (el
+`lastReadAt` de la otra persona). CU-14 copia los documentos a retención (`messagesSnapshot[].document` y
+`retainedImageKeys`, que pasa a significar «archivos retenidos»); EA-03 borra los documentos de los chats
+expirados y EA-05 las copias vencidas. Texto propuesto:
+
+| Id | Texto |
+|---|---|
+| RN-19 (modificada) | Un mensaje contiene exactamente uno de: texto (1–500 caracteres, emojis incluidos), una imagen, un sticker del paquete del sistema o un documento. |
+| RF-CHT-10 (modificado) | El sistema no permitirá adjuntar archivos distintos de imágenes JPG/PNG/WebP ≤ 5 MB y documentos PDF, DOCX, XLSX, PPTX o TXT ≤ 10 MB; el tipo se determinará por el contenido y se rechazarán ejecutables y documentos con macros. |
+| RF-CHT-27 | El sistema entregará los documentos solo a los dos participantes del chat vigente, como descarga (attachment) y con `nosniff`. |
+| RF-CHT-21 (modificado) | … y mostrará a quien envió un mensaje si la otra persona ya lo vio (su última lectura es posterior al envío). |
+| RF-CHT-28 | El chat ofrecerá un selector de emojis Unicode y un paquete de 20 stickers propios; cada sticker tiene un nombre accesible. |
+
 ### Fase 5 — Despliegue en un servidor propio
 
 | # | Cambio | Requisitos del SRS v1.9 afectados | Tipo | Justificación |

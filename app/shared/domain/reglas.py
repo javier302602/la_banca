@@ -166,6 +166,33 @@ def validar_parametro(clave: ClaveParametro, valor_crudo: str | int) -> str | in
 
 
 # --- Contenido de un mensaje del chat (RN-19, RF-CHT-08–10) ---------------------
+MSG_UN_CONTENIDO = "Un mensaje lleva texto, una imagen, un sticker o un documento: solo uno"
+MSG_SIN_CONTENIDO = "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker"
+
+
+def validar_contenido_chat(texto: str | None, imagen: bytes | None, sticker: str | None,
+                           documento: bytes | None) -> tuple[str | None, str | None]:
+    """SRS v2.0 (RN-19 modificada): exactamente uno de texto, imagen, sticker o documento.
+
+    Devuelve (texto normalizado | None, mime de la imagen | None); el sticker y el documento se validan aparte.
+    """
+    from app.shared.domain.entities import STICKERS
+
+    texto_normalizado = normalizar_texto(texto) or None
+    presentes = sum(1 for x in (texto_normalizado, imagen, sticker, documento) if x)
+    if presentes > 1:
+        raise ValueError(MSG_UN_CONTENIDO)
+    if presentes == 0:
+        raise ValueError(MSG_SIN_CONTENIDO)
+    if sticker:
+        if sticker not in STICKERS:
+            raise ValueError("Ese sticker no existe")
+        return None, None
+    if documento:
+        return None, None
+    return validar_contenido_mensaje(texto, imagen)
+
+
 def validar_contenido_mensaje(texto: str | None, imagen: bytes | None) -> tuple[str | None, str | None]:
     """Devuelve (texto normalizado | None, mime de la imagen | None). Exactamente uno de los dos."""
     from app.shared.domain.entities import LONGITUD_MENSAJE

@@ -39,8 +39,17 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
   botón para quitar cada una; miniatura y cantidad en el feed; galería con miniaturas en el detalle.
 - Al reportar una publicación, sus imágenes se copian al área de retención (EA-05 las borra al vencer el plazo).
 - EA-03 borra además las imágenes de las publicaciones vencidas o cerradas.
+- **Fase 4 — Chat estilo Messenger:** burbujas agrupadas por autor con la foto o el avatar de la otra persona
+  junto al último mensaje de cada grupo; hora y estado «Enviado» / «Visto» (según su `lastReadAt`); selector de
+  32 emojis Unicode (sin librerías) y paquete propio de 20 stickers SVG con nombre accesible; documentos PDF,
+  DOCX, XLSX, PPTX y TXT de hasta 10 MB validados por contenido (se rechazan ejecutables, Office con macros y Office
+  antiguo), descargados como adjunto con `nosniff` solo por los dos participantes y mostrados como tarjeta con
+  icono, nombre y tamaño.
+- Los reportes de chat conservan los documentos y los stickers; EA-03 borra los documentos de los chats expirados.
 
 ### Changed
+- `GET /api/chats/{id}` devuelve `visto_hasta`; los mensajes incluyen `sticker`, `sticker_url` y `documento`.
+- El chat expone al otro participante cuándo se leyó su mensaje (la política de privacidad lo informa).
 - `POST /api/publicaciones` acepta también `multipart/form-data` (campo `imagenes`); el JSON de v1 sigue
   funcionando igual.
 - Términos y política de privacidad: declaran la foto, el avatar, la biografía y la fecha de ingreso como datos

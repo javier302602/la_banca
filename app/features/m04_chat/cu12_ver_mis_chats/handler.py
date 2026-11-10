@@ -17,8 +17,10 @@ from app.shared.domain.errors import NoDisponible, NoEncontrado
 from app.shared.domain.perfiles import apariencias
 from app.shared.domain.reglas import minutos_hacia_arriba, segundos_restantes
 
+from app.features.m04_chat.cu11_enviar_mensaje.handler import documento_response, url_sticker
+
 from .request import (AbrirChatRequest, AvisoExpiracion, ChatDetalleResponse, ChatResumenResponse,
-                      ImagenDescargada, MensajeResponse, MisChatsResponse)
+                      DocumentoDescargado, ImagenDescargada, MensajeResponse, MisChatsResponse)
 
 MSG_EXPIRADO = "Este chat expiró"  # RF-CHT-25
 
@@ -69,8 +71,11 @@ class VerMisChatsHandler:
             mensajes=[MensajeResponse(id=m.id, es_propio=m.emisor_id == estudiante_id,
                                       nickname_emisor=m.nickname_emisor, texto=m.texto,
                                       imagen_url=url_imagen(chat.id, m.id) if m.imagen else None,
+                                      sticker=m.sticker, sticker_url=url_sticker(m.sticker) if m.sticker else None,
+                                      documento=documento_response(chat.id, m.id, m.documento),
                                       fecha_envio=m.fecha_envio, hora=hora_hhmm(m.fecha_envio))
                       for m in mensajes],
+            visto_hasta=chat.ultima_lectura.get(otro_id),
         )
 
     async def imagen(self, estudiante_id: str, chat_id: str, mensaje_id: str) -> ImagenDescargada:
@@ -80,6 +85,16 @@ class VerMisChatsHandler:
         if contenido is None:
             raise NoEncontrado("La imagen no existe", codigo="imagen_inexistente")
         return ImagenDescargada(contenido, mensaje.imagen.mime_type)
+
+    async def documento(self, estudiante_id: str, chat_id: str, mensaje_id: str) -> DocumentoDescargado:
+        """Solo para los dos participantes de un chat vigente (SRS v2.0, cambio 4.4; RNF-SEG-04)."""
+        chat = await self._chat_vigente(estudiante_id, chat_id, self._clock.ahora())
+        mensaje = await self._chats.buscar_mensaje(chat.id, mensaje_id)
+        d = mensaje.documento if mensaje else None
+        contenido = await self._imagenes.leer(d.referencia) if d else None
+        if contenido is None:
+            raise NoEncontrado("El documento no existe", codigo="documento_inexistente")
+        return DocumentoDescargado(contenido, d.mime_type, d.nombre)
 
     async def _chat_vigente(self, estudiante_id: str, chat_id: str, ahora: datetime) -> Chat:
         chat = await self._chats.buscar_por_id(chat_id)

@@ -297,7 +297,7 @@ class FakeChatRepository(IChatRepository):
         propios = [m for m in self.mensajes.values() if m.chat_id == chat_id]
         for m in propios:
             del self.mensajes[m.id]
-        return [m.imagen.referencia for m in propios if m.imagen]
+        return [r for m in propios for r in m.archivos]
 
     async def listar_activos_por_usuario(self, usuario_id, ahora):
         activos = [copy.deepcopy(c) for c in self.chats.values()
