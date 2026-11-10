@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {# CU-10 — Responder a una publicación #}
 
-{% block title %}Responder{% endblock %}
+{% block title %}{{ t("responder.titulo") }}{% endblock %}
 {% block pagina %}responder{% endblock %}
 
 {% block content %}
 <div class="mx-auto" style="max-width: 40rem">
-  <p><a href="/publicaciones/{{ publicacion_id }}">← Volver a la publicación</a></p>
-  <h1 class="h4 mb-3">Responder</h1>
+  <p><a href="/publicaciones/{{ publicacion_id }}">{{ t("responder.volver") }}</a></p>
+  <h1 class="h4 mb-3">{{ t("responder.titulo") }}</h1>
   <div id="mensajes" aria-live="polite"></div>
   <article class="card mb-3 d-none" id="contexto" aria-labelledby="contexto-titulo">
     <div class="card-body">
-      <p class="small text-body-secondary mb-2">Respondes a la publicación de <span id="contexto-autor"></span></p>
+      <p class="small text-body-secondary mb-2">{{ t("responder.contexto") }} <span id="contexto-autor"></span></p>
       <span class="badge etiqueta-tipo mb-2" id="contexto-tipo"></span>
       <h2 class="h6 mb-1" id="contexto-titulo"></h2>
       <p class="small mb-0 contenido-libre" id="contexto-descripcion"></p>
@@ -19,15 +19,20 @@
   </article>
   <form id="form-mensaje" novalidate>
     <div class="mb-3">
-      <label class="form-label" for="texto">Primer mensaje</label>
+      <label class="form-label" for="texto">{{ t("responder.primer_mensaje") }}</label>
       <textarea class="form-control" id="texto" name="texto" rows="3" maxlength="500"></textarea>
-      <div class="form-text"><span id="contador-texto"></span> · o adjunta una imagen (no ambos)</div>
+      <div class="form-text"><span id="contador-texto"></span>{{ t("js.separador") }}{{ t("responder.o_imagen") }}</div>
     </div>
     <div class="mb-3">
-      <label class="form-label" for="imagen">Imagen (JPG, PNG o WebP, hasta 5 MB)</label>
-      <input class="form-control" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp">
+      <label class="form-label" for="imagen">{{ t("responder.imagen") }}</label>
+      <div class="selector-archivo">
+            <input class="entrada-archivo" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
+                   aria-describedby="nombre-archivo">
+            <span class="btn btn-outline-secondary btn-sm boton-archivo" aria-hidden="true">{{ t("js.imagen.elegir") }}</span>
+            <span class="small text-body-secondary nombre-archivo" id="nombre-archivo">{{ t("js.imagen.ninguna") }}</span>
+          </div>
     </div>
-    <button class="btn btn-primary" type="submit">Enviar y abrir chat</button>
+    <button class="btn btn-primary" type="submit">{{ t("responder.enviar") }}</button>
   </form>
 </div>
 <span id="publicacion" data-id="{{ publicacion_id }}" hidden></span>

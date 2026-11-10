@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {# CU-09 — Detalle de publicación #}
 
-{% block title %}Publicación{% endblock %}
+{% block title %}{{ t("detalle.titulo_pagina") }}{% endblock %}
 {% block pagina %}detalle{% endblock %}
 
 {% block content %}
 <div class="mx-auto" style="max-width: 44rem">
-  <p><a href="/feed">← Volver al feed</a></p>
+  <p><a href="/feed">{{ t("detalle.volver") }}</a></p>
   <div id="mensajes" aria-live="polite"></div>
   <article class="card d-none" id="detalle">
     <div class="card-body">
       <div class="d-flex gap-2 align-items-center mb-2">
         <span class="badge etiqueta-tipo" id="tipo"></span>
-        <span class="badge etiqueta-propia d-none" id="propia">Tu publicación</span>
+        <span class="badge etiqueta-propia d-none" id="propia">{{ t("js.feed.tu_publicacion") }}</span>
       </div>
       <h1 class="h4 card-title" id="titulo"></h1>
       <p class="card-text contenido-libre" id="descripcion"></p>
-      <p class="small text-body-secondary mb-3">Por <span id="autor"></span> · Tiempo restante:
-        <span id="restante"></span></p>
+      <p class="small text-body-secondary mb-3">{{ t("detalle.por") }} <span id="autor"></span> ·
+        {{ t("detalle.tiempo_restante") }} <span id="restante"></span></p>
       <div class="d-flex gap-2" id="acciones"></div>
     </div>
   </article>

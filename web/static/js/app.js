@@ -4,12 +4,44 @@
 
 const Banca = (() => {
   const CABECERA_AUTOMATICA = { "X-Actualizacion-Automatica": "1" };  // RF-AUT-25
-  const TIPOS = { NECESITO: "Necesito", OFREZCO: "Ofrezco", ACTIVIDAD: "Actividad" };
   let desfase = 0;  // ms entre la hora del servidor y la del navegador (RF-FED-09: hora del sistema)
+
+  /* i18n: los textos vienen del catálogo es-PE que la página incrusta en <script id="i18n"> (claves «js.*» de
+   * web/i18n/es-PE.json). Idioma y zona horaria fijos por el SRS: es-PE y America/Lima (RN-34). */
+  const IDIOMA = "es-PE";
+  const ZONA_HORARIA = "America/Lima";
+  let catalogo = null;
+
+  function cargarCatalogo() {
+    if (catalogo) return catalogo;
+    const nodo = typeof document.getElementById === "function" ? document.getElementById("i18n") : null;
+    catalogo = nodo ? JSON.parse(nodo.textContent) : {};
+    return catalogo;
+  }
+
+  function t(clave, parametros = {}) {
+    const texto = cargarCatalogo()[clave];
+    if (texto === undefined) return clave;  // clave faltante: visible para detectarla en pruebas
+    return texto.replace(/\{(\w+)\}/g, (todo, nombre) => (nombre in parametros ? String(parametros[nombre]) : todo));
+  }
+
+  const TIPOS = new Proxy({}, { get: (_, tipo) => t(`tipos.${String(tipo)}`) });
+
+  const FORMATO_HORA = new Intl.DateTimeFormat(IDIOMA, { timeZone: ZONA_HORARIA, hour: "2-digit", minute: "2-digit",
+                                                         hourCycle: "h23" });
+  const FORMATO_FECHA = new Intl.DateTimeFormat(IDIOMA, { timeZone: ZONA_HORARIA, dateStyle: "long" });
+
+  function formatoHora(fechaIso) { return FORMATO_HORA.format(new Date(fechaIso)); }  // RF-CHT-11: HH:MM en Lima
+
+  function formatoFecha(fecha) {  // «AAAA-MM-DD» se interpreta como ese día en Lima, no en UTC
+    const valor = /^\d{4}-\d{2}-\d{2}$/.test(fecha) ? `${fecha}T12:00:00-05:00` : fecha;
+    const d = new Date(valor);
+    return Number.isNaN(d.getTime()) ? String(fecha) : FORMATO_FECHA.format(d);
+  }
 
   class ErrorApi extends Error {
     constructor(status, datos) {
-      super((datos && datos.detail) || "Ocurrió un error. Inténtalo de nuevo");
+      super((datos && datos.detail) || t("error_generico"));
       this.status = status;
       this.codigo = datos && datos.codigo;
       this.datos = datos || {};
@@ -32,7 +64,7 @@ const Banca = (() => {
     try {
       respuesta = await fetch(url, { method: metodo, headers, body, credentials: "same-origin" });
     } catch (e) {
-      throw new ErrorApi(0, { detail: "Sin conexión. Revisa tu red e inténtalo de nuevo" });
+      throw new ErrorApi(0, { detail: t("sin_conexion") });
     }
     let datos = null;
     if (respuesta.status !== 204) {
@@ -49,12 +81,12 @@ const Banca = (() => {
 
   function restante(fechaIso) {  // RNF-USA-01: «X h Y min», «X h», «Y min» o «menos de 1 min»
     const ms = new Date(fechaIso).getTime() - ahora();
-    if (ms <= 0) return "Expirada";
+    if (ms <= 0) return t("tiempo.expirada");
     const minutos = Math.floor(ms / 60000);
-    if (minutos < 1) return "menos de 1 min";
+    if (minutos < 1) return t("tiempo.menos_de_un_minuto");
     const h = Math.floor(minutos / 60), m = minutos % 60;
-    if (h === 0) return `${m} min`;
-    return m === 0 ? `${h} h` : `${h} h ${m} min`;
+    if (h === 0) return t("tiempo.minutos", { m });
+    return m === 0 ? t("tiempo.horas", { h }) : t("tiempo.horas_minutos", { h, m });
   }
 
   function el(etiqueta, atributos = {}, ...hijos) {
@@ -126,7 +158,7 @@ const Banca = (() => {
   }
 
   function contador(campo, salida, maximo) {  // RF-PUB-12
-    const actualizar = () => { salida.textContent = `${campo.value.trim().length}/${maximo}`; };
+    const actualizar = () => { salida.textContent = t("contador", { usados: campo.value.trim().length, maximo }); };
     campo.addEventListener("input", actualizar);
     actualizar();
   }
@@ -158,7 +190,7 @@ const Banca = (() => {
     if (!archivo || archivo.size <= limite) return archivo;
     let mapa;
     try { mapa = await createImageBitmap(archivo); }
-    catch (e) { throw new ErrorApi(422, { detail: "La imagen está dañada o no se puede leer" }); }
+    catch (e) { throw new ErrorApi(422, { detail: t("imagen.danada") }); }
     const lienzo = document.createElement("canvas");
     const formato = formatoSalida(lienzo);
     let escala = Math.min(1, LADO_MAXIMO / Math.max(mapa.width, mapa.height));
@@ -178,7 +210,7 @@ const Banca = (() => {
     } finally {
       if (mapa.close) mapa.close();
     }
-    throw new ErrorApi(422, { detail: "No se pudo reducir la imagen por debajo de 4 MB" });
+    throw new ErrorApi(422, { detail: t("imagen.no_reducible") });
   }
 
   setInterval(() => refrescarRestantes(), 30000);
@@ -191,12 +223,35 @@ const Banca = (() => {
     try {
       const r = await api("/api/chats", { automatica: true });
       const n = r.items.filter((c) => c.no_leidos).length;
-      insignia.textContent = n ? `${n} ${n === 1 ? "nuevo" : "nuevos"}` : "";
+      insignia.textContent = n ? t(n === 1 ? "no_leidos.uno" : "no_leidos.varios", { n }) : "";
       insignia.classList.toggle("d-none", n === 0);
       insignia.dataset.cargado = "1";
     } catch (e) { /* informativo */ }
   }
+  /* Selector de imagen propio: el texto del control nativo depende del idioma del navegador («Choose File»);
+   * el botón visible y el nombre del archivo salen del catálogo. El <input> real sigue siendo el control
+   * accesible (etiqueta, foco y teclado) y queda superpuesto, transparente, sobre el botón visible. */
+  function prepararSelectorArchivo(raiz = document) {
+    raiz.querySelectorAll(".selector-archivo").forEach((caja) => {
+      const entrada = caja.querySelector("input[type=file]");
+      const nombre = caja.querySelector(".nombre-archivo");
+      const mostrar = () => { nombre.textContent = entrada.files.length ? entrada.files[0].name : t("imagen.ninguna"); };
+      entrada.addEventListener("change", mostrar);
+      entrada.closest("form")?.addEventListener("reset", () => setTimeout(mostrar));
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    // Fechas visibles formateadas con Intl en America/Lima (p. ej. la versión de los términos)
+    document.querySelectorAll("time[data-fecha]").forEach((n) => { n.textContent = formatoFecha(n.getAttribute("datetime")); });
+    prepararSelectorArchivo();
+    // WCAG 3.3.7 (entrada redundante): el correo escrito en un paso se propone en el siguiente
+    // (registro → activación → inicio de sesión → recuperación). Solo en sessionStorage de esta pestaña.
+    document.querySelectorAll("[data-recordar]").forEach((campo) => {
+      const clave = `banca.${campo.dataset.recordar}`;
+      try { if (!campo.value) campo.value = sessionStorage.getItem(clave) || ""; } catch (e) { /* sin almacenamiento */ }
+      campo.addEventListener("change", () => { try { sessionStorage.setItem(clave, campo.value.trim()); } catch (e) { /* */ } });
+    });
     if (!document.getElementById("nav-no-leidos")) return;  // sin sesión no hay menú de chats
     actualizarNoLeidos();
     setInterval(() => { if (document.visibilityState === "visible") actualizarNoLeidos(); }, 30000);
@@ -210,7 +265,8 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, sincronizar, ahora, restante, el, alerta, limpiar, contador,
+  return { api, ErrorApi, TIPOS, t, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
+           alerta, limpiar, contador,
            limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };
 })();

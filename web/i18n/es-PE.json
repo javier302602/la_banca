@@ -1,0 +1,239 @@
+{
+  "_meta": {
+    "idioma": "es-PE",
+    "nombre": "Español (Perú)",
+    "zona_horaria": "America/Lima",
+    "nota": "Único idioma activo (RNF-USA-05). Las claves bajo «js» se envían al navegador. Interpolación: {nombre}."
+  },
+  "app": {
+    "nombre": "La Banca",
+    "titulo_pagina": "{titulo} · La Banca"
+  },
+  "nav": {
+    "mostrar_menu": "Mostrar menú",
+    "ahora": "Ahora",
+    "publicar": "Publicar",
+    "mis_publicaciones": "Mis publicaciones",
+    "mis_chats": "Mis chats",
+    "cerrar_sesion": "Cerrar sesión",
+    "iniciar_sesion": "Iniciar sesión",
+    "registrarse": "Registrarse"
+  },
+  "pie": {
+    "terminos": "Términos de uso y política de privacidad",
+    "ayuda": "Ayuda"
+  },
+  "campos": {
+    "correo_institucional": "Correo institucional",
+    "contrasena": "Contraseña",
+    "confirmar_contrasena": "Confirma la contraseña",
+    "ayuda_nickname": "De 3 a 20 caracteres: letras sin tilde, dígitos o guion bajo (_).",
+    "ayuda_contrasena": "De 8 a 64 caracteres, con al menos una letra y un dígito."
+  },
+  "login": {
+    "titulo": "Iniciar sesión",
+    "aviso_inactividad": "Tu sesión se cerró por inactividad",
+    "ingresar": "Ingresar",
+    "olvidaste": "¿Olvidaste tu contraseña?",
+    "crear_cuenta": "Crear una cuenta",
+    "nuevo_enlace": "Solicitar un nuevo enlace de activación"
+  },
+  "registro": {
+    "titulo_pagina": "Registrar cuenta",
+    "titulo": "Crear cuenta",
+    "placeholder_correo": "usuario@{dominio}",
+    "nickname": "Nickname público",
+    "acepto": "Acepto los",
+    "terminos": "términos de uso y la política de privacidad",
+    "boton": "Registrarme",
+    "ya_tienes": "¿Ya tienes cuenta?",
+    "inicia_sesion": "Inicia sesión"
+  },
+  "activar": {
+    "titulo": "Activar cuenta",
+    "activando": "Activando tu cuenta…",
+    "continuar": "Continuar",
+    "subtitulo": "Solicitar un nuevo enlace de activación",
+    "correo": "Correo con el que te registraste",
+    "enviar": "Enviar nuevo enlace"
+  },
+  "recuperar": {
+    "titulo": "Recuperar contraseña",
+    "enviar": "Enviar enlace",
+    "volver": "Volver a iniciar sesión"
+  },
+  "restablecer": {
+    "titulo": "Nueva contraseña",
+    "nueva": "Nueva contraseña",
+    "guardar": "Guardar contraseña",
+    "nuevo_enlace": "Solicitar un nuevo enlace"
+  },
+  "terminos": {
+    "titulo": "Términos de uso y política de privacidad",
+    "version": "Versión {version}"
+  },
+  "perfil": {
+    "titulo": "Mi perfil",
+    "nickname": "Nickname",
+    "guardar": "Guardar nickname"
+  },
+  "tipos": {
+    "TODOS": "Todos",
+    "NECESITO": "Necesito",
+    "OFREZCO": "Ofrezco",
+    "ACTIVIDAD": "Actividad"
+  },
+  "motivos": {
+    "INAPPROPRIATE": "Contenido inapropiado",
+    "HARASSMENT": "Acoso o comportamiento ofensivo",
+    "SPAM": "Spam",
+    "FRAUD": "Fraude o engaño",
+    "OTHER": "Otro"
+  },
+  "publicar": {
+    "titulo_pagina": "Crear publicación",
+    "titulo": "Nueva publicación",
+    "tipo": "Tipo",
+    "campo_titulo": "Título",
+    "campo_descripcion": "Descripción",
+    "duracion": "Tu publicación estará activa durante 24 horas",
+    "boton": "Publicar"
+  },
+  "mias": {
+    "titulo_pagina": "Mis publicaciones",
+    "titulo": "Mis publicaciones activas",
+    "nueva": "Nueva publicación",
+    "vacio": "No tienes publicaciones activas."
+  },
+  "feed": {
+    "titulo": "Ahora",
+    "tipo": "Tipo",
+    "ver_todos": "Ver todos",
+    "actualizar": "Actualizar"
+  },
+  "detalle": {
+    "titulo_pagina": "Publicación",
+    "volver": "← Volver al feed",
+    "por": "Por",
+    "tiempo_restante": "Tiempo restante:"
+  },
+  "chats": {
+    "titulo": "Mis chats",
+    "vacio": "No tienes chats activos."
+  },
+  "chat": {
+    "titulo_pagina": "Chat",
+    "volver": "← Mis chats",
+    "reportar": "Reportar",
+    "mensaje": "Mensaje",
+    "placeholder": "Escribe un mensaje",
+    "imagen": "O una imagen (JPG, PNG o WebP, hasta 5 MB)",
+    "enviar": "Enviar"
+  },
+  "responder": {
+    "titulo": "Responder",
+    "volver": "← Volver a la publicación",
+    "contexto": "Respondes a la publicación de",
+    "primer_mensaje": "Primer mensaje",
+    "o_imagen": "o adjunta una imagen (no ambos)",
+    "imagen": "Imagen (JPG, PNG o WebP, hasta 5 MB)",
+    "enviar": "Enviar y abrir chat"
+  },
+  "reportar": {
+    "titulo_publicacion": "Reportar publicación",
+    "titulo_chat": "Reportar chat",
+    "volver": "← Volver",
+    "motivo": "Motivo",
+    "observacion": "Observación (opcional)",
+    "enviar": "Enviar reporte"
+  },
+  "ayuda": {
+    "titulo": "Ayuda",
+    "intro": "Respuestas a las dudas más comunes sobre La Banca.",
+    "p_activar": "No me llegó el correo de activación",
+    "r_activar": "Revisa la carpeta de correo no deseado. El enlace vence a las 24 horas; puedes pedir uno nuevo desde «Solicitar un nuevo enlace de activación» (hasta 5 en 24 horas). Una cuenta sin activar se elimina a las 72 horas del registro.",
+    "p_publicacion": "¿Cuánto dura una publicación?",
+    "r_publicacion": "24 horas desde que la creas. Puedes tener hasta 3 activas a la vez y cerrarlas antes desde «Mis publicaciones».",
+    "p_chat": "¿Por qué desapareció un chat?",
+    "r_chat": "Un chat expira tras 24 horas sin mensajes y su contenido se elimina. Cuando falten 10 minutos verás un aviso dentro del chat; enviar un mensaje lo mantiene activo.",
+    "p_reporte": "¿Qué pasa cuando reporto algo?",
+    "r_reporte": "El reporte es confidencial: nadie sabe que lo hiciste. Se conserva una copia del contenido durante 7 días y luego se elimina.",
+    "p_contrasena": "Olvidé mi contraseña",
+    "r_contrasena": "Usa «¿Olvidaste tu contraseña?» en la pantalla de inicio de sesión. El enlace vence a los 30 minutos y, al usarlo, se cierran todas tus sesiones.",
+    "p_datos": "¿Cómo ejerzo mis derechos sobre mis datos personales?",
+    "r_datos": "Consulta la sección «Derechos ARCO» de los términos de uso y la política de privacidad."
+  },
+  "error": {
+    "ir_al_inicio": "Ir al inicio",
+    "404": {
+      "titulo": "Página no encontrada",
+      "mensaje": "La dirección que buscas no existe o ya no está disponible."
+    },
+    "405": {
+      "titulo": "Acción no permitida",
+      "mensaje": "Esta dirección no admite la acción solicitada."
+    }
+  },
+  "js": {
+    "error_generico": "Ocurrió un error. Inténtalo de nuevo",
+    "sin_conexion": "Sin conexión. Revisa tu red e inténtalo de nuevo",
+    "tipos": {
+      "NECESITO": "Necesito",
+      "OFREZCO": "Ofrezco",
+      "ACTIVIDAD": "Actividad"
+    },
+    "tiempo": {
+      "expirada": "Expirada",
+      "menos_de_un_minuto": "menos de 1 min",
+      "minutos": "{m} min",
+      "horas": "{h} h",
+      "horas_minutos": "{h} h {m} min"
+    },
+    "contador": "{usados}/{maximo}",
+    "separador": " · ",
+    "imagen": {
+      "danada": "La imagen está dañada o no se puede leer",
+      "no_reducible": "No se pudo reducir la imagen por debajo de 4 MB",
+      "alt": "Imagen de {nickname}",
+      "elegir": "Elegir imagen",
+      "ninguna": "Ningún archivo seleccionado"
+    },
+    "no_leidos": {
+      "uno": "{n} nuevo",
+      "varios": "{n} nuevos"
+    },
+    "acceso": {
+      "nickname_actualizado": "Nickname actualizado",
+      "solicitar_enlace": "Solicitar un nuevo enlace",
+      "ir_a_iniciar_sesion": "Ir a iniciar sesión",
+      "iniciar_sesion": "Iniciar sesión"
+    },
+    "feed": {
+      "tu_publicacion": "Tu publicación",
+      "cargando_mas": "Cargando más…",
+      "responder": "Responder",
+      "abrir_chat": "Abrir chat",
+      "reportar": "Reportar"
+    },
+    "chat": {
+      "texto_o_imagen": "Un mensaje lleva texto o una imagen, no ambos",
+      "vacio": "Escribe un mensaje o adjunta una imagen",
+      "nuevo": "Nuevo",
+      "expiro": "Este chat expiró",
+      "abrir_chat": "Abrir el chat"
+    },
+    "publicaciones": {
+      "cupo": "Publicaciones activas: {activas} de {maximo}",
+      "cupo_lleno": "Ya tienes {maximo} publicaciones activas, el máximo permitido. Cierra una o espera a que expire.",
+      "ir_a_mias": "Ir a Mis publicaciones",
+      "selecciona_tipo": "Selecciona el tipo de publicación",
+      "tiempo_restante": "Tiempo restante: ",
+      "cerrar": "Cerrar",
+      "confirmar_cierre": "¿Cerrar esta publicación? No podrás reactivarla",
+      "cerrada": "Publicación cerrada"
+    },
+    "reportes": {
+      "volver": "Volver"
+    }
+  }
+}

@@ -22,6 +22,12 @@ async def consultar_terminos(handler: ConsultarTerminosHandler = Depends(get_han
     return await handler.handle()
 
 
+@router.get("/ayuda", include_in_schema=False)
+async def pagina_ayuda(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
+    """Ayuda (WCAG 3.2.6 ayuda consistente, Nielsen H10): enlazada desde el pie de todas las páginas."""
+    return render(request, "m01_acceso/ayuda.html", sesion)
+
+
 @router.get("/terminos", include_in_schema=False)
 async def pagina_terminos(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional),
                           handler: ConsultarTerminosHandler = Depends(get_handler)):

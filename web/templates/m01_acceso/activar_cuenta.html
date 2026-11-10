@@ -1,27 +1,28 @@
 {% extends "base.html" %}
-{# CU-17 — Activar cuenta (y A1: solicitar un nuevo enlace) #}
+{# CU-17 — Activar la cuenta #}
 
-{% block title %}Activar cuenta{% endblock %}
+{% block title %}{{ t("activar.titulo") }}{% endblock %}
 {% block pagina %}activar{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
-    <h1 class="h4 mb-3">Activar cuenta</h1>
+    <h1 class="h4 mb-3">{{ t("activar.titulo") }}</h1>
     <div id="mensajes" aria-live="polite">
-      {% if token %}<div class="alert alert-info" role="status">Activando tu cuenta…</div>{% endif %}
+      {% if token %}<div class="alert alert-info" role="status">{{ t("activar.activando") }}</div>{% endif %}
     </div>
     <div id="continuar" class="d-none mb-4">
-      <a class="btn btn-primary" href="/login">Continuar</a>
+      <a class="btn btn-primary" href="/login">{{ t("activar.continuar") }}</a>
     </div>
     <section id="reenvio" class="{% if token %}d-none{% endif %}">
-      <h2 class="h6">Solicitar un nuevo enlace de activación</h2>
+      <h2 class="h6">{{ t("activar.subtitulo") }}</h2>
       <form id="form-reenvio" novalidate>
         <div class="mb-3">
-          <label class="form-label" for="correo">Correo con el que te registraste</label>
-          <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required>
+          <label class="form-label" for="correo">{{ t("activar.correo") }}</label>
+          <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required
+                 data-recordar="correo">
         </div>
-        <button class="btn btn-outline-primary" type="submit">Enviar nuevo enlace</button>
+        <button class="btn btn-outline-primary" type="submit">{{ t("activar.enviar") }}</button>
       </form>
     </section>
   </div>

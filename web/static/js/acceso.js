@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, el, limpiar, ocupado, mostrarErrores, limpiarErrores, vaciarContrasenas } = Banca;
+  const { api, alerta, el, limpiar, ocupado, mostrarErrores, limpiarErrores, vaciarContrasenas, t } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
   const valor = (id) => document.getElementById(id).value;
@@ -24,9 +24,9 @@
     const enCampo = mostrarErrores(formulario, error);  // RNF-USA-03
     const extras = [];
     if (error.codigo === "cuenta_pendiente" || error.codigo === "cuenta_no_activada" || error.codigo === "enlace_invalido") {
-      extras.push(" ", el("a", { href: "/activar", class: "alert-link", text: "Solicitar un nuevo enlace" }));
+      extras.push(" ", el("a", { href: "/activar", class: "alert-link", text: t("acceso.solicitar_enlace") }));
     }
-    if (error.codigo === "correo_registrado") extras.push(" ", el("a", { href: "/login", class: "alert-link", text: "Ir a iniciar sesión" }));
+    if (error.codigo === "correo_registrado") extras.push(" ", el("a", { href: "/login", class: "alert-link", text: t("acceso.ir_a_iniciar_sesion") }));
     if (!enCampo || extras.length) alerta(mensajes, error.message, error.status === 429 ? "warning" : "danger", ...extras);
     else limpiar(mensajes);
   }
@@ -79,7 +79,7 @@
         const r = await api("/api/contrasena/restablecer", { metodo: "POST", cuerpo: {
           token, contrasena: valor("contrasena"), confirmacion: valor("confirmacion") } });
         document.getElementById("form-restablecer").classList.add("d-none");
-        alerta(mensajes, r.mensaje, "success", " ", el("a", { href: "/login", class: "alert-link", text: "Iniciar sesión" }));
+        alerta(mensajes, r.mensaje, "success", " ", el("a", { href: "/login", class: "alert-link", text: t("acceso.iniciar_sesion") }));
       } catch (error) {
         if (error.codigo === "enlace_invalido") document.getElementById("acciones").classList.remove("d-none");
         throw error;
@@ -92,7 +92,7 @@
       const r = await api("/api/cuentas/me/nickname", { metodo: "PATCH", cuerpo: { nickname: valor("nickname") } });
       const nav = document.getElementById("nav-nickname");
       if (nav) nav.textContent = `@${r.nickname}`;
-      alerta(mensajes, "Nickname actualizado", "success");
+      alerta(mensajes, t("acceso.nickname_actualizado"), "success");
     });
   }
 })();

@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {# CU-04 — Editar nickname (perfil) · CU-16 desde el perfil (RF-AUT-24) #}
 
-{% block title %}Mi perfil{% endblock %}
+{% block title %}{{ t("perfil.titulo") }}{% endblock %}
 {% block pagina %}perfil{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
-    <h1 class="h4 mb-3">Mi perfil</h1>
+    <h1 class="h4 mb-3">{{ t("perfil.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-nickname" novalidate>
       <div class="mb-3">
-        <label class="form-label" for="nickname">Nickname</label>
+        <label class="form-label" for="nickname">{{ t("perfil.nickname") }}</label>
         <input class="form-control" id="nickname" name="nickname" required maxlength="20" value="{{ sesion.nickname }}"
-               aria-describedby="ayuda-nickname">
-        <div class="form-text" id="ayuda-nickname">De 3 a 20 caracteres: letras sin tilde, dígitos o guion bajo (_).</div>
+               autocomplete="nickname" aria-describedby="ayuda-nickname">
+        <div class="form-text" id="ayuda-nickname">{{ t("campos.ayuda_nickname") }}</div>
       </div>
-      <button class="btn btn-primary" type="submit">Guardar nickname</button>
+      <button class="btn btn-primary" type="submit">{{ t("perfil.guardar") }}</button>
     </form>
     <hr>
-    <p class="small mb-1"><a href="/terminos">Términos de uso y política de privacidad</a></p>
-    <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>Cerrar sesión</button>
+    <p class="small mb-1"><a href="/terminos">{{ t("pie.terminos") }}</a></p>
+    <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>{{ t("nav.cerrar_sesion") }}</button>
   </div>
 </div>
 {% endblock %}
