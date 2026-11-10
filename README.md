@@ -86,8 +86,15 @@ En cualquier otro entorno esas rutas responden 404.
 MONGO_URI="mongodb+srv://..." python scripts/respaldo_mongodb.py --destino /ruta/respaldos
 ```
 
-Prográmalo una vez al día (p. ej. a las 03:00 UTC−5) en un equipo con almacenamiento persistente; Vercel no sirve
-para esto porque su sistema de archivos es efímero.
+`.github/workflows/backup.yml` lo ejecuta a diario (03:00 UTC−5) y sube el volcado **cifrado** (GPG, AES-256) como
+artifact con retención de 7 días. Se activa al crear estos secrets del repositorio:
+
+- `MONGO_URI`: cadena de conexión de producción. Sin ella, el workflow termina sin hacer nada.
+- `BACKUP_PASSPHRASE`: frase de cifrado. Es obligatoria, porque el volcado contiene datos personales y los artifacts
+  los descarga cualquiera con acceso de lectura al repositorio. Guárdala fuera de GitHub: sin ella no se puede
+  restaurar.
+
+Para restaurar: `gpg --decrypt <archivo>.gpg > dump.archive.gz` y `mongorestore --gzip --archive=dump.archive.gz --uri ...`.
 
 ## Despliegue en Vercel
 

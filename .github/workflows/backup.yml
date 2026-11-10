@@ -1,0 +1,84 @@
+# Respaldo diario de MongoDB (Entregable 2 §8.1, PA-37, RNF-PRI-02).
+# Corre scripts/respaldo_mongodb.py, cifra el volcado y lo sube como artifact con retención de 7 días.
+#
+# Secrets del repositorio:
+#   MONGO_URI          cadena de conexión de producción. Mientras no exista, el workflow termina sin hacer nada.
+#   BACKUP_PASSPHRASE  frase para cifrar el volcado (GPG, AES-256). Obligatoria si existe MONGO_URI: el volcado
+#                      contiene datos personales (Ley N.° 29733) y los artifacts los puede descargar cualquiera con
+#                      acceso de lectura al repositorio. Sin ella el workflow falla en vez de subir el volcado sin cifrar.
+# Variable opcional: MONGO_DB (por defecto la_banca_db).
+#
+# Restaurar: gpg --decrypt <archivo>.gpg > dump.archive.gz && mongorestore --gzip --archive=dump.archive.gz --uri ...
+name: Respaldo diario
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # 03:00 en America/Lima (UTC−5), hora valle
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: respaldo-diario
+  cancel-in-progress: false
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      MONGO_DB: ${{ vars.MONGO_DB || 'la_banca_db' }}
+    steps:
+      - name: Comprobar secrets
+        id: secretos
+        run: |
+          if [ -z "$MONGO_URI" ]; then
+            echo "::notice::No existe el secret MONGO_URI: el respaldo se activará cuando se configure"
+            echo "activo=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Falta el secret BACKUP_PASSPHRASE: no se sube un volcado con datos personales sin cifrar"
+            exit 1
+          fi
+          echo "activo=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.secretos.outputs.activo == 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.secretos.outputs.activo == 'true'
+        with:
+          python-version-file: .python-version
+
+      - name: Instalar MongoDB Database Tools
+        if: steps.secretos.outputs.activo == 'true'
+        run: |
+          curl --fail --silent --show-error --location -o tools.deb \
+            https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.13.0.deb
+          sudo apt-get install -y ./tools.deb
+          mongodump --version
+
+      - name: Respaldar con mongodump
+        if: steps.secretos.outputs.activo == 'true'
+        run: python scripts/respaldo_mongodb.py --destino respaldos
+
+      - name: Cifrar el volcado
+        if: steps.secretos.outputs.activo == 'true'
+        run: |
+          for archivo in respaldos/*.archive.gz; do
+            gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+              --output "$archivo.gpg" "$archivo" <<< "$BACKUP_PASSPHRASE"
+            rm "$archivo"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: steps.secretos.outputs.activo == 'true'
+        with:
+          name: respaldo-${{ github.run_id }}
+          path: respaldos/*.archive.gz.gpg
+          retention-days: 7  # RNF-PRI-02: ninguna copia de respaldo con más de 7 días
+          if-no-files-found: error
