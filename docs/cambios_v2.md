@@ -146,6 +146,22 @@ código AGPLv3 (`pgsty/minio`) fijada a una versión y reemplazable con `MINIO_I
 | 6.1 | `scripts/backup.sh` y `scripts/restore.sh`: base de datos y archivos de MinIO en un paquete fechado, con rotación de 7 días | RNF-PRI-02 (copias ≤ 7 días), PA-37 | Amplía | Respaldo completo: base y archivos. |
 | 6.2 | Migraciones de esquema versionadas, idempotentes y registradas, que se aplican al arrancar. La 001 convierte datos de v1 a v2 | RNF-MAN-01 | Nuevo | Actualizar sin pasos manuales y poder restaurar un respaldo de la v1 sobre la v2. |
 
+**Implementación (Fase 6).** `app/shared/db/migraciones.py` descubre `scripts/migraciones/NNN_*.py`, las aplica en
+orden desde el *lifespan* de la app y las registra en `schema_migrations` (`_id`, fecha, duración, versión y
+resumen); un documento en `schema_migrations_lock` con vencimiento de 10 min garantiza que solo un proceso migre.
+`001_v1_a_v2` agrega `accounts.bio/avatar/photo`, `publications.images` y `messages.sticker/documentAttachment` solo
+donde faltan. `scripts/migrar.py` muestra el estado o aplica a mano. `restore.sh` borra la base completa antes de
+restaurar: un volcado de la v1 no trae `schema_migrations`, y conservar el registro de la base actual haría saltar
+la migración. Prueba completa en `tests/despliegue/test_respaldo_restauracion.py` (con `PRUEBA_DOCKER=1`):
+respaldo en un compose, restauración en otro con volúmenes nuevos y verificación byte a byte de fotos, galería,
+imágenes y documentos, contraseñas y chats; y un respaldo **real** de la v1 (código del tag `v1.0.0` ejecutado en un
+`git worktree`, volcado con `mongodump` como la v1) restaurado sobre la v2 y migrado por la 001.
+
+| Id | Texto propuesto |
+|---|---|
+| RNF-MAN-03 | Los cambios de esquema se aplicarán con migraciones numeradas e idempotentes, ejecutadas automáticamente al arrancar y registradas en la base. |
+| RNF-FIA-05 | El respaldo incluirá la base de datos y los archivos almacenados en un único paquete fechado; la restauración reemplazará ambos y aceptará respaldos de versiones anteriores, que se migrarán al arrancar. |
+
 ### Fase 7 — Pruebas finales y datos de demostración
 
 | # | Cambio | Requisitos del SRS v1.9 afectados | Tipo | Justificación |

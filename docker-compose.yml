@@ -67,7 +67,7 @@ services:
     <<: *reinicio
     build: .
     image: la-banca-app:${VERSION_IMAGEN:-local}
-    env_file: .env
+    env_file: ${ARCHIVO_ENV:-.env}   # otro archivo para levantar una segunda instancia (pruebas)
     environment:
       # Dentro de la red de Compose los servicios se llaman por su nombre
       MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/?replicaSet=rs0}
