@@ -5,6 +5,7 @@ EA-02 (Expirar publicación; RF-PUB-09, RF-FED-02) se evalúa en la consulta: so
 estado ACTIVE y fecha_expiracion > ahora. Filtro opcional por tipo (RN-44), orden por creación descendente
 (RF-FED-03) y bloques de 20 con cursor (RF-FED-19). Las propias se marcan «Tu publicación» (RF-FED-07).
 """
+from app.features.m02_publicaciones.cu05_crear_publicacion.handler import url_imagen_publicacion
 from app.shared.domain.contracts import IAccountRepository, IClock, IPublicationRepository
 from app.shared.domain.entities import TAMANO_BLOQUE_FEED
 from app.shared.domain.perfiles import apariencias
@@ -33,7 +34,8 @@ class ConsultarFeedHandler:
                              apariencia_autor=caras[p.autor_id],
                              fecha_creacion=p.fecha_creacion, fecha_expiracion=p.fecha_expiracion,
                              segundos_restantes=segundos_restantes(p.fecha_expiracion, ahora),
-                             es_propia=p.autor_id == estudiante_id)
+                             es_propia=p.autor_id == estudiante_id, num_imagenes=len(p.imagenes),
+                             miniatura=url_imagen_publicacion(p.id, 0) if p.imagenes else None)
             for p in bloque
         ]
         vacio = None

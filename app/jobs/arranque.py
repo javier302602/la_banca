@@ -14,7 +14,8 @@ log = logging.getLogger("la_banca.arranque")
 
 async def aplicar_plazos_vencidos() -> dict[str, dict[str, int]]:
     from app.jobs.ea03_limpiar_chats_expirados.handler import LimpiarChatsExpiradosHandler
-    from app.jobs.ea03_limpiar_chats_expirados.repository import MongoLimpiarChatsRepository
+    from app.jobs.ea03_limpiar_chats_expirados.repository import (MongoLimpiarChatsRepository,
+                                                               MongoRetirarImagenesPublicacionesRepository)
     from app.jobs.ea05_depurar_contenido_reportado.handler import DepurarContenidoReportadoHandler
     from app.jobs.ea05_depurar_contenido_reportado.repository import MongoDepurarReportesRepository
     from app.jobs.ea07_eliminar_cuentas_no_activadas.handler import EliminarCuentasNoActivadasHandler
@@ -32,7 +33,8 @@ async def aplicar_plazos_vencidos() -> dict[str, dict[str, int]]:
         log.exception("No se pudieron aplicar los plazos vencidos al arrancar")
         return {}
     trabajos = {
-        "ea03": LimpiarChatsExpiradosHandler(MongoLimpiarChatsRepository(db), imagenes, reloj),
+        "ea03": LimpiarChatsExpiradosHandler(MongoLimpiarChatsRepository(db), imagenes, reloj,
+                                             MongoRetirarImagenesPublicacionesRepository(db)),
         "ea05": DepurarContenidoReportadoHandler(MongoDepurarReportesRepository(db), imagenes, reloj),
         "ea07": EliminarCuentasNoActivadasHandler(MongoEliminarCuentasRepository(db), reloj),
     }

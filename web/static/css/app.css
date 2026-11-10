@@ -242,3 +242,21 @@ a.autor:hover .nombre-autor, a.autor:focus-visible .nombre-autor { text-decorati
 .opcion-avatar:has(.entrada-mosaico:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
 .opcion-iniciales { display: inline-flex; align-items: center; gap: var(--lb-espacio-2); border-radius: var(--lb-radio-xl);
                     padding: 3px var(--lb-espacio-3) 3px 3px; }
+
+/* --- Imágenes en publicaciones (SRS v2.0, Fase 3) ---------------------------------------------------------------- */
+.miniatura-publicacion { width: 100%; height: 9rem; object-fit: cover; display: block;
+                         border-top-left-radius: var(--lb-radio-xl); border-top-right-radius: var(--lb-radio-xl); }
+.cantidad-imagenes { background: var(--lb-color-primario-suave); color: var(--lb-color-texto); }
+.galeria-principal { margin: 0; background: var(--lb-color-fondo); border-radius: var(--lb-radio-lg); overflow: hidden;
+                     display: flex; align-items: center; justify-content: center; }
+.galeria-principal img { max-width: 100%; max-height: 60vh; display: block; }
+.galeria-miniaturas button { padding: 0; border: 2px solid transparent; border-radius: var(--lb-radio-md); overflow: hidden;
+                             background: none; line-height: 0; }
+.galeria-miniaturas button[aria-current="true"] { border-color: var(--lb-color-primario); }
+.galeria-miniaturas button:focus-visible { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.galeria-miniaturas img { width: 4rem; height: 4rem; object-fit: cover; display: block; }
+.vista-previa li { position: relative; }
+.vista-previa img { width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: var(--lb-radio-md); display: block;
+                    border: 1px solid var(--lb-color-borde); }
+.vista-previa button { position: absolute; top: -.5rem; right: -.5rem; width: var(--lb-punto-objetivo-minimo);
+                       height: var(--lb-punto-objetivo-minimo); padding: 0; border-radius: 50%; line-height: 1; }

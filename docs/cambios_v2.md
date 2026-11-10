@@ -66,6 +66,22 @@ agrega a las cuentas de v1. Requisitos nuevos propuestos para el SRS v2.0:
 | 3.2 | Al reportar una publicación, sus imágenes se copian a retención como las del chat | RF-REP-06 (copia de tipo, título, descripción y fechas), RN-24 | **Modifica** RF-REP-06 | La evidencia de un reporte debe incluir todo el contenido publicado. |
 | 3.3 | Las imágenes de una publicación vencida o cerrada se eliminan del almacenamiento en la siguiente limpieza (EA-03) | RN-11, RNF-PRI-03 (por analogía) | Nuevo | No conservar imágenes personales más allá de la vida de la publicación. Las copias de un reporte siguen el plazo de RN-24. |
 
+**Implementación (Fase 3).** `POST /api/publicaciones` acepta JSON (como en v1, sin imágenes) o
+`multipart/form-data` con el campo `imagenes` repetido hasta 3 veces. Campo nuevo `publications.images`
+(lista de `{objectKey, mimeType, sizeBytes, storageBucket}`, prefijo `publicaciones/` en el almacenamiento). La
+galería se sirve en `GET /api/publicaciones/{id}/imagenes/{n}` solo mientras la publicación está activa (EA-02). El
+feed devuelve `num_imagenes` y `miniatura`. CU-13 guarda las copias en `retainedImageKeys` y en
+`publicationData.imageKeys`; EA-05 las borra al vencer la retención. EA-03 vacía `images` de las publicaciones
+vencidas o cerradas y borra los objetos (`imagenes_de_publicaciones_eliminadas`). Texto propuesto:
+
+| Id | Texto |
+|---|---|
+| RF-PUB-01 (modificado) | El sistema permitirá crear una publicación indicando tipo, título, descripción y, opcionalmente, hasta 3 imágenes JPG, PNG o WebP de hasta 5 MB cada una. |
+| RF-PUB-17 | El sistema validará cada imagen por su contenido, la volverá a codificar sin metadatos y rechazará la publicación completa si una no es válida, sin conservar las demás. |
+| RF-FED-20 | El feed mostrará la primera imagen y la cantidad de imágenes de cada publicación; el detalle mostrará la galería. |
+| RF-REP-06 (modificado) | … copia del tipo, título, descripción, fechas **y de las imágenes**, conservadas en el área de retención. |
+| RN-11b | Las imágenes de una publicación vencida o cerrada se eliminan del almacenamiento en la siguiente ejecución de EA-03. |
+
 ### Fase 4 — Chat estilo Messenger
 
 | # | Cambio | Requisitos del SRS v1.9 afectados | Tipo | Justificación |

@@ -25,6 +25,8 @@ class FeedItemResponse(BaseModel):
     fecha_expiracion: datetime
     segundos_restantes: int
     es_propia: bool  # «Tu publicación» (RF-FED-07); sin Responder ni Reportar (RF-FED-12)
+    num_imagenes: int = 0          # SRS v2.0, cambio 3.1
+    miniatura: str | None = None   # primera imagen de la galería
 
 
 class FeedResponse(BaseModel):

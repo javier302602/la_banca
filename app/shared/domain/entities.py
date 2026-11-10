@@ -33,6 +33,7 @@ LONGITUD_MENSAJE = 500
 LONGITUD_OBSERVACION = 300
 FORMATOS_IMAGEN = ("image/jpeg", "image/png", "image/webp")
 TAMANO_MAX_IMAGEN = 5 * 1024 * 1024  # 5 242 880 bytes
+MAX_IMAGENES_PUBLICACION = 3        # SRS v2.0, cambio 3.1
 
 
 # --- Enumeraciones (valores = CHECK IN del Entregable 2) --------------------
@@ -222,6 +223,7 @@ class Publicacion:
     fecha_expiracion: datetime  # fecha_creacion + DURACION_PUBLICACION (RN-09)
     estado: EstadoPublicacion = EstadoPublicacion.ACTIVE
     fecha_cierre: datetime | None = None
+    imagenes: list[ImagenAdjunta] = field(default_factory=list)  # 0..3 (SRS v2.0, cambio 3.1)
 
     def activa(self, ahora: datetime) -> bool:
         """EA-02 evaluado al consultar."""

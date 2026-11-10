@@ -10,7 +10,7 @@ from app.shared.db.mongo import get_database
 from app.shared.storage.image_storage import get_image_storage
 
 from .handler import LimpiarChatsExpiradosHandler
-from .repository import MongoLimpiarChatsRepository
+from .repository import MongoLimpiarChatsRepository, MongoRetirarImagenesPublicacionesRepository
 
 router = APIRouter(tags=["Jobs"])
 
@@ -25,7 +25,8 @@ def verificar_cron_secret(authorization: str | None = Header(default=None)) -> N
 
 def get_handler(db: AsyncDatabase = Depends(get_database)) -> LimpiarChatsExpiradosHandler:
     return LimpiarChatsExpiradosHandler(chats=MongoLimpiarChatsRepository(db), imagenes=get_image_storage(),
-                                        clock=get_clock())
+                                        clock=get_clock(),
+                                        publicaciones=MongoRetirarImagenesPublicacionesRepository(db))
 
 
 @router.get("/jobs/ea03-limpiar-chats-expirados", status_code=200)

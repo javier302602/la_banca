@@ -14,7 +14,7 @@ def escenario(navegador, servidor, usuarios):
     try:
         iniciar_sesion(autor, "beto@unas.edu.pe")
         iniciar_sesion(lector, "ana@unas.edu.pe")
-        pid = publicar(autor, "Busco grupo de estudio de física", "NECESITO")
+        pid = publicar(autor, "Busco grupo de estudio de física", "NECESITO", imagenes=2)
         chat = responder(lector, pid, "Me apunto")
         publicar(lector, "Ofrezco clases de cálculo", "OFREZCO")
         return {"pid": pid, "chat": chat}
@@ -109,6 +109,8 @@ def test_2_4_11_el_foco_no_queda_oculto(navegador, servidor, escenario):
             vistos = set()
             for _ in range(40):
                 pagina.keyboard.press("Tab")
+                # WebKit desplaza hasta el elemento con foco de forma asíncrona: se mide tras dos cuadros pintados
+                pagina.evaluate("() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo)))")
                 estado = pagina.evaluate(FOCO_VISIBLE_JS)
                 if estado is None or estado["id"] in vistos:
                     continue
