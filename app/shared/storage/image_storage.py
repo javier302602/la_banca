@@ -113,10 +113,15 @@ class S3ImageStorage(ImageStorage):
     def __init__(self, bucket: str, endpoint: str | None, access_key: str | None, secret_key: str | None,
                  region: str | None = None) -> None:
         import boto3
+        from botocore.config import Config
 
         self._bucket = self.bucket = bucket
+        # MinIO y otros compatibles con S3 en un host propio usan direcciones por ruta (http://minio:9000/bucket);
+        # AWS S3 sin endpoint propio, las virtuales. STORAGE_ESTILO_DIRECCION=path|virtual|auto lo fuerza.
+        estilo = variable("STORAGE_ESTILO_DIRECCION") or ("path" if endpoint else "auto")
         self._s3 = boto3.client("s3", endpoint_url=endpoint, aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key, region_name=region)
+                                aws_secret_access_key=secret_key, region_name=region,
+                                config=Config(signature_version="s3v4", s3={"addressing_style": estilo}))
 
     async def guardar(self, imagen: bytes, mime_type: str, prefijo: str = "chats") -> str:
         return await self.guardar_procesado(recodificar_sin_metadatos(imagen, mime_type), mime_type, prefijo)

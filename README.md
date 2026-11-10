@@ -104,6 +104,12 @@ artifact con retención de 7 días. Se activa al crear estos secrets del reposit
 
 Para restaurar: `gpg --decrypt <archivo>.gpg > dump.archive.gz` y `mongorestore --gzip --archive=dump.archive.gz --uri ...`.
 
+## Despliegue en un servidor propio (Docker Compose)
+
+`docker compose up -d` levanta la app (gunicorn + uvicorn), MongoDB 7 (replica set), MinIO, Caddy con HTTPS
+automático, el planificador de automatismos y, en el perfil `dev`, Mailpit. Guía paso a paso para alguien que no
+conoce el proyecto: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md). Variables: [.env.example](.env.example).
+
 ## Despliegue en Vercel
 
 `vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons

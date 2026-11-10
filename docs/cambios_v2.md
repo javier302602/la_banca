@@ -122,6 +122,23 @@ expirados y EA-05 las copias vencidas. Texto propuesto:
 | 5.3 | Acceso sin abrir puertos mediante Cloudflare Tunnel o Tailscale (documentado) | RNF-SEG-03 | Nuevo (opcional) | Útil cuando el servidor está detrás de un router doméstico. |
 | 5.4 | Automatismos (EA-03, EA-05, EA-07) con un servicio de tareas dentro del compose | RNF-PRI-02, RNF-PRI-03 | Amplía | Sin Vercel Cron ni GitHub Actions, el despliegue propio necesita su propio planificador. |
 
+**Implementación (Fase 5).** `Dockerfile` (Python 3.14 slim, usuario sin privilegios, healthcheck contra
+`/api/salud`), `requirements-servidor.txt` (gunicorn + uvicorn-worker), `despliegue/gunicorn.conf.py`,
+`despliegue/Caddyfile` y `docker-compose.yml` con los servicios `mongo`, `minio`, `minio-init`, `app`, `tareas`,
+`caddy`, `mailpit` (perfil `dev`) y `cloudflared` (perfil `tunel`). Todas las imágenes están fijadas a una
+versión. Cambios de código asociados: `SMTP_TLS=starttls|ssl|ninguno` (Mailpit no cifra; `ninguno` se rechaza con
+`ENTORNO=produccion`), direccionamiento por ruta para S3 con endpoint propio (MinIO), validador `$jsonSchema` de
+`accounts` ampliado con `bio`, `avatar` y `photo`, y `scripts/crear_usuario.py` para la primera cuenta.
+`scripts/verificar_despliegue.py` recorre el flujo principal contra la URL pública. Guía: `docs/DESPLIEGUE.md`.
+
+| Id | Texto propuesto |
+|---|---|
+| RNF-DIS-02 | El sistema podrá desplegarse en un servidor propio con un único `docker compose up -d`, sin servicios gestionados, configurándose solo por variables de entorno. |
+| RNF-SEG-03 (ampliado) | En el despliegue propio, el proxy obtiene y renueva automáticamente el certificado TLS del dominio configurado. |
+
+**Riesgo:** la imagen oficial de MinIO dejó de publicarse en Docker Hub; se usa una compilación comunitaria del
+código AGPLv3 (`pgsty/minio`) fijada a una versión y reemplazable con `MINIO_IMAGEN`.
+
 ### Fase 6 — Migración de datos
 
 | # | Cambio | Requisitos del SRS v1.9 afectados | Tipo | Justificación |

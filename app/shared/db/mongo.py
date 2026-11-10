@@ -124,6 +124,8 @@ async def _abortar(sesion) -> None:
 
 
 # --- Esquema físico (Entregable 2, Anexo B) ------------------------------------
+from app.shared.domain.perfiles import AVATARES, BIOGRAFIA_MAX  # noqa: E402
+
 def _validador_accounts(dominio: str | None) -> dict:
     patron_email = (f"^[a-z0-9._%+-]+@{re.escape(dominio.lower())}$" if dominio else "^[^@\\s]+@[^@\\s]+$")
     enlace = lambda minimo: {  # noqa: E731
@@ -146,6 +148,12 @@ def _validador_accounts(dominio: str | None) -> dict:
             "passwordReset": enlace(0),
             "createdAt": {"bsonType": "date"},
             "activatedAt": {"bsonType": ["date", "null"]},
+            # Perfil (SRS v2.0): biografía, avatar del catálogo y foto; nunca un dato de género
+            "bio": {"bsonType": "string", "maxLength": BIOGRAFIA_MAX},
+            "avatar": {"enum": [*AVATARES, None]},
+            "photo": {"bsonType": ["object", "null"], "required": ["objectKey", "mimeType", "updatedAt"],
+                      "properties": {"objectKey": {"bsonType": "string"}, "mimeType": {"bsonType": "string"},
+                                     "updatedAt": {"bsonType": "date"}}},
         },
     }}
 
