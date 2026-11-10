@@ -3,6 +3,7 @@
 Cada slice implementa en su repository.py únicamente los métodos que su handler usa
 (segregación por slice); los demás conservan la implementación por defecto, que falla.
 """
+import asyncio
 from abc import ABC
 from datetime import datetime
 
@@ -45,11 +46,20 @@ class IConfigurationProvider(ABC):
 
 
 class IPasswordHasher(ABC):
+    """`hash`/`verificar` son lentos a propósito (bcrypt, RNF-SEG-02). Desde código async se usan las variantes
+    `_async`, que los ejecutan en un hilo para no bloquear el event loop del servidor mientras tanto."""
+
     def hash(self, contrasena: str) -> str:
         raise NotImplementedError
 
     def verificar(self, contrasena: str, hash_guardado: str) -> bool:
         raise NotImplementedError
+
+    async def hash_async(self, contrasena: str) -> str:
+        return await asyncio.to_thread(self.hash, contrasena)
+
+    async def verificar_async(self, contrasena: str, hash_guardado: str) -> bool:
+        return await asyncio.to_thread(self.verificar, contrasena, hash_guardado)
 
 
 class ITokenService(ABC):

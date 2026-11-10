@@ -59,7 +59,7 @@ class RecuperarContrasenaHandler:
     async def restablecer(self, body: RestablecerContrasenaRequest) -> MensajeResponse:
         ahora = self._clock.ahora()
         estudiante = await self._cuentas.restablecer_con_enlace(self._tokens.hash(body.token),
-                                                                self._hasher.hash(body.contrasena), ahora)
+                                                                await self._hasher.hash_async(body.contrasena), ahora)
         if estudiante is None:
             raise NoDisponible(MSG_ENLACE_INVALIDO, codigo="enlace_invalido")
         await self._cuentas.cerrar_sesiones_de(estudiante.id, ahora)

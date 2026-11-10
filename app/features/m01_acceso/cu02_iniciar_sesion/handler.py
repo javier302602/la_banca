@@ -34,11 +34,11 @@ class IniciarSesionHandler:
         self._config = config
         self._clock = clock
 
-    def _hash_señuelo(self) -> str:
+    async def _hash_señuelo(self) -> str:
         """Hash real para verificar aunque el correo no exista: iguala el tiempo de respuesta (RF-AUT-09)."""
         clave = type(self._hasher).__name__
         if clave not in _SEÑUELOS:
-            _SEÑUELOS[clave] = self._hasher.hash("señuelo-sin-cuenta-0")
+            _SEÑUELOS[clave] = await self._hasher.hash_async("señuelo-sin-cuenta-0")
         return _SEÑUELOS[clave]
 
     async def handle(self, body: IniciarSesionRequest) -> SesionIniciada:
@@ -56,8 +56,8 @@ class IniciarSesionHandler:
         estudiante = await self._cuentas.buscar_por_correo(body.correo)
         if estudiante is not None and estudiante.pendiente_vencida(ahora):
             estudiante = None  # EA-07 al consultar: la cuenta ya no existe
-        valida = self._hasher.verificar(body.contrasena,
-                                        estudiante.password_hash if estudiante else self._hash_señuelo())
+        guardado = estudiante.password_hash if estudiante else await self._hash_señuelo()
+        valida = await self._hasher.verificar_async(body.contrasena, guardado)  # en un hilo: no bloquea el servidor
         if estudiante is None or not valida:
             await self._registrar_fallo(body.correo, intento, ahora)
             raise NoAutenticado(MSG_CREDENCIALES, codigo="credenciales_invalidas")
