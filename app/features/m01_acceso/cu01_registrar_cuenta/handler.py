@@ -71,7 +71,7 @@ class RegistrarCuentaHandler:
         estudiante = Estudiante(
             id="",
             correo_institucional=body.correo,
-            password_hash=self._hasher.hash(body.contrasena),
+            password_hash=await self._hasher.hash_async(body.contrasena),
             nickname=body.nickname,
             estado=EstadoCuenta.PENDIENTE_ACTIVACION,
             fecha_registro=ahora,
