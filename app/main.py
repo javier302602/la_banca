@@ -32,7 +32,9 @@ from app.jobs.ea03_limpiar_chats_expirados.endpoint import router as ea03_limpia
 from app.jobs.ea05_depurar_contenido_reportado.endpoint import router as ea05_depurar_contenido_reportado
 from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_eliminar_cuentas_no_activadas
 from app.jobs.arranque import programar_al_arrancar
+from app.salud import router as salud
 from app.shared.config.provider import verificar_entorno
+from app.shared.version import VERSION
 from app.shared.db.mongo import asegurar_indices_una_vez
 from app.shared.domain.errors import ErrorDominio
 from app.pruebas.reloj import router as reloj_de_pruebas
@@ -53,7 +55,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="La Banca", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="La Banca", version=VERSION, lifespan=lifespan)
 app.middleware("http")(forzar_https)  # RNF-SEG-03: HTTP → HTTPS y HSTS en producción
 
 
@@ -101,6 +103,7 @@ for router in [
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,
     ea03_limpiar_chats_expirados, ea05_depurar_contenido_reportado, ea07_eliminar_cuentas_no_activadas,
     reloj_de_pruebas,  # RNF-MAN-02: solo responde con ENTORNO=pruebas
+    salud,
 ]:
     app.include_router(router)
 

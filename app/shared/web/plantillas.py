@@ -9,12 +9,14 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.shared.security.session import SesionActual
+from app.shared.version import VERSION
 from app.shared.web.i18n import IDIOMA_ACTIVO, ZONA_HORARIA, catalogo_js, t
 
 DIRECTORIO = Path(__file__).resolve().parents[3] / "web" / "templates"
 plantillas = Jinja2Templates(directory=DIRECTORIO)
 # i18n: todas las plantillas toman sus textos del catálogo (web/i18n/es-PE.json)
-plantillas.env.globals.update(t=t, idioma=IDIOMA_ACTIVO, zona_horaria=ZONA_HORARIA, catalogo_js=catalogo_js())
+plantillas.env.globals.update(t=t, idioma=IDIOMA_ACTIVO, zona_horaria=ZONA_HORARIA, catalogo_js=catalogo_js(),
+                               version=VERSION)
 
 
 def render(request: Request, nombre: str, sesion: SesionActual | None = None, **contexto):
