@@ -1,15 +1,56 @@
 /* La Banca — estilos complementarios a Bootstrap 5 */
 .contenido-libre { white-space: pre-wrap; overflow-wrap: anywhere; }
-.tarjeta-publicacion { transition: box-shadow .15s ease; }
-.tarjeta-publicacion:hover { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .08); }
 .etiqueta-propia { font-size: .75rem; }
 
-.chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; }
-.burbuja { max-width: 75%; padding: .5rem .75rem; border-radius: 1rem; overflow-wrap: anywhere; }
-.burbuja.propia { align-self: flex-end; background: var(--bs-primary-bg-subtle); border-bottom-right-radius: .25rem; }
-.burbuja.ajena { align-self: flex-start; background: var(--bs-secondary-bg); border-bottom-left-radius: .25rem; }
+/* RNF-USA-04: texto secundario con contraste ≥ 4,5:1 también sobre el fondo gris de la página. */
+:root { --bs-secondary-color: #5c636a;
+        /* enlaces: #0d6efd da 4,08:1 sobre el fondo gris; #0a58ca da 5,6:1 */
+        --bs-link-color: #0a58ca; --bs-link-color-rgb: 10, 88, 202;
+        --bs-link-hover-color: #084298; --bs-link-hover-color-rgb: 8, 66, 152; }
+
+/* --- Gestalt: figura-fondo y región común -------------------------------------------------------------
+ * El fondo de la página es gris claro y el contenido (tarjetas, formularios, chat) va sobre superficies
+ * blancas: cada bloque se percibe como una figura separada del fondo. */
+body { background: #f3f4f6; }
+.card, .list-group-item { background: #fff; }
+
+/* --- Gestalt: similitud por tipo de publicación ----------------------------------------------------------
+ * Cada tipo tiene su color en la etiqueta y en el borde izquierdo de la tarjeta; publicaciones del mismo tipo se
+ * reconocen como grupo. Texto oscuro sobre fondo claro: contraste ≥ 7:1. */
+.tipo-NECESITO { --tipo-fondo: #ffe8b3; --tipo-texto: #5c3c00; --tipo-borde: #d99a00; }
+.tipo-OFREZCO { --tipo-fondo: #cfeedd; --tipo-texto: #0b3d22; --tipo-borde: #2f9e63; }
+.tipo-ACTIVIDAD { --tipo-fondo: #d6e4ff; --tipo-texto: #0b2a66; --tipo-borde: #3b6fd8; }
+.badge.etiqueta-tipo { background: var(--tipo-fondo, #e9ecef); color: var(--tipo-texto, #212529); }
+.badge.etiqueta-propia { background: #fff; color: #0b2a66; border: 1px solid #3b6fd8; }
+
+/* --- Gestalt: proximidad dentro de la tarjeta del feed ------------------------------------------------------
+ * Etiquetas, título y autor van juntos (separación pequeña) y las tarjetas se separan entre sí más que sus
+ * elementos internos: cada tarjeta se lee como una unidad. */
+.tarjeta-publicacion { border-left: .3rem solid var(--tipo-borde, var(--bs-border-color)); transition: box-shadow .15s ease; }
+.tarjeta-publicacion:hover, .tarjeta-publicacion:focus-visible { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12); }
+.tarjeta-publicacion .card-body { display: flex; flex-direction: column; gap: .35rem; padding: 1rem; }
+.tarjeta-publicacion .card-body > * { margin: 0; }
+#lista.row { --bs-gutter-y: 1.25rem; --bs-gutter-x: 1.25rem; }
+
+/* --- Chat: proximidad, figura-fondo y continuidad ----------------------------------------------------------
+ * Mensajes seguidos del mismo autor se agrupan (separación mínima) y un cambio de autor deja más aire.
+ * Las burbujas (figura) destacan sobre el fondo tintado del historial; la alineación a la derecha/izquierda
+ * forma dos columnas continuas que separan lo propio de lo ajeno. */
+.chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0;
+                 background: #eef1f5; padding: .75rem; }
+.burbuja { max-width: 80%; padding: .45rem .75rem; border-radius: 1rem; overflow-wrap: anywhere;
+           margin-top: .9rem; box-shadow: 0 1px 1px rgba(0, 0, 0, .06); }
+.burbuja:first-child { margin-top: 0; }
+.burbuja.continua { margin-top: .2rem; }
+.burbuja.propia { align-self: flex-end; background: #cfe2ff; border-bottom-right-radius: .25rem; }
+.burbuja.ajena { align-self: flex-start; background: #fff; border-bottom-left-radius: .25rem; }
+.burbuja.propia.continua { border-top-right-radius: .25rem; }
+.burbuja.ajena.continua { border-top-left-radius: .25rem; }
 .burbuja img { max-width: 100%; max-height: 40vh; border-radius: .5rem; display: block; }
-.burbuja .hora { font-size: .7rem; color: var(--bs-secondary-color); text-align: right; }
+.burbuja .hora { font-size: .7rem; color: #4a5056; text-align: right; }
+
+/* Mis chats: la hora va en su propia columna y no se monta sobre el título (proximidad) */
+.fila-chat { display: grid; grid-template-columns: 1fr auto; gap: .25rem .75rem; align-items: start; }
 
 .aviso-expiracion { animation: latido 2s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: .65; } }
@@ -21,3 +62,8 @@
                          --bs-btn-hover-border-color: #565e64; --bs-btn-active-bg: #565e64; }
 .btn-outline-danger { --bs-btn-color: #b02a37; --bs-btn-border-color: #b02a37; --bs-btn-hover-bg: #b02a37;
                       --bs-btn-hover-border-color: #b02a37; --bs-btn-active-bg: #b02a37; }
+
+/* Insignia de chats con mensajes nuevos en el menú (blanco sobre #b02a37: 6,4:1) */
+.contador-no-leidos { background: #b02a37; color: #fff; font-size: .7rem; vertical-align: text-top; }
+.btn-outline-primary { --bs-btn-color: #0a58ca; --bs-btn-border-color: #0a58ca; --bs-btn-hover-bg: #0a58ca;
+                       --bs-btn-hover-border-color: #0a58ca; --bs-btn-active-bg: #0a58ca; }

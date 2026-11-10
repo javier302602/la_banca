@@ -9,6 +9,14 @@
   <p><a href="/publicaciones/{{ publicacion_id }}">← Volver a la publicación</a></p>
   <h1 class="h4 mb-3">Responder</h1>
   <div id="mensajes" aria-live="polite"></div>
+  <article class="card mb-3 d-none" id="contexto" aria-labelledby="contexto-titulo">
+    <div class="card-body">
+      <p class="small text-body-secondary mb-2">Respondes a la publicación de <span id="contexto-autor"></span></p>
+      <span class="badge etiqueta-tipo mb-2" id="contexto-tipo"></span>
+      <h2 class="h6 mb-1" id="contexto-titulo"></h2>
+      <p class="small mb-0 contenido-libre" id="contexto-descripcion"></p>
+    </div>
+  </article>
   <form id="form-mensaje" novalidate>
     <div class="mb-3">
       <label class="form-label" for="texto">Primer mensaje</label>
