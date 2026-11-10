@@ -168,6 +168,12 @@ imágenes y documentos, contraseñas y chats; y un respaldo **real** de la v1 (c
 |---|---|---|---|---|
 | 7.1 | `scripts/seed_demo.py` (4 usuarios con avatar, publicaciones con imágenes y chats con emojis, stickers y documentos) y recorrido del flujo completo sobre el compose | — | Nuevo | Demostración y verificación integral. |
 
+**Implementación (Fase 7).** `scripts/seed_demo.py` usa los casos de uso de la app (`--reiniciar` borra antes los
+datos de demo). Resultados y evidencias en `docs/auditoria_cumplimiento.md` §1 y §7: 457 pruebas unitarias,
+10 e2e contra MongoDB, 44 por navegador en Chromium, Firefox y WebKit (axe wcag22aa en claro y oscuro), respaldo y
+restauración con Docker (incluido un respaldo real de la v1) y recorrido completo sobre el compose levantado desde
+cero.
+
 ## 3. Impacto
 
 - **Privacidad:** la política de privacidad debe incluir la foto, la biografía, los documentos adjuntos y el estado
@@ -179,7 +185,13 @@ imágenes y documentos, contraseñas y chats; y un respaldo **real** de la v1 (c
 - **Pruebas:** axe con wcag22aa en modo claro y oscuro, e2e en tres motores y prueba de respaldo y restauración
   entre contenedores.
 
-## 4. Aprobación
+## 4. Estado
+
+Implementado en la versión **2.0.0** (tag `v2.0.0`). Todos los cambios de esta solicitud están cubiertos por
+pruebas automatizadas (ver `docs/auditoria_cumplimiento.md` §7). Pendiente de la aprobación formal y de las
+acciones de despliegue señaladas en §3 (nueva versión de los términos y revisión del dimensionamiento).
+
+## 5. Aprobación
 
 | Rol | Nombre | Fecha | Decisión |
 |---|---|---|---|

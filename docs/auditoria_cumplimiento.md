@@ -1,8 +1,8 @@
 # Auditoría de cumplimiento — La Banca
 
-**Fecha:** 10 de noviembre de 2026 · **Rama auditada:** `correcciones-auditoria` (fusionada en `main`) · **Referencias:** SRS v1.9 (`docs/La_Banca_Especificacion_de_Requisitos_2026_v1_9.docx`) y Entregable 2 v2.0 corregido (`docs/Entregable_2_v2_Corregido.docx`).
+**Fecha:** 10 de noviembre de 2026 · **Versión auditada:** 2.0.0 (rama `mejoras-v2`, fusionada en `main`) · **Referencias:** SRS v1.9 (`docs/La_Banca_Especificacion_de_Requisitos_2026_v1_9.docx`), solicitud de cambio a SRS v2.0 (`docs/cambios_v2.md`) y Entregable 2 v2.0 corregido (`docs/Entregable_2_v2_Corregido.docx`).
 
-Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136 RF, 44/50 RN y 15/38 RNF en OK; la segunda, 136/136, 50/50 y 18/38. Esta versión refleja la segunda tanda de correcciones (usabilidad, compatibilidad, carga, robustez y respaldos).
+Cuarta versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136 RF, 44/50 RN y 15/38 RNF en OK; la segunda, 136/136, 50/50 y 18/38; la tercera (v1.0.0, tag `v1.0.0`), 136/136, 50/50 y 34/38. Esta versión audita la **v2.0.0**: los requisitos del SRS v1.9 (con los que modifica la solicitud de cambio, marcados «v2») y los requisitos nuevos de la v2 (sección 7).
 
 ## 1. Resumen
 
@@ -10,13 +10,23 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 |---|---|---|---|---|
 | Requisitos funcionales (RF) | 136 | 136 | 0 | 0 |
 | Reglas de negocio (RN) | 50 | 50 | 0 | 0 |
-| Requisitos no funcionales (RNF) | 38 | 34 | 3 | 1 |
+| Requisitos no funcionales (RNF) | 38 | 35 | 2 | 1 |
+| Cambios del SRS v2.0 (sección 7) | 23 | 23 | 0 | 0 |
 
-**Pruebas:**
-- **Unitarias:** 297 pasan (`pytest`).
-- **e2e:** 36 pasan y 2 se omiten con motivo (`pytest -m e2e`), contra MongoDB 7 en Docker como replica set `rs0`.
-- **Navegador:** Playwright en Chromium, Firefox y WebKit, con Pixel 7 e iPhone 14 emulados.
-- **Carga:** Locust, 100 usuarios durante 15 min (sección 6).
+RNF-PRI-02 pasa a OK: el despliegue con Docker Compose trae `scripts/backup.sh` con rotación de 7 días y la prueba de
+respaldo y restauración (sección 7.6).
+
+**Pruebas (v2.0.0):**
+- **Unitarias:** 457 pasan (`pytest`); 4 se omiten porque necesitan Docker o un compose levantado y se ejecutan aparte.
+- **e2e contra MongoDB:** 10 pasan (`pytest -m e2e tests/e2e --ignore=tests/e2e/navegador`), replica set `rs0` en Docker.
+- **Navegador (Playwright):** 44 pruebas por navegador. Chromium 44/44; Firefox 43 + 1 omitida (no emula móviles);
+  WebKit 43 + 1 omitida (Tab no recorre enlaces, como Safari). Incluyen **axe-core 4.12 con wcag2a…wcag22aa en modo
+  claro y oscuro** en las 18 pantallas, a 360 y 1366 px.
+- **Docker:** respaldo en un compose y restauración en otro limpio, y restauración de un respaldo real de la v1
+  (`PRUEBA_DOCKER=1 pytest tests/despliegue/test_respaldo_restauracion.py`): 2/2. Recorrido completo en el navegador
+  contra el compose levantado desde cero con `scripts/seed_demo.py` (`tests/despliegue/test_recorrido_compose.py`):
+  2/2, capturas en `docs/demo/`.
+- **Carga:** Locust, 100 usuarios durante 15 min (sección 6, medida en la v1.0.0).
 
 ### Qué depende del despliegue o del grupo
 
@@ -25,12 +35,28 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RNF-DIS-01 (FALTA) | Despliegue | Monitor externo que consulte la página de inicio cada minuto y mida la disponibilidad mensual. |
 | RNF-SEG-03 (PARCIAL) | Despliegue | Comprobar contra el dominio publicado que se rechaza TLS 1.0/1.1 (la app ya redirige a HTTPS y envía HSTS). |
 | RNF-REN-01 a REN-06 (OK en local) | Despliegue | Repetir `tests/carga/ejecutar_carga.py` contra Vercel + Atlas, con el SMTP y el Object Storage reales. |
-| RNF-PRI-02 (PARCIAL) | Grupo y despliegue | Crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE` para activar el respaldo diario; si se usan snapshots de Atlas, fijar su retención en ≤ 7 días. |
+| RNF-PRI-02 (OK) | Despliegue | Con Docker Compose: programar `scripts/backup.sh` con cron y guardar los paquetes fuera del servidor. Con Vercel + Atlas: crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE` y fijar la retención de snapshots en ≤ 7 días. |
+| RNF-SEG-03 | Despliegue | Con Docker Compose, Caddy obtiene el certificado y negocia TLS 1.2/1.3; falta verificarlo contra el dominio publicado. |
+| RN-31 (v2) | Grupo | La v2 cambia la política (perfil, imágenes, documentos, «visto»): publicar una versión nueva de `TERMINOS_VERSION`. |
+| MinIO | Despliegue | La imagen oficial dejó de publicarse; se usa una compilación comunitaria fijada (`pgsty/minio`), reemplazable con `MINIO_IMAGEN`. |
 | RNF-COM-01 (PARCIAL) | Grupo | Probar en las dos últimas versiones de Chrome, Firefox y Edge, y en Chrome Android y Safari iOS reales. |
 | RN-31, RNF-LEG-01/02/03 (OK) | Grupo | Texto legal aprobado y los valores de `TERMINOS_VERSION`, `TERMINOS_FECHA` y `CANAL_ARCO`. |
 | RF-CFG-01 (OK) | Grupo | El SRS deja el dominio institucional «pendiente de decisión»: definir `DOMINIO_INSTITUCIONAL`. |
 
-### Correcciones de esta versión
+### Cambios de la v2.0.0
+
+| Commit | Fase |
+|---|---|
+| `cfd5583` | Versionado (`VERSION`, `/api/salud`, CHANGELOG, solicitud de cambio) |
+| `cd41b48` | 1 — Rediseño visual con modo claro y oscuro |
+| `d02df55` | 2 — Perfiles con foto, avatar elegido o iniciales |
+| `a575767` | 3 — Imágenes en publicaciones |
+| `c971cd1` | 4 — Chat estilo Messenger: emojis, stickers, documentos y visto |
+| `39f097f` | 5 — Despliegue portable con Docker Compose |
+| `83cffa3` | 6 — Respaldos, restauración y migraciones versionadas |
+| (este commit) | 7 — Datos de demo, recorrido completo, capturas y esta auditoría |
+
+### Correcciones de la v1.0.0
 
 | Commit | Cambio | Requisitos |
 |---|---|---|
@@ -73,6 +99,10 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | `T:scripts::` · `T:wf::` | `tests/scripts/test_respaldo_mongodb.py` · `tests/scripts/test_workflow_respaldo.py` |
 | `T:nav-form::` · `T:nav-a11y::` · `T:nav-compat::` | `tests/e2e/navegador/test_formularios.py` · `test_accesibilidad.py` · `test_compatibilidad.py` (Playwright) |
 | `T:e2e::` · `T:e2e-cupo::` · `T:e2e-rob::` | `tests/e2e/test_flujo_completo.py` · `test_cupo_concurrente.py` · `test_robustez.py` (requieren MongoDB con replica set) |
+| `T:perfiles::` · `T:img-pub::` · `T:chat-v2::` | `tests/features/m07_perfiles/test_perfiles.py` · `tests/features/m02_publicaciones/test_imagenes_publicacion.py` · `tests/features/m04_chat/test_chat_v2.py` |
+| `T:e2e-perfiles::` · `T:e2e-img::` · `T:e2e-chat2::` · `T:e2e-migr::` | `tests/e2e/test_perfiles.py` · `test_imagenes_publicacion.py` · `test_chat_v2.py` · `test_migraciones.py` |
+| `T:nav-perfiles::` · `T:nav-img::` · `T:nav-chat::` · `T:nav-wcag::` | `tests/e2e/navegador/test_perfiles.py` · `test_imagenes_publicacion.py` · `test_chat_messenger.py` · `test_wcag22.py` |
+| `T:despliegue::` · `T:migr::` · `T:respaldo-docker::` · `T:recorrido::` | `tests/despliegue/test_despliegue.py` · `tests/shared/test_migraciones.py` · `tests/despliegue/test_respaldo_restauracion.py` · `test_recorrido_compose.py` |
 
 ## 2. Requisitos funcionales (136)
 
@@ -134,7 +164,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 
 | RF | Nombre | Prio. | Implementación | Test que lo verifica | Estado | Observación |
 |---|---|---|---|---|---|---|
-| RF-PUB-01 | Crear publicación | E | cu05/handler.py | T:cu05::test_crea_con_duracion_fija_de_24_horas; T:e2e::test_flujo_completo | **OK** |  |
+| RF-PUB-01 | Crear publicación (v2: con hasta 3 imágenes) | E | cu05/handler.py, cu05/endpoint.py (JSON o multipart) | T:cu05::test_crea_con_duracion_fija_de_24_horas; T:img-pub::test_crea_con_hasta_3_imagenes_sin_exif; T:e2e::test_flujo_completo | **OK** | v2 (cambio 3.1) |
 | RF-PUB-02 | Exigir tipo de publicación | E | cu05/request.py (enum sin valor por defecto); crear_publicacion.html | T:web::test_crear_publicacion_sin_duracion_ni_tipo_preseleccionado; T:cu05::test_validaciones; T:webval::test_errores_de_validacion_en_espanol | **OK** |  |
 | RF-PUB-03 | Validar título | E | cu05/request.py; reglas.py `validar_longitud` | T:cu05::test_validaciones, test_limites_exactos_aceptados | **OK** |  |
 | RF-PUB-04 | Validar descripción | E | cu05/request.py; reglas.py `validar_longitud` | T:cu05::test_validaciones, test_limites_exactos_aceptados | **OK** |  |
@@ -187,7 +217,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RF-CHT-07 | Permitir múltiples respuestas | E | cu10/handler.py | T:cu10::test_un_chat_activo_por_usuario_y_publicacion | **OK** |  |
 | RF-CHT-08 | Enviar mensajes de texto | E | reglas.py `validar_contenido_mensaje` | T:cu10::test_validacion_del_mensaje; T:cu11::test_mensaje_reinicia_expiracion | **OK** |  |
 | RF-CHT-09 | Enviar imágenes | E | reglas.py `validar_imagen`; storage/image_storage.py (guarda `storageBucket`) | T:cu11::test_imagen_con_url_protegida; T:shared::test_rechaza_formato_y_tamano, test_mensaje_guarda_storage_bucket | **OK** | El navegador recomprime las imágenes de más de 4 MB antes de subirlas (límite de Vercel). |
-| RF-CHT-10 | No permitir otros medios | E | reglas.py `validar_imagen` | T:shared::test_rechaza_formato_y_tamano | **OK** |  |
+| RF-CHT-10 | No permitir otros medios (v2: imágenes y documentos permitidos, validados por contenido) | E | reglas.py `validar_imagen`; documentos.py | T:shared::test_rechaza_formato_y_tamano; T:chat-v2::test_rechazados | **OK** | v2 (cambio 4.3) |
 | RF-CHT-11 | Mostrar los mensajes del chat | E | cu12/repository.py (orden); clock.py `hora_hhmm` (America/Lima); campo `hora` | T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios; T:cu11::test_mensaje_reinicia_expiracion; T:shared::test_hora_hhmm_en_america_lima | **OK** | Corregido: HH:MM calculada en el servidor en America/Lima (commit `f6a3b3f`). |
 | RF-CHT-12 | Reiniciar el conteo de inactividad | E | cu11/repository.py | T:cu11::test_mensaje_reinicia_expiracion; T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios | **OK** |  |
 | RF-CHT-13 | Expirar chat por inactividad | E | entities.py `Chat.activo`; ea03/* | T:cu11::test_chat_expirado_no_admite_mensajes; T:ea03::test_elimina_solo_chats_expirados_con_mensajes_e_imagenes | **OK** |  |
@@ -198,7 +228,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RF-CHT-18 | Ver mis chats activos | E | cu12/handler.py `handle` (`hora_ultimo_mensaje`); chat.js | T:cu12::test_lista_por_ultimo_mensaje_con_no_leidos | **OK** | Corregido junto con RF-CHT-11. |
 | RF-CHT-19 | Abrir un chat desde la lista | E | cu12/handler.py `abrir` | T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios | **OK** |  |
 | RF-CHT-20 | Recibir mensajes sin recargar | E | chat.js (sondeo cada 1 s) | T:web::test_archivos_estaticos; T:cu12::test_sondeo_incremental | **OK** |  |
-| RF-CHT-21 | Indicar mensajes no leídos | D | cu12/* `lastReadAt` | T:cu12::test_lista_por_ultimo_mensaje_con_no_leidos | **OK** |  |
+| RF-CHT-21 | Indicar mensajes no leídos (v2: y «visto» para quien envió) | D | cu12/* `lastReadAt`, `visto_hasta` | T:cu12::test_lista_por_ultimo_mensaje_con_no_leidos; T:chat-v2::test_visto_usa_last_read_at_de_la_otra_persona | **OK** | v2 (cambio 4.1) |
 | RF-CHT-22 | Mostrar el contexto del chat | D | mapeo.py (contexto desnormalizado en chats); chat.html | T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios; T:cu10::test_crea_chat_y_primer_mensaje | **OK** |  |
 | RF-CHT-23 | Ofrecer abrir el chat existente | D | cu09/handler.py `chat_existente_id`; cu10/handler.py | T:cu09::test_ofrece_chat_existente; T:cu10::test_un_chat_activo_por_usuario_y_publicacion | **OK** |  |
 | RF-CHT-24 | Permitir responder de nuevo tras la expiración | E | cu10/handler.py, cu10/repository.py `eliminar_chat` | T:cu10::test_responder_de_nuevo_tras_expirar_crea_chat_nuevo | **OK** |  |
@@ -214,7 +244,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RF-REP-03 | Exigir motivo del reporte | E | cu13/request.py, cu14/request.py; entities.py `MOTIVOS_REPORTE` | T:cu13::test_validaciones; T:web::test_reportar_ofrece_los_cinco_motivos | **OK** |  |
 | RF-REP-04 | Permitir observación opcional | E | cu13/request.py, cu14/request.py | T:cu13::test_validaciones | **OK** |  |
 | RF-REP-05 | Conservar el reporte | E | cu13/handler.py, cu14/handler.py; mapeo.py | T:cu13::test_registra_reporte_con_copia_y_plazo | **OK** |  |
-| RF-REP-06 | Conservar el contenido de una publicación reportada | E | cu13/handler.py (`publicationData`) | T:cu13::test_registra_reporte_con_copia_y_plazo; T:shared::test_snapshot_de_reporte_con_captured_at_y_publication_data | **OK** |  |
+| RF-REP-06 | Conservar el contenido de una publicación reportada (v2: con sus imágenes) | E | cu13/handler.py (`publicationData`, `retainedImageKeys`) | T:cu13::test_registra_reporte_con_copia_y_plazo; T:shared::test_snapshot_de_reporte_con_captured_at_y_publication_data; T:img-pub::test_reporte_copia_las_imagenes_a_retencion_y_ea03_ea05_limpian | **OK** | v2 (cambio 3.2) |
 | RF-REP-07 | Conservar los identificadores | E | cu13/handler.py, cu14/handler.py | T:cu13::test_registra_reporte_con_copia_y_plazo; T:cu14::test_snapshot_de_textos_e_imagenes_retenidas | **OK** |  |
 | RF-REP-08 | Conservar durante el plazo | E | `retentionEndsAt`; ea05/* | T:cu13::test_plazo_configurable; T:ea05::test_purga_al_vencer_el_plazo_de_cada_reporte | **OK** |  |
 | RF-REP-09 | Eliminar al vencer el plazo | E | ea05/* | T:ea05::test_purga_al_vencer_el_plazo_de_cada_reporte; T:e2e::test_feed_paginado_y_jobs | **OK** |  |
@@ -249,7 +279,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RN-01 | cu01/handler.py; reglas.py `correo_del_dominio` | T:cu01::test_rechaza_otro_dominio_y_subdominio | **OK** |  |
 | RN-02 | cu17/* | T:cu17::test_activa_con_enlace_vigente_una_sola_vez | **OK** |  |
 | RN-03 | cu01/handler.py; `uq_accounts_email` | T:cu01::test_rechaza_correo_activo_o_pendiente | **OK** |  |
-| RN-04 | DTO de respuesta sin correo | T:cu08::test_no_expone_correo_y_tiempo_restante; T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios | **OK** |  |
+| RN-04 | DTO de respuesta sin correo (v2: se ven nickname, foto o avatar, biografía y fecha de ingreso; nunca el correo) | T:cu08::test_no_expone_correo_y_tiempo_restante; T:cu12::test_abrir_no_reinicia_expiracion_y_marca_propios; T:perfiles::test_ver_perfil_publico_sin_correo | **OK** | v2 (cambio 2.1) |
 | RN-05 | reglas.py `validar_nickname`; cu04/*; colación | T:shared::test_nickname_*; T:cu04::* | **OK** |  |
 | RN-06 | security/session.py | T:shared::test_sesion_* | **OK** |  |
 | RN-07 | entities.py `TipoPublicacion`; cu05/request.py | T:cu05::test_validaciones | **OK** |  |
@@ -264,7 +294,7 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RN-16 | cu10; `uq_chats_pub_responder` | T:cu10::test_un_chat_activo_*, test_responder_de_nuevo_tras_expirar_crea_chat_nuevo | **OK** |  |
 | RN-17 | cu11/cu12 (participantes); ruta protegida de imágenes | T:cu12::test_imagen_solo_para_participantes; T:cu11::test_tercero_no_puede_enviar | **OK** |  |
 | RN-18 | cu10 (chat + primer mensaje en transacción) | T:cu10::test_crea_chat_y_primer_mensaje | **OK** |  |
-| RN-19 | reglas.py `validar_contenido_mensaje`, `validar_imagen` | T:cu10::test_validacion_del_mensaje; T:shared::test_rechaza_formato_y_tamano | **OK** |  |
+| RN-19 | reglas.py `validar_contenido_chat` (v2: texto, imagen, sticker o documento: solo uno), `validar_imagen` | T:cu10::test_validacion_del_mensaje; T:shared::test_rechaza_formato_y_tamano; T:chat-v2::test_solo_un_contenido_por_mensaje | **OK** | v2 (cambio 4.2) |
 | RN-20 | cu11/repository.py; `Chat.activo` | T:cu11::test_mensaje_reinicia_expiracion; T:cu12::test_abrir_no_reinicia_* | **OK** |  |
 | RN-21 | cu12 `_calcular_aviso` | T:cu12::test_aviso_ea04_con_anticipacion_configurable | **OK** |  |
 | RN-22 | ea03/*; `_chat_vigente` | T:ea03::test_elimina_solo_chats_expirados_* | **OK** |  |
@@ -313,15 +343,15 @@ Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136
 | RNF-FIA-03 | Operaciones atómicas | mongo.py `en_transaccion`; cu05, cu10, cu11 | T:tx::*; T:cu10::test_imagen_corrupta_no_deja_chat, test_fallo_al_crear_borra_la_imagen; T:cu14::test_fallo_al_registrar_no_deja_copias | **OK** |  |
 | RNF-SEG-01 | Sesión obligatoria salvo funciones exceptuadas | `get_sesion_actual` / `get_sesion_opcional` | T:web::test_paginas_privadas_sin_sesion_redirigen; T:e2e::test_flujo_completo | **OK** |  |
 | RNF-SEG-02 | bcrypt con costo ≥ 10 | hashing.py (costo 12 + prehash SHA-256) | T:shared::test_bcrypt_con_sal_y_contrasena_larga, test_costo_por_defecto_es_12 | **OK** |  |
-| RNF-SEG-03 | HTTPS con TLS ≥ 1.2 | app/shared/web/https.py: HTTP → HTTPS (308) y HSTS con ENTORNO=produccion | T:rob::test_http_se_redirige_a_https_en_produccion, test_proxy_que_termina_tls_x_forwarded_proto | **PARCIAL** | La redirección y HSTS están probadas. **Despliegue:** la versión de TLS (rechazar 1.0/1.1) la negocia Vercel y solo se verifica contra el dominio publicado. |
+| RNF-SEG-03 | HTTPS con TLS ≥ 1.2 | app/shared/web/https.py: HTTP → HTTPS (308) y HSTS con ENTORNO=produccion; v2: Caddy con HTTPS automático (`despliegue/Caddyfile`) | T:rob::test_http_se_redirige_a_https_en_produccion, test_proxy_que_termina_tls_x_forwarded_proto; T:despliegue::test_caddy_https_automatico_configurable | **PARCIAL** | La redirección y HSTS están probadas, y el recorrido de la Fase 7 se hizo por HTTPS a través de Caddy. **Despliegue:** la versión de TLS (rechazar 1.0/1.1) solo se verifica contra el dominio publicado (Caddy usa TLS 1.2 y 1.3 por omisión). |
 | RNF-SEG-04 | Chat e imágenes solo para participantes | cu11/cu12 `_chat_vigente`; ruta de imagen con sesión | T:cu12::test_imagen_solo_para_participantes; T:e2e::test_flujo_completo | **OK** |  |
 | RNF-SEG-05 | Texto literal, sin HTML | Autoescape de Jinja2; `textContent` en JS | T:web::test_nickname_se_escapa, test_archivos_estaticos | **OK** |  |
 | RNF-SEG-06 | Identificador ≥ 128 bits; HttpOnly, Secure, SameSite=Lax | hashing.py (256 bits); session.py | T:cu02::test_endpoint_escribe_cookie_segura; T:shared::test_tokens_* | **OK** |  |
 | RNF-SEG-07 | Sesión invalidada no reutilizable | session.py; cu03 | T:shared::test_sesion_expirada_queda_invalidada; T:cu03::* | **OK** |  |
 | RNF-PRI-01 | Correo no visible para otros | DTO sin correo | T:cu08::test_no_expone_correo_*; T:e2e::test_flujo_completo | **OK** |  |
-| RNF-PRI-02 | Contenido reportado eliminado ≤ 24 h; respaldos ≤ 7 días | ea05 (cron horario y al arrancar); scripts/respaldo_mongodb.py; .github/workflows/backup.yml (artifact cifrado, 7 días) | T:ea05::*; T:scripts::test_rota_respaldos_de_mas_de_7_dias; T:wf::* | **PARCIAL** | **Grupo:** el respaldo diario se activa al crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE`. **Despliegue:** si se usan snapshots de Atlas, su retención (≤ 7 días) se configura en Atlas. |
+| RNF-PRI-02 | Contenido reportado eliminado ≤ 24 h; respaldos ≤ 7 días | ea05 (cron horario y al arrancar); scripts/respaldo_mongodb.py, .github/workflows/backup.yml; v2: scripts/backup.sh (`RETENCION_RESPALDOS_DIAS` ≤ 7) y scripts/restore.sh | T:ea05::*; T:scripts::*; T:wf::*; T:migr::test_scripts_de_respaldo_y_restauracion; T:respaldo-docker::* | **OK** | La rotación de 7 días está en los dos caminos (Docker Compose y Vercel + Atlas). **Despliegue:** programar el respaldo y, con Atlas, fijar la retención de snapshots. |
 | RNF-PRI-03 | Chat expirado eliminado ≤ 24 h | ea03 (cron horario y al arrancar) | T:ea03::*; T:ea07::test_workflow_* | **OK** |  |
-| RNF-PRI-04 | Imágenes sin EXIF | image_storage.py `recodificar_sin_metadatos` | T:shared::test_imagen_se_recodifica_sin_exif; T:cu10::test_primer_mensaje_con_imagen_sin_exif | **OK** |  |
+| RNF-PRI-04 | Imágenes sin EXIF (v2: también fotos de perfil e imágenes de publicaciones) | image_storage.py `recodificar_sin_metadatos`, `foto_cuadrada` | T:shared::test_imagen_se_recodifica_sin_exif; T:cu10::test_primer_mensaje_con_imagen_sin_exif; T:perfiles::test_foto_recortada_cuadrada_sin_exif_y_reemplaza_la_anterior; T:img-pub::test_crea_con_hasta_3_imagenes_sin_exif | **OK** |  |
 | RNF-PRI-05 | Logs sin texto ni imágenes de chats | Ningún `log.*` incluye contenido de mensajes | T:rob::test_registros_tecnicos_sin_texto_ni_imagenes_de_chats | **OK** |  |
 | RNF-LEG-01 | Consentimiento expreso y registrado | registro.html; cu01 `termsAcceptance` | T:web::test_registro_casilla_desmarcada; T:cu01::test_registro_* | **OK** | **Grupo:** `TERMINOS_VERSION` y `TERMINOS_FECHA` del texto aprobado (obligatorias en producción). |
 | RNF-LEG-02 | Política: datos, finalidad, plazos, quién accede | web/terminos/terminos.txt (incluye respaldos, PA-37) | T:cu16::test_politica_completa_rn31_con_canal_arco_configurado | **OK** | **Grupo:** aprobación del texto legal. |
@@ -431,3 +461,71 @@ Ejecutada con `python tests/carga/ejecutar_carga.py` el 2026-11-10 (01:23–01:3
 | sondeo del chat abierto (1 s) | 24365 | 0 | 0,02 s | 0,10 s | 8,47 s |
 
 **Validez:** son mediciones en local, sin latencia de red real. Para RNF-REN-04 se sumó la transferencia de subida y bajada calculada a 10 Mbps. Los resultados deben confirmarse en el despliegue (Vercel + Atlas).
+
+## 7. Cambio de alcance: SRS v2.0 (v2.0.0)
+
+Cada fila es un cambio de `docs/cambios_v2.md`. Estado con el mismo criterio de la sección 1.
+
+### 7.1 Versionado
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| `VERSION`, versión en el pie y en `/api/salud` | `VERSION`, app/shared/version.py, app/salud.py, base.html | T:shared/test_version.py::* | **OK** |
+| CHANGELOG (Keep a Changelog) y solicitud de cambio | CHANGELOG.md, docs/cambios_v2.md | T:shared/test_version.py::test_changelog_keep_a_changelog | **OK** |
+
+### 7.2 Fase 1 — Rediseño visual
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| 1.1 Portada, paleta, iconos, ilustraciones, mosaicos de tipo | portada.html, tokens.css, app.css, web/static/img/ | T:web::*; T:nav-wcag::test_axe_wcag22aa_sin_violaciones | **OK** |
+| 1.2 Modo claro y oscuro con interruptor y `prefers-color-scheme` | base.html, app.js `prepararTema` | tests/e2e/navegador/test_tema.py; axe en ambos modos | **OK** |
+| 1.3 Tokens por modo para Figma (`tokens.json`) y 96 capturas | scripts/exportar_tokens.py, scripts/tomar_capturas.py | T:web/test_tokens.py::* | **OK** |
+
+### 7.3 Fase 2 — Perfiles
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| 2.1 Perfil con nickname, foto o avatar, biografía ≤ 160 y fecha de ingreso; sin correo | m07_perfiles/cu19, cu20; ver_perfil.html | T:perfiles::test_ver_perfil_publico_sin_correo; T:e2e-perfiles::*; T:nav-perfiles::* | **OK** |
+| 2.2 Foto JPG/PNG/WebP ≤ 2 MB, recortada a cuadrado, sin EXIF, re-codificada | cu19/handler.py, image_storage.py `foto_cuadrada` | T:perfiles::test_foto_recortada_cuadrada_sin_exif_y_reemplaza_la_anterior, test_foto_rechazada | **OK** |
+| 2.3 Avatar elegido (12, en tres grupos solo visuales) o iniciales; sin género | domain/perfiles.py, validador `accounts` | T:perfiles::test_no_se_guarda_ni_se_infiere_genero, test_avatar_debe_ser_del_catalogo; T:e2e-perfiles (validador) | **OK** |
+| 2.4 Foto o avatar en feed, detalle y chat | `apariencias()` en cu08, cu09, cu12 | T:perfiles::test_feed_incluye_la_apariencia_del_autor; T:nav-perfiles::test_editar_perfil_y_verlo_en_feed_detalle_y_chat | **OK** |
+
+### 7.4 Fase 3 — Imágenes en publicaciones
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| 3.1 Hasta 3 imágenes, mismas reglas que el chat, compresión en el navegador, galería | cu05 (multipart), cu09 galería, publicaciones.js, feed.js | T:img-pub::*; T:e2e-img::*; T:nav-img::test_publicar_con_imagenes_y_ver_la_galeria (imagen > 5 MB reducida en el navegador) | **OK** |
+| 3.2 Al reportar, las imágenes se copian a retención | cu13/handler.py | T:img-pub::test_reporte_copia_las_imagenes_a_retencion_y_ea03_ea05_limpian; T:e2e-img | **OK** |
+| 3.3 Imágenes de publicaciones vencidas o cerradas borradas por EA-03 | ea03/repository.py `MongoRetirarImagenesPublicacionesRepository` | T:img-pub (idem); T:e2e-img | **OK** |
+
+### 7.5 Fase 4 — Chat estilo Messenger
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| 4.1 Burbujas agrupadas con foto o avatar, hora y enviado/visto (`lastReadAt`) | chat.js `fila`, cu12 `visto_hasta` | T:chat-v2::test_visto_usa_last_read_at_de_la_otra_persona; T:nav-chat::test_chat_messenger; tests/e2e/navegador/test_nielsen_gestalt.py | **OK** |
+| 4.2 Emojis Unicode sin librerías y 20 stickers SVG propios con nombre accesible | chat.js, web/static/stickers/ | T:chat-v2::test_solo_un_contenido_por_mensaje, test_enviar_sticker; T:nav-chat | **OK** |
+| 4.3 Documentos PDF/DOCX/XLSX/PPTX/TXT ≤ 10 MB por contenido; sin ejecutables ni macros; solo los dos participantes; attachment + nosniff; tarjeta | domain/documentos.py, cu11, cu12 `descargar_documento` | T:chat-v2::test_tipos_permitidos_por_contenido, test_rechazados, test_endpoint_documento_con_cabeceras_seguras; T:e2e-chat2::*; T:nav-chat | **OK** |
+| 4.4 Los reportes de chat conservan documentos (y stickers) | cu14/handler.py; EA-03 borra documentos | T:chat-v2::test_reporte_conserva_documentos_y_ea03_ea05_los_borran; T:e2e-chat2 | **OK** |
+
+### 7.6 Fases 5 y 6 — Despliegue portable, respaldos y migraciones
+
+| Cambio | Implementación | Pruebas | Estado |
+|---|---|---|---|
+| 5.1 docker-compose: app (gunicorn + uvicorn), MongoDB 7 replica set con volumen, MinIO, Mailpit, Caddy; perfiles dev/prod | docker-compose.yml, Dockerfile, despliegue/ | T:despliegue::*; T:recorrido::* (levantado desde cero) | **OK** |
+| 5.2 Bloqueo del arranque en producción (términos, CANAL_ARCO, proveedores reales, SMTP cifrado) | config/provider.py `verificar_entorno` | T:despliegue::test_produccion_rechaza_smtp_sin_cifrar; verificado con `docker compose run -e ENTORNO=produccion` | **OK** |
+| 5.3 Acceso sin abrir puertos (Cloudflare Tunnel, Tailscale) documentado | docs/DESPLIEGUE.md §8, servicio `cloudflared` | T:despliegue::test_guia_paso_a_paso | **OK** |
+| 5.4 Automatismos dentro del compose | servicio `tareas` | T:despliegue::test_tareas_llama_a_los_jobs_con_cron_secret | **OK** |
+| `.env.example` completo y `docs/DESPLIEGUE.md` paso a paso | .env.example, docs/DESPLIEGUE.md | T:despliegue::test_env_example_completo, test_env_example_sin_comentarios_en_la_misma_linea | **OK** |
+| 6.1 backup.sh / restore.sh: base + bucket en un paquete fechado | scripts/backup.sh, scripts/restore.sh | T:respaldo-docker::test_respaldo_en_un_contenedor_y_restauracion_en_otro_limpio (byte a byte) | **OK** |
+| 6.2 Migraciones versionadas, idempotentes, al arrancar y registradas; 001 v1 → v2 | app/shared/db/migraciones.py, scripts/migraciones/001_v1_a_v2.py | T:migr::*; T:e2e-migr::* (3 procesos a la vez: migra uno); T:respaldo-docker::test_respaldo_de_v1_se_restaura_sobre_v2 (código del tag v1.0.0) | **OK** |
+
+### 7.7 Fase 7 — Datos de demo y recorrido
+
+`scripts/seed_demo.py` crea 4 cuentas con avatar, 4 publicaciones (6 imágenes) y 3 chats con emojis, stickers,
+una imagen y documentos PDF, DOCX y TXT, usando los casos de uso de la app. Con el compose levantado desde cero
+(`docker compose down -v && docker compose up -d`, todos los servicios *healthy* en 16 s), el recorrido del navegador
+(`T:recorrido::*`) pasó por portada, inicio de sesión, feed con miniaturas y avatares, galería, chat (descarga del
+PDF, emoji, sticker, «visto» cuando la otra persona abre el chat), perfil propio y público en modo oscuro,
+publicación con imagen desde la interfaz, y registro con el correo de activación recibido en Mailpit.
+`scripts/verificar_despliegue.py` repite el flujo por la API.
+
