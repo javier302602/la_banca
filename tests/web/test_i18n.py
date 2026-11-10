@@ -125,7 +125,7 @@ def cliente():
 @pytest.mark.parametrize("ruta", ["/feed", "/chats", "/publicaciones/nueva", "/ayuda", "/terminos"])
 def test_paginas_en_es_pe_con_catalogo(cliente, ruta):
     html = cliente.get(ruta).text
-    assert '<html lang="es-PE">' in html and 'data-zona-horaria="America/Lima"' in html
+    assert '<html lang="es-PE"' in html and 'data-zona-horaria="America/Lima"' in html
     incrustado = json.loads(re.search(r'<script id="i18n" type="application/json">(.*?)</script>', html, re.S).group(1))
     assert incrustado == i18n.catalogo_js()
 

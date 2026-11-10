@@ -7,7 +7,7 @@
 {% block content %}
 <div class="contenedor-medio">
   <p><a href="/publicaciones/{{ publicacion_id }}">{{ t("responder.volver") }}</a></p>
-  <h1 class="h4 mb-3">{{ t("responder.titulo") }}</h1>
+  <h1 class="h4 mb-3"><i class="bi bi-reply icono-titulo" aria-hidden="true"></i>{{ t("responder.titulo") }}</h1>
   <div id="mensajes" aria-live="polite"></div>
   <article class="card mb-3 d-none" id="contexto" aria-labelledby="contexto-titulo">
     <div class="card-body">

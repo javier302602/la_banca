@@ -15,6 +15,19 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
 - Archivo `VERSION`; la versión se muestra en el pie de todas las páginas y en `GET /api/salud`.
 - `GET /api/salud`: estado del servicio y de la base de datos para monitores y healthchecks (503 si la base no
   responde).
+- **Fase 1 — Rediseño visual:** portada para visitantes con lema y llamada a la acción; paleta con color
+  primario (#4f3cc9) y de acento (#c2410c); tarjetas con sombra y bordes redondeados; iconos de Bootstrap Icons
+  1.11.3 en el menú, los títulos, las acciones y los tipos de publicación; ilustraciones originales en los estados
+  vacíos; tipos de publicación elegidos en mosaicos.
+- **Modo claro y oscuro:** interruptor en la barra (`role="switch"`) que respeta `prefers-color-scheme` y recuerda
+  la elección en el navegador; todos los colores salen de los tokens, con un juego por modo.
+- `tokens.json` con los conjuntos `global`, `claro` y `oscuro`, los temas Claro y Oscuro y sombras `boxShadow`.
+- 90 capturas (15 páginas × 3 anchos × 2 modos).
+
+### Changed
+- `/` sin sesión muestra la portada (antes redirigía al inicio de sesión).
+- En tableta (768–1023 px) el menú con sesión muestra solo textos y «Cerrar sesión» como icono, para que quepa.
+- axe-core con wcag22aa se ejecuta en modo claro y oscuro.
 
 ## [1.0.0] - 2026-11-10
 

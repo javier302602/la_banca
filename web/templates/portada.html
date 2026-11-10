@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{# Portada pública: lema y llamada a la acción (cambio 1.2 de docs/cambios_v2.md) #}
+
+{% block title %}{{ t("portada.titulo_pagina") }}{% endblock %}
+{% block pagina %}portada{% endblock %}
+
+{% block content %}
+<section class="portada" aria-labelledby="lema">
+  <div>
+    <h1 class="lema mb-3" id="lema">{{ t("portada.lema_1") }} <span>{{ t("portada.lema_2") }}</span></h1>
+    <p class="mb-4">{{ t("portada.descripcion") }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-acento btn-lg" href="/registro"><i class="bi bi-person-plus" aria-hidden="true"></i>
+        {{ t("portada.crear_cuenta") }}</a>
+      <a class="btn btn-outline-primary btn-lg" href="/login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+        {{ t("portada.iniciar_sesion") }}</a>
+    </div>
+  </div>
+  <img src="/static/img/portada.svg" alt="">
+</section>
+
+<section class="ventajas my-5" aria-label="{{ t('feed.tipo') }}">
+  {% for tipo, icono in [("NECESITO", "bi-life-preserver"), ("OFREZCO", "bi-gift"), ("ACTIVIDAD", "bi-people")] %}
+  <article class="card tipo-{{ tipo }}">
+    <div class="card-body">
+      <span class="badge etiqueta-tipo mb-2"><i class="bi {{ icono }}" aria-hidden="true"></i> {{ t("tipos." ~ tipo) }}</span>
+      <p class="mb-0">{{ t("portada." ~ tipo.lower()) }}</p>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="card mb-4" aria-labelledby="como-funciona">
+  <div class="card-body">
+    <h2 class="h5" id="como-funciona"><i class="bi bi-signpost-split icono-titulo" aria-hidden="true"></i>{{ t("portada.como_funciona") }}</h2>
+    <ol class="mb-0">
+      <li>{{ t("portada.paso_1") }}</li>
+      <li>{{ t("portada.paso_2") }}</li>
+      <li>{{ t("portada.paso_3") }}</li>
+    </ol>
+  </div>
+</section>
+{% endblock %}

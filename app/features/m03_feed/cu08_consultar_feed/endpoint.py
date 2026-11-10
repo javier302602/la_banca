@@ -35,8 +35,11 @@ async def consultar_feed(
 
 
 @router.get("/", include_in_schema=False)
-async def inicio(sesion: SesionActual | None = Depends(get_sesion_opcional)):
-    return redirigir("/feed" if sesion else "/login")
+async def inicio(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
+    """Con sesión, el feed; sin sesión, la portada con lema y llamada a la acción."""
+    if sesion is not None:
+        return redirigir("/feed")
+    return render(request, "portada.html", None)
 
 
 @router.get("/feed", include_in_schema=False)

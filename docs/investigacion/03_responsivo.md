@@ -24,7 +24,7 @@
 
 ## 2. Tokens de diseño
 
-**Fuente única:** `web/static/css/tokens.css`, con variables `--lb-<categoría>-<nombre>` (48 tokens). `app.css` solo usa tokens: no tiene ningún color literal, y un test lo comprueba. Bootstrap también se alimenta de ellos (`--bs-body-color`, `--bs-link-color`, `--bs-secondary-color`…).
+**Fuente única:** `web/static/css/tokens.css` (v2: `:root` define el modo claro y `[data-bs-theme="dark"]` el oscuro, con los mismos nombres; el JSON tiene los conjuntos `global`, `claro` y `oscuro` y los temas Claro y Oscuro), con variables `--lb-<categoría>-<nombre>` (48 tokens). `app.css` solo usa tokens: no tiene ningún color literal, y un test lo comprueba. Bootstrap también se alimenta de ellos (`--bs-body-color`, `--bs-link-color`, `--bs-secondary-color`…).
 
 | Categoría | Tokens | Ejemplos |
 |---|---|---|
@@ -55,25 +55,25 @@ El flujo inverso (diseño → código) sería: editar en Tokens Studio, exportar
 
 ## 3. Capturas
 
-`python scripts/tomar_capturas.py` arranca la app contra MongoDB (replica set), siembra datos de ejemplo y captura con Playwright (Chromium) la página completa de las 15 pantallas en los tres anchos: 45 imágenes en `docs/investigacion/capturas/`, con nombre `<nn>-<página>-<ancho>.png`.
+`python scripts/tomar_capturas.py` arranca la app contra MongoDB (replica set), siembra datos de ejemplo y captura con Playwright (Chromium) la página completa de las 15 pantallas en los tres anchos y en los dos modos (emulando `prefers-color-scheme`): 90 imágenes en `docs/investigacion/capturas/claro/` y `docs/investigacion/capturas/oscuro/`, con nombre `<nn>-<página>-<ancho>.png`. La tabla enlaza el modo claro; el oscuro tiene los mismos nombres en `capturas/oscuro/`.
 
 | # | Página | 360 px | 768 px | 1024 px |
 |---|---|---|---|---|
-| 01 | Iniciar sesión | [ver](capturas/01-login-360.png) | [ver](capturas/01-login-768.png) | [ver](capturas/01-login-1024.png) |
-| 02 | Registro | [ver](capturas/02-registro-360.png) | [ver](capturas/02-registro-768.png) | [ver](capturas/02-registro-1024.png) |
-| 03 | Activar cuenta | [ver](capturas/03-activar-360.png) | [ver](capturas/03-activar-768.png) | [ver](capturas/03-activar-1024.png) |
-| 04 | Recuperar contraseña | [ver](capturas/04-recuperar-360.png) | [ver](capturas/04-recuperar-768.png) | [ver](capturas/04-recuperar-1024.png) |
-| 05 | Restablecer contraseña | [ver](capturas/05-restablecer-360.png) | [ver](capturas/05-restablecer-768.png) | [ver](capturas/05-restablecer-1024.png) |
-| 06 | Términos | [ver](capturas/06-terminos-360.png) | [ver](capturas/06-terminos-768.png) | [ver](capturas/06-terminos-1024.png) |
-| 07 | Feed «Ahora» | [ver](capturas/07-feed-360.png) | [ver](capturas/07-feed-768.png) | [ver](capturas/07-feed-1024.png) |
-| 08 | Detalle | [ver](capturas/08-detalle-360.png) | [ver](capturas/08-detalle-768.png) | [ver](capturas/08-detalle-1024.png) |
-| 09 | Crear publicación | [ver](capturas/09-crear-publicacion-360.png) | [ver](capturas/09-crear-publicacion-768.png) | [ver](capturas/09-crear-publicacion-1024.png) |
-| 10 | Mis publicaciones | [ver](capturas/10-mis-publicaciones-360.png) | [ver](capturas/10-mis-publicaciones-768.png) | [ver](capturas/10-mis-publicaciones-1024.png) |
-| 11 | Mis chats | [ver](capturas/11-mis-chats-360.png) | [ver](capturas/11-mis-chats-768.png) | [ver](capturas/11-mis-chats-1024.png) |
-| 12 | Chat | [ver](capturas/12-chat-360.png) | [ver](capturas/12-chat-768.png) | [ver](capturas/12-chat-1024.png) |
-| 13 | Responder | [ver](capturas/13-responder-360.png) | [ver](capturas/13-responder-768.png) | [ver](capturas/13-responder-1024.png) |
-| 14 | Reportar | [ver](capturas/14-reportar-360.png) | [ver](capturas/14-reportar-768.png) | [ver](capturas/14-reportar-1024.png) |
-| 15 | Perfil | [ver](capturas/15-perfil-360.png) | [ver](capturas/15-perfil-768.png) | [ver](capturas/15-perfil-1024.png) |
+| 01 | Iniciar sesión | [ver](capturas/claro/01-login-360.png) | [ver](capturas/claro/01-login-768.png) | [ver](capturas/claro/01-login-1024.png) |
+| 02 | Registro | [ver](capturas/claro/02-registro-360.png) | [ver](capturas/claro/02-registro-768.png) | [ver](capturas/claro/02-registro-1024.png) |
+| 03 | Activar cuenta | [ver](capturas/claro/03-activar-360.png) | [ver](capturas/claro/03-activar-768.png) | [ver](capturas/claro/03-activar-1024.png) |
+| 04 | Recuperar contraseña | [ver](capturas/claro/04-recuperar-360.png) | [ver](capturas/claro/04-recuperar-768.png) | [ver](capturas/claro/04-recuperar-1024.png) |
+| 05 | Restablecer contraseña | [ver](capturas/claro/05-restablecer-360.png) | [ver](capturas/claro/05-restablecer-768.png) | [ver](capturas/claro/05-restablecer-1024.png) |
+| 06 | Términos | [ver](capturas/claro/06-terminos-360.png) | [ver](capturas/claro/06-terminos-768.png) | [ver](capturas/claro/06-terminos-1024.png) |
+| 07 | Feed «Ahora» | [ver](capturas/claro/07-feed-360.png) | [ver](capturas/claro/07-feed-768.png) | [ver](capturas/claro/07-feed-1024.png) |
+| 08 | Detalle | [ver](capturas/claro/08-detalle-360.png) | [ver](capturas/claro/08-detalle-768.png) | [ver](capturas/claro/08-detalle-1024.png) |
+| 09 | Crear publicación | [ver](capturas/claro/09-crear-publicacion-360.png) | [ver](capturas/claro/09-crear-publicacion-768.png) | [ver](capturas/claro/09-crear-publicacion-1024.png) |
+| 10 | Mis publicaciones | [ver](capturas/claro/10-mis-publicaciones-360.png) | [ver](capturas/claro/10-mis-publicaciones-768.png) | [ver](capturas/claro/10-mis-publicaciones-1024.png) |
+| 11 | Mis chats | [ver](capturas/claro/11-mis-chats-360.png) | [ver](capturas/claro/11-mis-chats-768.png) | [ver](capturas/claro/11-mis-chats-1024.png) |
+| 12 | Chat | [ver](capturas/claro/12-chat-360.png) | [ver](capturas/claro/12-chat-768.png) | [ver](capturas/claro/12-chat-1024.png) |
+| 13 | Responder | [ver](capturas/claro/13-responder-360.png) | [ver](capturas/claro/13-responder-768.png) | [ver](capturas/claro/13-responder-1024.png) |
+| 14 | Reportar | [ver](capturas/claro/14-reportar-360.png) | [ver](capturas/claro/14-reportar-768.png) | [ver](capturas/claro/14-reportar-1024.png) |
+| 15 | Perfil | [ver](capturas/claro/15-perfil-360.png) | [ver](capturas/claro/15-perfil-768.png) | [ver](capturas/claro/15-perfil-1024.png) |
 
 Las capturas sirven de referencia para maquetar en Figma con los mismos tokens; también permiten comparar visualmente después de cada cambio de estilos.
 

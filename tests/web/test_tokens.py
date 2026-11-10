@@ -14,7 +14,7 @@ TOKENS_CSS = (RAIZ / "web/static/css/tokens.css").read_text(encoding="utf-8")
 APP_CSS = (RAIZ / "web/static/css/app.css").read_text(encoding="utf-8")
 TOKENS_JSON = json.loads((RAIZ / "docs/investigacion/tokens.json").read_text(encoding="utf-8"))
 TIPOS_TOKENS_STUDIO = {"color", "fontFamilies", "fontSizes", "fontWeights", "lineHeights", "spacing", "borderRadius",
-                       "sizing"}
+                       "sizing", "boxShadow"}
 
 _spec = importlib.util.spec_from_file_location("exportar_tokens", RAIZ / "scripts" / "exportar_tokens.py")
 exportar_tokens = importlib.util.module_from_spec(_spec)
@@ -30,18 +30,31 @@ def test_tokens_json_sincronizado_con_tokens_css():
 
 
 def test_formato_tokens_studio():
-    assert TOKENS_JSON["$metadata"] == {"tokenSetOrder": ["global"]} and TOKENS_JSON["$themes"] == []
-    hojas = [(grupo, nombre, token) for grupo, tokens in TOKENS_JSON["global"].items() for nombre, token in tokens.items()]
-    assert len(hojas) >= 40
-    for grupo, nombre, token in hojas:
-        assert set(token) <= {"value", "type", "description"} and token["type"] in TIPOS_TOKENS_STUDIO, (grupo, nombre)
-        assert token["type"] == grupo, (grupo, nombre)
+    assert TOKENS_JSON["$metadata"] == {"tokenSetOrder": ["global", "claro", "oscuro"]}
+    assert [(tema["name"], tema["selectedTokenSets"]) for tema in TOKENS_JSON["$themes"]] == [
+        ("Claro", {"global": "enabled", "claro": "enabled"}), ("Oscuro", {"global": "enabled", "oscuro": "enabled"})]
+    hojas = [(conjunto, grupo, nombre, token) for conjunto in ("global", "claro", "oscuro")
+             for grupo, tokens in TOKENS_JSON[conjunto].items() for nombre, token in tokens.items()]
+    assert len(hojas) >= 80
+    for conjunto, grupo, nombre, token in hojas:
+        assert set(token) <= {"value", "type", "description"}, (conjunto, nombre)
+        assert token["type"] in TIPOS_TOKENS_STUDIO and token["type"] == grupo, (conjunto, grupo, nombre)
         if token["type"] == "color":
             assert re.fullmatch(r"#[0-9a-f]{6}", token["value"]), (nombre, token["value"])
+        if token["type"] == "boxShadow":
+            capas = token["value"] if isinstance(token["value"], list) else [token["value"]]
+            assert all(set(c) == {"x", "y", "blur", "spread", "color", "type"} for c in capas), nombre
         if token["type"] in ("fontSizes", "spacing", "borderRadius", "sizing"):
             assert re.fullmatch(r"\d+(\.\d+)?(rem|px)", token["value"]), (nombre, token["value"])
     assert TOKENS_JSON["global"]["sizing"]["tableta"]["value"] == "768px"
     assert TOKENS_JSON["global"]["sizing"]["escritorio"]["value"] == "1024px"
+
+
+def test_modo_oscuro_define_los_mismos_colores_y_sombras():
+    for grupo in ("color", "boxShadow"):
+        assert set(TOKENS_JSON["claro"][grupo]) == set(TOKENS_JSON["oscuro"][grupo]), grupo
+    assert not ({"color", "boxShadow"} & set(TOKENS_JSON["global"]))
+    assert TOKENS_JSON["claro"]["color"]["fondo"]["value"] != TOKENS_JSON["oscuro"]["color"]["fondo"]["value"]
 
 
 def test_app_css_sin_colores_literales_y_solo_tokens_existentes():

@@ -3,7 +3,7 @@
 
 (() => {
   const { api, alerta, el, limpiar, contador, ocupado, restante, refrescarRestantes, mostrarErrores, limpiarErrores,
-          errorEnCampo, TIPOS, t } = Banca;
+          errorEnCampo, TIPOS, t, icono, etiquetaTipo } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -57,7 +57,7 @@
 
     const fila = (p) => el("li", { class: "list-group-item d-flex justify-content-between align-items-center gap-2" },
       el("div", {},
-        el("span", { class: `badge etiqueta-tipo tipo-${p.tipo} me-2`, text: TIPOS[p.tipo] }),
+        el("span", { class: `badge etiqueta-tipo tipo-${p.tipo} me-2` }, ...etiquetaTipo(p.tipo)),
         el("a", { href: `/publicaciones/${encodeURIComponent(p.id)}`, text: p.titulo }),
         el("div", { class: "small text-body-secondary" }, t("publicaciones.tiempo_restante"),
           el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))),

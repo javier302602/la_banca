@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-hidden="true">
+  <!-- Ilustración original: hoja de anuncio con un lápiz -->
+  <ellipse cx="100" cy="126" rx="70" ry="7" fill="#5b5f73" opacity=".25"/>
+  <rect x="56" y="16" width="86" height="104" rx="10" fill="#ffffff" stroke="#4f3cc9" stroke-width="4"/>
+  <g stroke="#7c6cf0" stroke-width="6" stroke-linecap="round"><path d="M72 42 h54"/><path d="M72 62 h40"/><path d="M72 82 h48"/></g>
+  <g transform="rotate(35 150 70)"><rect x="140" y="30" width="16" height="66" rx="4" fill="#f59f00"/><path d="M140 96 h16 l-8 14z" fill="#8a5a2b"/></g>
+</svg>

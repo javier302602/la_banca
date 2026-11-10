@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-hidden="true">
+  <!-- Ilustración original: dos burbujas de mensaje en espera -->
+  <ellipse cx="100" cy="124" rx="70" ry="7" fill="#5b5f73" opacity=".25"/>
+  <rect x="30" y="24" width="96" height="54" rx="16" fill="#7c6cf0" opacity=".85"/>
+  <path d="M48 78 l6 16 l12-16z" fill="#7c6cf0" opacity=".85"/>
+  <rect x="84" y="62" width="88" height="46" rx="16" fill="#ff9b6b"/>
+  <path d="M150 108 l-4 14 l-12-14z" fill="#ff9b6b"/>
+  <g fill="#ffffff"><circle cx="62" cy="51" r="5"/><circle cx="78" cy="51" r="5"/><circle cx="94" cy="51" r="5"/></g>
+</svg>
