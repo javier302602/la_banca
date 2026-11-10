@@ -28,6 +28,8 @@ from app.features.m04_chat.cu12_ver_mis_chats.endpoint import router as cu12_ver
 from app.features.m05_reportes.cu13_reportar_publicacion.endpoint import router as cu13_reportar_publicacion
 from app.features.m05_reportes.cu14_reportar_chat.endpoint import router as cu14_reportar_chat
 from app.features.m06_configuracion.cu15_configurar_parametros.endpoint import router as cu15_configurar_parametros
+from app.features.m07_perfiles.cu19_editar_perfil.endpoint import router as cu19_editar_perfil
+from app.features.m07_perfiles.cu20_ver_perfil.endpoint import router as cu20_ver_perfil
 from app.jobs.ea03_limpiar_chats_expirados.endpoint import router as ea03_limpiar_chats_expirados
 from app.jobs.ea05_depurar_contenido_reportado.endpoint import router as ea05_depurar_contenido_reportado
 from app.jobs.ea07_eliminar_cuentas_no_activadas.endpoint import router as ea07_eliminar_cuentas_no_activadas
@@ -101,6 +103,7 @@ for router in [
     cu08_consultar_feed, cu09_ver_detalle_publicacion,
     cu10_responder_publicacion, cu11_enviar_mensaje, cu12_ver_mis_chats,
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,
+    cu19_editar_perfil, cu20_ver_perfil,
     ea03_limpiar_chats_expirados, ea05_depurar_contenido_reportado, ea07_eliminar_cuentas_no_activadas,
     reloj_de_pruebas,  # RNF-MAN-02: solo responde con ENTORNO=pruebas
     salud,

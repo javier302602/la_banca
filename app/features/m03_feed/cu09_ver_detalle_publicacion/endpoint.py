@@ -4,6 +4,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
+from app.shared.db.perfiles import MongoPerfilesPublicosRepository
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.web.plantillas import redirigir_a_login, render
 
@@ -19,6 +20,7 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerDetallePublicac
         publicaciones=MongoVerDetallePublicacionRepository(db),
         chats=MongoChatExistenteRepository(db),
         clock=get_clock(),
+        cuentas=MongoPerfilesPublicosRepository(db),
     )
 
 

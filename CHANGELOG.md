@@ -24,7 +24,20 @@ Cambio de alcance de SRS v1.9 a v2.0: ver `docs/cambios_v2.md` (solicitud de cam
 - `tokens.json` con los conjuntos `global`, `claro` y `oscuro`, los temas Claro y Oscuro y sombras `boxShadow`.
 - 90 capturas (15 páginas × 3 anchos × 2 modos).
 
+- **Fase 2 — Perfiles:** página pública `/perfiles/{nickname}` con foto o avatar, biografía (≤ 160 caracteres)
+  y fecha de ingreso; el correo no se muestra a nadie. `/perfil` permite subir una foto (JPG/PNG/WebP ≤ 2 MB,
+  recortada a cuadrado de hasta 512 px, re-codificada en WebP y sin EXIF), quitarla, y elegir uno de 12 avatares
+  originales agrupados como «Hombre», «Mujer» y «Neutros» solo para presentarlos; sin elección, iniciales sobre un
+  color. No se infiere ni se guarda el género. La foto o el avatar aparecen en el feed, el detalle (con enlace al
+  perfil), la lista de chats y la cabecera del chat.
+- API: `GET/PATCH /api/cuentas/me/perfil`, `PUT/DELETE /api/cuentas/me/foto`, `GET /api/perfiles/{nickname}` y
+  `GET /api/perfiles/{nickname}/foto` (con sesión, `nosniff`). Los DTO del feed, el detalle y los chats incluyen
+  `apariencia_autor` / `apariencia_contraparte`.
+- Tokens `--lb-color-avatar-1…6` (claro y oscuro) para el fondo de las iniciales.
+
 ### Changed
+- Términos y política de privacidad: declaran la foto, el avatar, la biografía y la fecha de ingreso como datos
+  tratados y que los demás los ven (RN-31). **Hay que subir `TERMINOS_VERSION`** al desplegar.
 - `/` sin sesión muestra la portada (antes redirigía al inicio de sesión).
 - En tableta (768–1023 px) el menú con sesión muestra solo textos y «Cerrar sesión» como icono, para que quepa.
 - axe-core con wcag22aa se ejecuta en modo claro y oscuro.

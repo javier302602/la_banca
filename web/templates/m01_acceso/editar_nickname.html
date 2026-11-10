@@ -1,28 +1,96 @@
 {% extends "base.html" %}
-{# CU-04 — Editar nickname (perfil) · CU-16 desde el perfil (RF-AUT-24) #}
+{# CU-04 — Editar nickname · CU-19 — Foto, avatar y biografía (SRS v2.0) · CU-16 desde el perfil (RF-AUT-24) #}
 
 {% block title %}{{ t("perfil.titulo") }}{% endblock %}
 {% block pagina %}perfil{% endblock %}
 
 {% block content %}
-<div class="contenedor-estrecho card tarjeta-formulario">
-  <div class="card-body">
-    <h1 class="h4 mb-3"><i class="bi bi-person-circle icono-titulo" aria-hidden="true"></i>{{ t("perfil.titulo") }}</h1>
-    <div id="mensajes" aria-live="polite"></div>
-    <form id="form-nickname" novalidate>
-      <div class="mb-3">
-        <label class="form-label" for="nickname">{{ t("perfil.nickname") }}</label>
-        <input class="form-control" id="nickname" name="nickname" required maxlength="20" value="{{ sesion.nickname }}"
-               autocomplete="nickname" aria-describedby="ayuda-nickname">
-        <div class="form-text" id="ayuda-nickname">{{ t("campos.ayuda_nickname") }}</div>
+<div class="contenedor-estrecho">
+  <div class="card tarjeta-formulario mb-3">
+    <div class="card-body">
+      <h1 class="h4 mb-3"><i class="bi bi-person-circle icono-titulo" aria-hidden="true"></i>{{ t("perfil.titulo") }}</h1>
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="avatar avatar-lg" id="vista-avatar" aria-hidden="true"></span>
+        <div>
+          <p class="fw-semibold mb-1" id="vista-nickname">@{{ sesion.nickname }}</p>
+          <a class="small d-inline-block py-1" id="enlace-publico" href="/perfiles/{{ sesion.nickname | urlencode }}">{{ t("perfil.ver_publico") }}</a>
+        </div>
       </div>
-      <button class="btn btn-primary" type="submit">{{ t("perfil.guardar") }}</button>
-    </form>
-    <hr>
-    <p class="small mb-1"><a href="/terminos">{{ t("pie.terminos") }}</a></p>
-    <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>{{ t("nav.cerrar_sesion") }}</button>
+      <p class="small text-body-secondary"><i class="bi bi-shield-lock" aria-hidden="true"></i> {{ t("perfil.privacidad") }}</p>
+      <div id="mensajes" aria-live="polite"></div>
+      <form id="form-nickname" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="nickname">{{ t("perfil.nickname") }}</label>
+          <input class="form-control" id="nickname" name="nickname" required maxlength="20" value="{{ sesion.nickname }}"
+                 autocomplete="nickname" aria-describedby="ayuda-nickname">
+          <div class="form-text" id="ayuda-nickname">{{ t("campos.ayuda_nickname") }}</div>
+        </div>
+        <button class="btn btn-primary" type="submit">{{ t("perfil.guardar") }}</button>
+      </form>
+    </div>
   </div>
+
+  <div class="card tarjeta-formulario mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3"><i class="bi bi-image icono-titulo" aria-hidden="true"></i>{{ t("perfil.datos") }}</h2>
+      <div id="mensajes-perfil" aria-live="polite"></div>
+
+      <form id="form-foto" class="mb-4" novalidate>
+        <label class="form-label" for="foto">{{ t("perfil.foto") }}</label>
+        <div class="selector-archivo mb-1">
+          <input class="entrada-archivo" type="file" id="foto" name="foto" accept="image/jpeg,image/png,image/webp"
+                 aria-describedby="nombre-foto ayuda-foto">
+          <span class="btn btn-outline-secondary btn-sm boton-archivo" aria-hidden="true">{{ t("js.imagen.elegir") }}</span>
+          <span class="small text-body-secondary nombre-archivo" id="nombre-foto">{{ t("js.imagen.ninguna") }}</span>
+        </div>
+        <div class="form-text mb-2" id="ayuda-foto">{{ t("perfil.ayuda_foto") }}</div>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-upload" aria-hidden="true"></i> {{ t("perfil.subir_foto") }}</button>
+          <button class="btn btn-outline-danger btn-sm d-none" type="button" id="quitar-foto"><i class="bi bi-trash" aria-hidden="true"></i> {{ t("perfil.quitar_foto") }}</button>
+        </div>
+      </form>
+
+      <form id="form-perfil" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="biografia">{{ t("perfil.biografia") }}</label>
+          <textarea class="form-control" id="biografia" name="biografia" rows="3" maxlength="160"
+                    aria-describedby="ayuda-biografia contador-biografia"></textarea>
+          <div class="d-flex justify-content-between gap-2">
+            <span class="form-text" id="ayuda-biografia">{{ t("perfil.ayuda_biografia") }}</span>
+            <span class="small text-body-secondary" id="contador-biografia"></span>
+          </div>
+        </div>
+        <fieldset class="mb-2" aria-describedby="ayuda-avatar">
+          <legend class="form-label fs-6 mb-1">{{ t("perfil.avatar") }}</legend>
+          <p class="form-text mt-0" id="ayuda-avatar">{{ t("perfil.ayuda_avatar") }}</p>
+          {% for grupo, avatares in grupos_avatar.items() %}
+          <fieldset class="grupo-avatares">
+            <legend>{{ t("perfil.grupos." ~ grupo) }}</legend>
+            <div class="opciones-avatar">
+              {% for avatar in avatares %}
+              <label class="opcion-avatar" for="avatar-{{ avatar }}">
+                <input class="entrada-mosaico" type="radio" name="avatar" id="avatar-{{ avatar }}" value="{{ avatar }}">
+                <img src="/static/avatares/{{ avatar }}.svg" alt="{{ t('js.perfil.avatar_alt', n=avatar[-2:] | int) }}" width="48" height="48">
+              </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endfor %}
+          <label class="opcion-avatar opcion-iniciales mb-3" for="avatar-ninguno">
+            <input class="entrada-mosaico" type="radio" name="avatar" id="avatar-ninguno" value="">
+            <span class="avatar avatar-md" id="muestra-iniciales" aria-hidden="true"></span>{{ t("perfil.sin_avatar") }}
+          </label>
+        </fieldset>
+        <div>
+          <button class="btn btn-primary" type="submit">{{ t("perfil.guardar_perfil") }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <p class="small mb-1"><a href="/terminos">{{ t("pie.terminos") }}</a></p>
+  <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>{{ t("nav.cerrar_sesion") }}</button>
 </div>
 {% endblock %}
 
-{% block scripts %}<script src="/static/js/acceso.js"></script>{% endblock %}
+{% block scripts %}<script src="/static/js/acceso.js"></script><script src="/static/js/perfiles.js"></script>{% endblock %}

@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 
+from app.shared.domain.perfiles import FotoPerfil
+
 # --- Constantes fijas (SRS §3.3) ----------------------------------------------
 DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
@@ -150,6 +152,14 @@ class Estudiante:
     activacion: EnlaceUnUso = field(default_factory=EnlaceUnUso)
     recuperacion: EnlaceUnUso = field(default_factory=EnlaceUnUso)
     fecha_activacion: datetime | None = None
+    # Perfil (SRS v2.0, cambio 2.1): lo que ven los demás junto al nickname; nunca el correo
+    biografia: str = ""
+    avatar: str | None = None       # avatar-NN elegido; no se guarda ningún grupo ni género
+    foto: FotoPerfil | None = None
+
+    @property
+    def fecha_ingreso(self) -> datetime:
+        return self.fecha_activacion or self.fecha_registro
 
     def pendiente_vencida(self, ahora: datetime) -> bool:
         """EA-07 evaluado al consultar: cuenta pendiente con más de 72 h ya no existe (RN-43)."""

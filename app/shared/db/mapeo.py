@@ -6,6 +6,8 @@ from datetime import datetime
 
 from bson import ObjectId
 
+from app.shared.domain.perfiles import FotoPerfil
+
 from app.shared.domain.entities import (
     AceptacionTerminos,
     VENTANA_ENLACES,
@@ -61,6 +63,9 @@ def estudiante_a_doc(e: Estudiante) -> dict:
         "passwordReset": enlace_a_doc(e.recuperacion),
         "createdAt": e.fecha_registro,
         "activatedAt": e.fecha_activacion,
+        "bio": e.biografia,
+        "avatar": e.avatar,
+        "photo": foto_a_doc(e.foto),
     }
     if e.aceptacion:
         doc["termsAcceptance"] = {"version": e.aceptacion.version, "acceptedAt": e.aceptacion.fecha}
@@ -82,7 +87,22 @@ def doc_a_estudiante(doc: dict) -> Estudiante:
         activacion=doc_a_enlace(doc.get("activation")),
         recuperacion=doc_a_enlace(doc.get("passwordReset")),
         fecha_activacion=doc.get("activatedAt"),
+        biografia=doc.get("bio") or "",
+        avatar=doc.get("avatar"),
+        foto=doc_a_foto(doc.get("photo")),
     )
+
+
+def foto_a_doc(foto: FotoPerfil | None) -> dict | None:
+    if foto is None:
+        return None
+    return {"objectKey": foto.referencia, "mimeType": foto.mime_type, "updatedAt": foto.actualizada_en}
+
+
+def doc_a_foto(doc: dict | None) -> FotoPerfil | None:
+    if not doc or not doc.get("objectKey"):
+        return None
+    return FotoPerfil(doc["objectKey"], doc.get("mimeType", "image/webp"), doc["updatedAt"])
 
 
 # --- login_attempts ---------------------------------------------------------------

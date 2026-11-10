@@ -33,6 +33,12 @@
   --lb-color-fondo-chat: #edeaf8;
   --lb-color-burbuja-propia: #e4defd;
   --lb-color-burbuja-ajena: #ffffff;
+  --lb-color-avatar-1: #d6e4ff;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-2: #cfeedd;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-3: #ffe8b3;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-4: #e4defd;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-5: #ffd6d1;             /* fondo de iniciales; texto ≥ 12:1 */
+  --lb-color-avatar-6: #d1f0f5;             /* fondo de iniciales; texto ≥ 12:1 */
 
   /* Tipos de publicación (similitud, Gestalt): fondo de etiqueta · texto (≥ 7:1) · borde de tarjeta */
   --lb-color-necesito-fondo: #ffe8b3;
@@ -109,6 +115,12 @@
   --lb-color-fondo-chat: #171624;
   --lb-color-burbuja-propia: #342c78;      /* texto 10,4:1 */
   --lb-color-burbuja-ajena: #262536;
+  --lb-color-avatar-1: #2b3f6b;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-2: #1f4a38;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-3: #5a4413;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-4: #3a2f7a;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-5: #6b2a2a;             /* fondo de iniciales; texto ≥ 7,8:1 */
+  --lb-color-avatar-6: #1e4a52;             /* fondo de iniciales; texto ≥ 7,8:1 */
 
   --lb-color-necesito-fondo: #47330a;      /* texto 9,3:1 */
   --lb-color-necesito-texto: #ffe08a;

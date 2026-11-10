@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo } = Banca;
+  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo, autor } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -21,7 +21,8 @@
             el("span", { class: "badge etiqueta-tipo" }, ...etiquetaTipo(p.tipo)),
             p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
-          el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), t("separador"),
+          el("p", { class: "small text-body-secondary mb-0 d-flex align-items-center flex-wrap" },
+            autor(p.nickname_autor, p.apariencia_autor, { enlace: false }), t("separador"),
             el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))));
 
     const url = (cursor) => {
@@ -99,7 +100,7 @@
       tipo.classList.add(`tipo-${p.tipo}`);  // Gestalt: mismo color que en el feed (similitud)
       document.getElementById("titulo").textContent = p.titulo;
       document.getElementById("descripcion").textContent = p.descripcion;
-      document.getElementById("autor").textContent = p.nickname_autor;
+      document.getElementById("autor").replaceChildren(autor(p.nickname_autor, p.apariencia_autor));  // enlace al perfil
       const r = document.getElementById("restante");
       r.dataset.expira = p.fecha_expiracion;
       r.textContent = restante(p.fecha_expiracion);

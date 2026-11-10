@@ -114,6 +114,37 @@ const Banca = (() => {
 
   function etiquetaTipo(tipo) { return [icono(t(`iconos_tipo.${tipo}`)), ` ${TIPOS[tipo]}`]; }
 
+  /* Perfiles (SRS v2.0): foto, avatar elegido o iniciales sobre un color. Es decorativo (aria-hidden): el
+   * nickname visible al lado ya nombra a la persona. */
+  function avatar(apariencia, tamano = "") {
+    const clases = `avatar${tamano ? ` avatar-${tamano}` : ""}`;
+    if (apariencia && apariencia.url) {
+      return el("span", { class: clases, "aria-hidden": "true" },
+                el("img", { src: apariencia.url, alt: "", loading: "lazy", decoding: "async" }));
+    }
+    const color = apariencia ? apariencia.color : 1;
+    // Las iniciales van en un atributo y se pintan con CSS: no ensucian el texto del nickname de al lado
+    return el("span", { class: `${clases} avatar-color-${color}`, "aria-hidden": "true",
+                        "data-iniciales": apariencia ? apariencia.iniciales : "?" });
+  }
+
+  function pintarAvatar(nodo, apariencia) {  // reemplaza un <span class="avatar …"> que ya está en la plantilla
+    if (!nodo) return;
+    const nuevo = avatar(apariencia);
+    nodo.className = nodo.className.split(" ").filter((c) => c === "avatar" || /^avatar-(sm|md|lg)$/.test(c))
+      .concat(nuevo.className.split(" ").filter((c) => c.startsWith("avatar-color-"))).join(" ");
+    if (nuevo.dataset.iniciales) nodo.dataset.iniciales = nuevo.dataset.iniciales; else delete nodo.dataset.iniciales;
+    nodo.replaceChildren(...nuevo.childNodes);
+  }
+
+  function urlPerfil(nickname) { return `/perfiles/${encodeURIComponent(nickname)}`; }
+
+  function autor(nickname, apariencia, { tamano = "", enlace = true } = {}) {
+    const hijos = [avatar(apariencia, tamano), el("span", { class: "nombre-autor", text: nickname })];
+    return enlace ? el("a", { class: "autor", href: urlPerfil(nickname) }, ...hijos)
+                  : el("span", { class: "autor" }, ...hijos);
+  }
+
   /* RNF-USA-03: el mensaje de un dato inválido se muestra junto al campo, enlazado con aria-describedby.
    * El servidor indica el campo en `errores[].campo` (validación) o en `campo` (errores de dominio). */
   function limpiarErrores(formulario) {
@@ -215,7 +246,7 @@ const Banca = (() => {
     } finally {
       if (mapa.close) mapa.close();
     }
-    throw new ErrorApi(422, { detail: t("imagen.no_reducible") });
+    throw new ErrorApi(422, { detail: t("imagen.no_reducible", { mb: Math.round(limite / 1048576) }) });
   }
 
   setInterval(() => refrescarRestantes(), 30000);
@@ -303,7 +334,7 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
+  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, avatar, pintarAvatar, autor, urlPerfil, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
            alerta, limpiar, contador,
            limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };

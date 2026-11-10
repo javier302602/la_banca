@@ -43,6 +43,21 @@ aprueben de forma explícita y se reflejen en el SRS v2.0.
 | 2.3 | Sin foto, la persona **elige** un avatar predefinido (grupos «hombre», «mujer» y «neutro»); si no elige, se muestran sus iniciales sobre un color | Ley N.° 29733 (minimización) | Nuevo | **No se infiere ni se guarda el género**: solo se guarda el identificador del avatar elegido (`avatar-01`…), y la agrupación es solo de presentación. El color de las iniciales se deriva del identificador interno, no de ningún atributo personal. |
 | 2.4 | La foto o el avatar aparecen en el feed, el detalle y el chat | RF-FED-04, RF-FED-05, RF-CHT-18, RF-CHT-22 | Amplía | Reconocer de un vistazo a la otra persona. |
 
+**Implementación (Fase 2).** Casos de uso nuevos **CU-19 «Editar mi perfil»** (`app/features/m07_perfiles/cu19_editar_perfil`)
+y **CU-20 «Ver el perfil de una persona»** (`cu20_ver_perfil`). Campos nuevos en `accounts`: `bio`, `avatar`
+(`avatar-01`…`avatar-12` o `null`) y `photo` (`objectKey`, `mimeType`, `updatedAt`); la migración 001 (Fase 6) los
+agrega a las cuentas de v1. Requisitos nuevos propuestos para el SRS v2.0:
+
+| Id propuesto | Texto |
+|---|---|
+| RF-PER-01 | El sistema permitirá a cada estudiante escribir una biografía de hasta 160 caracteres. |
+| RF-PER-02 | El sistema permitirá subir una foto de perfil JPG, PNG o WebP de hasta 2 MB; la recortará al cuadrado central (máx. 512 px), la volverá a codificar y eliminará sus metadatos. |
+| RF-PER-03 | El sistema permitirá quitar la foto; al quitarla o reemplazarla, la anterior se borra del almacenamiento. |
+| RF-PER-04 | El sistema ofrecerá 12 avatares predefinidos presentados en tres grupos; solo guardará el identificador del avatar elegido. |
+| RF-PER-05 | Sin foto ni avatar, el sistema mostrará las iniciales del nickname sobre un color derivado del identificador interno. |
+| RF-PER-06 | Con sesión iniciada, cualquier estudiante podrá ver el perfil de una cuenta activa: nickname, foto o avatar, biografía y fecha de ingreso (activación). Un nickname inexistente o pendiente de activación responde «Este perfil no existe». |
+| RN-04 (modificada) | Los demás usuarios ven el nickname, la foto o el avatar, la biografía y la fecha de ingreso. El correo institucional no se muestra a nadie. |
+
 ### Fase 3 — Imágenes en publicaciones
 
 | # | Cambio | Requisitos del SRS v1.9 afectados | Tipo | Justificación |

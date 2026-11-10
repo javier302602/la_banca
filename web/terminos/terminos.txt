@@ -4,7 +4,7 @@ TÉRMINOS DE USO Y POLÍTICA DE PRIVACIDAD DE LA BANCA
 La Banca es un espacio temporal para que estudiantes de la comunidad universitaria publiquen, descubran y respondan situaciones puntuales entre clases.
 
 2. Datos que se tratan
-Correo institucional, nickname, estado de activación de la cuenta, publicaciones, mensajes y reportes.
+Correo institucional, nickname, estado de activación de la cuenta y fecha de ingreso; de forma opcional, la foto de perfil, el avatar elegido y una biografía breve; publicaciones, mensajes y reportes. La foto se recorta y se le quitan los metadatos (incluida la ubicación) antes de guardarla. No se pide ni se deduce el género: del avatar solo se guarda cuál elegiste.
 
 3. Finalidad del tratamiento
 Autenticar a los estudiantes, mostrar publicaciones y permitir conversaciones 1 a 1.
@@ -14,10 +14,11 @@ Autenticar a los estudiantes, mostrar publicaciones y permitir conversaciones 1 
 - Chats: se eliminan tras 24 horas sin mensajes.
 - Contenido reportado: se conserva durante el plazo de conservación configurado (inicialmente 7 días) y se elimina del almacenamiento activo y de los registros técnicos dentro de las 24 horas siguientes al vencimiento de ese plazo.
 - Cuentas no activadas: se eliminan a las 72 horas del registro.
+- Foto de perfil: hasta que la quites o la reemplaces.
 - Copias de respaldo: se conservan como máximo 7 días; los datos eliminados desaparecen de ellas al rotarse.
 
 5. Quién accede
-Los demás usuarios ven solo tu nickname. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico, y únicamente para atender un requerimiento de la institución o de una autoridad competente.
+Los demás usuarios ven tu nickname, tu foto o avatar, tu biografía y tu fecha de ingreso; tu correo institucional no se muestra a nadie. El contenido de un chat solo lo ven sus dos participantes. El contenido reportado solo lo consulta el responsable técnico, y únicamente para atender un requerimiento de la institución o de una autoridad competente.
 
 6. Derechos ARCO
 Puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición (Ley N.° 29733 y su reglamento) a través de: {{CANAL_ARCO}}.

@@ -3,7 +3,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS, t, formatoHora, etiquetaTipo } = Banca;
+  const { api, alerta, limpiar, el, contador, ocupado, mostrarErrores, limpiarErrores, TIPOS, t, formatoHora, etiquetaTipo, autor, avatar } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -23,7 +23,7 @@
     const formulario = document.getElementById("form-mensaje");
     // Nielsen H6 (reconocer en vez de recordar): se muestra la publicación a la que se responde
     api(`/api/publicaciones/${id}`).then((p) => {
-      document.getElementById("contexto-autor").textContent = p.nickname_autor;
+      document.getElementById("contexto-autor").replaceChildren(autor(p.nickname_autor, p.apariencia_autor));
       const tipo = document.getElementById("contexto-tipo");
       tipo.replaceChildren(...etiquetaTipo(p.tipo));
       tipo.classList.add(`tipo-${p.tipo}`);
@@ -59,9 +59,9 @@
     const vacio = document.getElementById("vacio");
     const fila = (c) => el("a", { class: "list-group-item list-group-item-action fila-chat",
                                   href: `/chats/${encodeURIComponent(c.id)}` },
-      el("div", {},
+      el("div", { class: "d-flex gap-2 align-items-start" }, avatar(c.apariencia_contraparte, "md"), el("div", {},
         el("div", { class: "fw-semibold", text: c.nickname_contraparte }),
-        el("div", { class: "small text-body-secondary", text: `${TIPOS[c.tipo_publicacion]}${t("separador")}${c.titulo_publicacion}` })),
+        el("div", { class: "small text-body-secondary", text: `${TIPOS[c.tipo_publicacion]}${t("separador")}${c.titulo_publicacion}` }))),
       el("div", { class: "text-end" },
         el("div", { class: "small text-body-secondary", text: formatoHora(c.ultimo_mensaje_en) }),
         c.no_leidos ? el("span", { class: "badge text-bg-primary", text: t("chat.nuevo") }) : null));  // RF-CHT-21
@@ -136,7 +136,7 @@
     }
 
     api(`/api/chats/${chatId}`).then((r) => {
-      document.getElementById("contraparte").textContent = r.nickname_contraparte;
+      document.getElementById("contraparte").replaceChildren(autor(r.nickname_contraparte, r.apariencia_contraparte, { tamano: "md" }));
       document.getElementById("tipo").textContent = TIPOS[r.tipo_publicacion];
       document.getElementById("titulo").textContent = r.titulo_publicacion;
       seccion.classList.remove("d-none");

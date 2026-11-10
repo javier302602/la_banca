@@ -209,3 +209,36 @@ p > a:only-child, .list-group-item a:not(.btn), .card-header a:not(.btn) {
 .selector-archivo:focus-within .boton-archivo { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
 .selector-archivo .boton-archivo { pointer-events: none; }
 .nombre-archivo { overflow-wrap: anywhere; }
+
+/* --- Perfiles (SRS v2.0, Fase 2): foto, avatar o iniciales junto al nickname ------------------------------------- */
+.avatar { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 2rem; height: 2rem;
+          border-radius: 50%; overflow: hidden; vertical-align: middle; background: var(--lb-color-primario-suave);
+          color: var(--lb-color-texto); font-weight: var(--lb-fuente-peso-negrita); font-size: var(--lb-fuente-tamano-xs);
+          line-height: 1; user-select: none; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar[data-iniciales]::before { content: attr(data-iniciales); }
+.avatar-md { width: 2.5rem; height: 2.5rem; font-size: var(--lb-fuente-tamano-sm); }
+.avatar-lg { width: 6rem; height: 6rem; font-size: var(--lb-fuente-tamano-xxl); box-shadow: var(--lb-sombra-tarjeta); }
+.avatar-color-1 { background: var(--lb-color-avatar-1); }
+.avatar-color-2 { background: var(--lb-color-avatar-2); }
+.avatar-color-3 { background: var(--lb-color-avatar-3); }
+.avatar-color-4 { background: var(--lb-color-avatar-4); }
+.avatar-color-5 { background: var(--lb-color-avatar-5); }
+.avatar-color-6 { background: var(--lb-color-avatar-6); }
+.autor { display: inline-flex; align-items: center; gap: var(--lb-espacio-2); }
+a.autor { color: inherit; text-decoration: none; min-height: var(--lb-punto-objetivo-minimo); }
+a.autor:hover .nombre-autor, a.autor:focus-visible .nombre-autor { text-decoration: underline; }
+.cabecera-perfil { display: flex; flex-direction: column; align-items: center; gap: var(--lb-espacio-2); text-align: center; }
+.biografia { overflow-wrap: anywhere; }
+
+/* Elegir avatar: mosaicos de radio agrupados (hombre / mujer / neutro) — la agrupación es solo visual */
+.grupo-avatares { border: 0; padding: 0; margin: 0 0 var(--lb-espacio-3); }
+.grupo-avatares legend { font-size: var(--lb-fuente-tamano-sm); color: var(--lb-color-texto-secundario); margin-bottom: var(--lb-espacio-1); }
+.opciones-avatar { display: flex; flex-wrap: wrap; gap: var(--lb-espacio-2); }
+.opcion-avatar { position: relative; display: inline-flex; border-radius: 50%; padding: 3px; border: 2px solid transparent; cursor: pointer; }
+.opcion-avatar img { width: 3rem; height: 3rem; border-radius: 50%; display: block; }
+.opcion-avatar .entrada-mosaico { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opcion-avatar:has(.entrada-mosaico:checked) { border-color: var(--lb-color-primario); background: var(--lb-color-primario-suave); }
+.opcion-avatar:has(.entrada-mosaico:focus-visible) { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
+.opcion-iniciales { display: inline-flex; align-items: center; gap: var(--lb-espacio-2); border-radius: var(--lb-radio-xl);
+                    padding: 3px var(--lb-espacio-3) 3px 3px; }
