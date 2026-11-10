@@ -5,8 +5,7 @@
 {% block pagina %}restablecer{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6 col-lg-5">
+<div class="contenedor-estrecho">
     <h1 class="h4 mb-3">{{ t("restablecer.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-restablecer" novalidate>
@@ -26,7 +25,6 @@
     <div id="acciones" class="mt-3 small d-none">
       <a href="/recuperar">{{ t("restablecer.nuevo_enlace") }}</a>
     </div>
-  </div>
 </div>
 <span id="token" data-token="{{ token or '' }}" hidden></span>
 {% endblock %}

@@ -1,91 +1,121 @@
-/* La Banca — estilos complementarios a Bootstrap 5 */
+/* La Banca — estilos complementarios a Bootstrap 5.
+ *
+ * Mobile-first: las reglas base son para 360 px; se amplían con min-width 768 px (tableta) y 1024 px
+ * (escritorio). Todos los colores, tamaños y espacios salen de tokens.css (variables --lb-*): este archivo
+ * no tiene colores literales (lo comprueba tests/web/test_tokens.py).
+ */
+
+/* --- Base: Bootstrap usa los tokens ------------------------------------------------------------------- */
+:root {
+  --bs-body-font-family: var(--lb-fuente-familia-base);
+  --bs-body-color: var(--lb-color-texto);
+  --bs-secondary-color: var(--lb-color-texto-secundario);   /* RNF-USA-04: ≥ 4,5:1 sobre el fondo gris */
+  --bs-border-color: var(--lb-color-borde);
+  --bs-link-color: var(--lb-color-primario);                /* #0d6efd de Bootstrap daba 4,08:1 sobre el fondo */
+  --bs-link-color-rgb: 10, 88, 202;
+  --bs-link-hover-color: var(--lb-color-primario-fuerte);
+  --bs-link-hover-color-rgb: 8, 66, 152;
+}
+
+/* Gestalt — figura-fondo y región común: fondo gris y contenido sobre superficies blancas */
+body { background: var(--lb-color-fondo); line-height: var(--lb-interlineado-base); }
+.card, .list-group-item { background: var(--lb-color-superficie); }
+/* «main h1.h4» supera en especificidad al tamaño fluido de .h4 de Bootstrap: la escala la fijan los tokens */
+main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--lb-interlineado-ajustado); }
 .contenido-libre { white-space: pre-wrap; overflow-wrap: anywhere; }
-.etiqueta-propia { font-size: .75rem; }
 
-/* RNF-USA-04: texto secundario con contraste ≥ 4,5:1 también sobre el fondo gris de la página. */
-:root { --bs-secondary-color: #5c636a;
-        /* enlaces: #0d6efd da 4,08:1 sobre el fondo gris; #0a58ca da 5,6:1 */
-        --bs-link-color: #0a58ca; --bs-link-color-rgb: 10, 88, 202;
-        --bs-link-hover-color: #084298; --bs-link-hover-color-rgb: 8, 66, 152; }
+/* --- Disposición (mobile-first) --------------------------------------------------------------------------
+ * 360 px: una columna a todo el ancho. 768 px: formularios y lecturas centrados con ancho máximo.
+ * 1024 px: feed en tres columnas y contenedores algo más anchos. */
+.contenedor-estrecho, .contenedor-medio, .contenedor-ancho { width: 100%; margin-inline: auto; }
+.rejilla-feed { display: grid; grid-template-columns: 1fr; gap: var(--lb-espacio-5); }
 
-/* --- Gestalt: figura-fondo y región común -------------------------------------------------------------
- * El fondo de la página es gris claro y el contenido (tarjetas, formularios, chat) va sobre superficies
- * blancas: cada bloque se percibe como una figura separada del fondo. */
-body { background: #f3f4f6; }
-.card, .list-group-item { background: #fff; }
+@media (min-width: 768px) {
+  main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-xl); }
+  .contenedor-estrecho { max-width: 30rem; }
+  .contenedor-medio { max-width: 40rem; }
+  .contenedor-ancho { max-width: 48rem; }
+  .rejilla-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
-/* --- Gestalt: similitud por tipo de publicación ----------------------------------------------------------
- * Cada tipo tiene su color en la etiqueta y en el borde izquierdo de la tarjeta; publicaciones del mismo tipo se
- * reconocen como grupo. Texto oscuro sobre fondo claro: contraste ≥ 7:1. */
-.tipo-NECESITO { --tipo-fondo: #ffe8b3; --tipo-texto: #5c3c00; --tipo-borde: #d99a00; }
-.tipo-OFREZCO { --tipo-fondo: #cfeedd; --tipo-texto: #0b3d22; --tipo-borde: #2f9e63; }
-.tipo-ACTIVIDAD { --tipo-fondo: #d6e4ff; --tipo-texto: #0b2a66; --tipo-borde: #3b6fd8; }
-.badge.etiqueta-tipo { background: var(--tipo-fondo, #e9ecef); color: var(--tipo-texto, #212529); }
-.badge.etiqueta-propia { background: #fff; color: #0b2a66; border: 1px solid #3b6fd8; }
+@media (min-width: 1024px) {
+  .contenedor-medio { max-width: 44rem; }
+  .rejilla-feed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
-/* --- Gestalt: proximidad dentro de la tarjeta del feed ------------------------------------------------------
- * Etiquetas, título y autor van juntos (separación pequeña) y las tarjetas se separan entre sí más que sus
- * elementos internos: cada tarjeta se lee como una unidad. */
-.tarjeta-publicacion { border-left: .3rem solid var(--tipo-borde, var(--bs-border-color)); transition: box-shadow .15s ease; }
+/* --- Gestalt — similitud por tipo de publicación ----------------------------------------------------------- */
+.tipo-NECESITO { --tipo-fondo: var(--lb-color-necesito-fondo); --tipo-texto: var(--lb-color-necesito-texto);
+                 --tipo-borde: var(--lb-color-necesito-borde); }
+.tipo-OFREZCO { --tipo-fondo: var(--lb-color-ofrezco-fondo); --tipo-texto: var(--lb-color-ofrezco-texto);
+                --tipo-borde: var(--lb-color-ofrezco-borde); }
+.tipo-ACTIVIDAD { --tipo-fondo: var(--lb-color-actividad-fondo); --tipo-texto: var(--lb-color-actividad-texto);
+                  --tipo-borde: var(--lb-color-actividad-borde); }
+.badge.etiqueta-tipo { background: var(--tipo-fondo, var(--lb-color-borde)); color: var(--tipo-texto, var(--lb-color-texto)); }
+.badge.etiqueta-propia { background: var(--lb-color-superficie); color: var(--lb-color-actividad-texto);
+                         border: 1px solid var(--lb-color-actividad-borde); font-size: var(--lb-fuente-tamano-xs); }
+
+/* --- Gestalt — proximidad dentro de la tarjeta del feed ----------------------------------------------------- */
+.tarjeta-publicacion { border-left: var(--lb-espacio-1) solid var(--tipo-borde, var(--lb-color-borde));
+                       transition: box-shadow .15s ease; }
 .tarjeta-publicacion:hover, .tarjeta-publicacion:focus-visible { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12); }
-.tarjeta-publicacion .card-body { display: flex; flex-direction: column; gap: .35rem; padding: 1rem; }
+.tarjeta-publicacion .card-body { display: flex; flex-direction: column; gap: var(--lb-espacio-2);
+                                  padding: var(--lb-espacio-4); }
 .tarjeta-publicacion .card-body > * { margin: 0; }
-#lista.row { --bs-gutter-y: 1.25rem; --bs-gutter-x: 1.25rem; }
 
-/* --- Chat: proximidad, figura-fondo y continuidad ----------------------------------------------------------
- * Mensajes seguidos del mismo autor se agrupan (separación mínima) y un cambio de autor deja más aire.
- * Las burbujas (figura) destacan sobre el fondo tintado del historial; la alineación a la derecha/izquierda
- * forma dos columnas continuas que separan lo propio de lo ajeno. */
+/* --- Chat — proximidad, figura-fondo y continuidad ---------------------------------------------------------- */
 .chat-mensajes { height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0;
-                 background: #eef1f5; padding: .75rem; }
-.burbuja { max-width: 80%; padding: .45rem .75rem; border-radius: 1rem; overflow-wrap: anywhere;
-           margin-top: .9rem; box-shadow: 0 1px 1px rgba(0, 0, 0, .06); }
+                 background: var(--lb-color-fondo-chat); padding: var(--lb-espacio-3); }
+.burbuja { max-width: 85%; padding: var(--lb-espacio-2) var(--lb-espacio-3); border-radius: var(--lb-radio-lg);
+           overflow-wrap: anywhere; margin-top: var(--lb-espacio-4); box-shadow: 0 1px 1px rgba(0, 0, 0, .06); }
 .burbuja:first-child { margin-top: 0; }
-.burbuja.continua { margin-top: .2rem; }
-.burbuja.propia { align-self: flex-end; background: #cfe2ff; border-bottom-right-radius: .25rem; }
-.burbuja.ajena { align-self: flex-start; background: #fff; border-bottom-left-radius: .25rem; }
-.burbuja.propia.continua { border-top-right-radius: .25rem; }
-.burbuja.ajena.continua { border-top-left-radius: .25rem; }
-.burbuja img { max-width: 100%; max-height: 40vh; border-radius: .5rem; display: block; }
-.burbuja .hora { font-size: .7rem; color: #4a5056; text-align: right; }
+.burbuja.continua { margin-top: var(--lb-espacio-1); }
+.burbuja.propia { align-self: flex-end; background: var(--lb-color-primario-suave); border-bottom-right-radius: var(--lb-radio-sm); }
+.burbuja.ajena { align-self: flex-start; background: var(--lb-color-superficie); border-bottom-left-radius: var(--lb-radio-sm); }
+.burbuja.propia.continua { border-top-right-radius: var(--lb-radio-sm); }
+.burbuja.ajena.continua { border-top-left-radius: var(--lb-radio-sm); }
+.burbuja img { max-width: 100%; max-height: 40vh; border-radius: var(--lb-radio-md); display: block; }
+.burbuja .hora { font-size: var(--lb-fuente-tamano-xs); color: var(--lb-color-texto-hora); text-align: right; }
 
-/* Mis chats: la hora va en su propia columna y no se monta sobre el título (proximidad) */
-.fila-chat { display: grid; grid-template-columns: 1fr auto; gap: .25rem .75rem; align-items: start; }
+@media (min-width: 768px) {
+  .chat-mensajes { height: 60vh; padding: var(--lb-espacio-4); }
+  .burbuja { max-width: 75%; }
+}
+
+/* Mis chats: la hora en su propia columna (proximidad) */
+.fila-chat { display: grid; grid-template-columns: 1fr auto; gap: var(--lb-espacio-1) var(--lb-espacio-3); align-items: start; }
 
 .aviso-expiracion { animation: latido 2s ease-in-out infinite; }
 @keyframes latido { 50% { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { .aviso-expiracion { animation: none; } }
 
-/* RNF-USA-04: contraste ≥ 4,5:1 también sobre los fondos grises de la barra y las cabeceras (#f8f9fa).
- * Los colores por defecto de Bootstrap dan 4,44:1 (secundario) y 4,26:1 (peligro). */
-.btn-outline-secondary { --bs-btn-color: #565e64; --bs-btn-border-color: #565e64; --bs-btn-hover-bg: #565e64;
-                         --bs-btn-hover-border-color: #565e64; --bs-btn-active-bg: #565e64; }
-.btn-outline-danger { --bs-btn-color: #b02a37; --bs-btn-border-color: #b02a37; --bs-btn-hover-bg: #b02a37;
-                      --bs-btn-hover-border-color: #b02a37; --bs-btn-active-bg: #b02a37; }
+/* --- Botones con contraste ≥ 4,5:1 sobre el fondo gris (RNF-USA-04) ---------------------------------------- */
+.btn-outline-secondary { --bs-btn-color: var(--lb-color-secundario); --bs-btn-border-color: var(--lb-color-secundario);
+                         --bs-btn-hover-bg: var(--lb-color-secundario); --bs-btn-hover-border-color: var(--lb-color-secundario);
+                         --bs-btn-active-bg: var(--lb-color-secundario); }
+.btn-outline-danger { --bs-btn-color: var(--lb-color-peligro); --bs-btn-border-color: var(--lb-color-peligro);
+                      --bs-btn-hover-bg: var(--lb-color-peligro); --bs-btn-hover-border-color: var(--lb-color-peligro);
+                      --bs-btn-active-bg: var(--lb-color-peligro); }
+.btn-outline-primary { --bs-btn-color: var(--lb-color-primario); --bs-btn-border-color: var(--lb-color-primario);
+                       --bs-btn-hover-bg: var(--lb-color-primario); --bs-btn-hover-border-color: var(--lb-color-primario);
+                       --bs-btn-active-bg: var(--lb-color-primario); }
 
-/* Insignia de chats con mensajes nuevos en el menú (blanco sobre #b02a37: 6,4:1) */
-.contador-no-leidos { background: #b02a37; color: #fff; font-size: .7rem; vertical-align: text-top; }
-.btn-outline-primary { --bs-btn-color: #0a58ca; --bs-btn-border-color: #0a58ca; --bs-btn-hover-bg: #0a58ca;
-                       --bs-btn-hover-border-color: #0a58ca; --bs-btn-active-bg: #0a58ca; }
+/* Insignia de chats con mensajes nuevos (blanco sobre peligro: 6,4:1) */
+.contador-no-leidos { background: var(--lb-color-peligro); color: var(--lb-color-texto-invertido);
+                      font-size: var(--lb-fuente-tamano-xs); vertical-align: text-top; }
 
-/* --- WCAG 2.5.8 (tamaño del objetivo, mínimo 24 × 24 px) ------------------------------------------------
- * Las casillas y radios de Bootstrap miden 16 px; se agrandan a 24 px y se alinean con su etiqueta.
- * Los enlaces sueltos (pie, enlaces secundarios) tienen alto suficiente; los enlaces dentro de una frase
- * quedan cubiertos por la excepción «en línea». */
-.form-check { display: flex; align-items: center; gap: .5rem; padding-left: 0; min-height: 1.75rem; }
-.form-check-inline { display: inline-flex; margin-right: 1.25rem; }
-.form-check .form-check-input { float: none; margin: 0; width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
-.pie-enlaces a, .enlaces-secundarios a { display: inline-block; padding: .25rem 0; min-height: 1.5rem; }
+/* --- WCAG 2.5.8: objetivos de al menos 24 × 24 px ----------------------------------------------------------- */
+.form-check { display: flex; align-items: center; gap: var(--lb-espacio-2); padding-left: 0; min-height: 1.75rem; }
+.form-check-inline { display: inline-flex; margin-right: var(--lb-espacio-5); }
+.form-check .form-check-input { float: none; margin: 0; width: var(--lb-punto-objetivo-minimo);
+                                height: var(--lb-punto-objetivo-minimo); flex-shrink: 0; }
+.pie-enlaces a, .enlaces-secundarios a { display: inline-block; padding: var(--lb-espacio-1) 0;
+                                         min-height: var(--lb-punto-objetivo-minimo); }
+p > a:only-child, .list-group-item a:not(.btn), .card-header a:not(.btn) {
+  display: inline-block; min-height: var(--lb-punto-objetivo-minimo); line-height: var(--lb-punto-objetivo-minimo); }
 
-/* --- Selector de imagen con textos del catálogo (i18n) --------------------------------------------------
- * El <input type=file> real (accesible: etiqueta, foco y teclado) queda superpuesto y transparente sobre el
- * botón visible; el foco se muestra en el botón (WCAG 2.4.7 y 2.4.11). */
-.selector-archivo { position: relative; display: flex; align-items: center; gap: .5rem; min-height: 2.25rem; }
+/* --- Selector de imagen con textos del catálogo (i18n; WCAG 2.4.7 y 2.4.11) ---------------------------------- */
+.selector-archivo { position: relative; display: flex; align-items: center; gap: var(--lb-espacio-2); min-height: 2.25rem; }
 .selector-archivo .entrada-archivo { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.selector-archivo:focus-within .boton-archivo { outline: 3px solid #0a58ca; outline-offset: 2px; }
+.selector-archivo:focus-within .boton-archivo { outline: 3px solid var(--lb-color-foco); outline-offset: 2px; }
 .selector-archivo .boton-archivo { pointer-events: none; }
 .nombre-archivo { overflow-wrap: anywhere; }
-
-/* WCAG 2.5.8: enlaces sueltos (no dentro de una frase) con al menos 24 px de alto */
-p > a:only-child, .list-group-item a:not(.btn), .card-header a:not(.btn) {
-  display: inline-block; min-height: 1.5rem; line-height: 1.5rem; }

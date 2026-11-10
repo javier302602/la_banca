@@ -77,6 +77,14 @@ curl -X POST -H "Authorization: Bearer $CRON_SECRET" -H "Content-Type: applicati
 
 En cualquier otro entorno esas rutas responden 404.
 
+## Diseño: tokens, capturas e investigación
+
+- `web/static/css/tokens.css` es la fuente de colores, tipografía, espaciado y puntos de quiebre (360/768/1024).
+  `python scripts/exportar_tokens.py` genera `docs/investigacion/tokens.json` para Tokens Studio (Figma).
+- `python scripts/tomar_capturas.py --mongo-uri "<replica set>"` captura las 15 páginas en los tres anchos.
+- `docs/investigacion/`: evaluación heurística y Gestalt (01), WCAG 2.2 e i18n (02) y diseño responsivo (03).
+- Textos de la interfaz: `web/i18n/es-PE.json` (único idioma activo).
+
 ## Respaldos (Entregable 2 §8.1)
 
 `scripts/respaldo_mongodb.py` ejecuta `mongodump --gzip --archive` y elimina los respaldos de más de 7 días

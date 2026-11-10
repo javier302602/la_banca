@@ -1,0 +1,72 @@
+/* La Banca — tokens de diseño (fuente única de colores, tipografía, espaciado y radios).
+ *
+ * Convención: --lb-<categoría>-<nombre>. scripts/exportar_tokens.py los exporta a
+ * docs/investigacion/tokens.json en el formato de Tokens Studio para Figma; un test comprueba que ambos coinciden.
+ * Categorías → tipo de Tokens Studio: color → color · fuente-familia → fontFamilies · fuente-tamano → fontSizes ·
+ * fuente-peso → fontWeights · interlineado → lineHeights · espacio → spacing · radio → borderRadius ·
+ * punto → sizing (puntos de quiebre; las media queries no admiten variables y repiten estos valores).
+ * Contrastes indicados sobre el fondo en que se usan (WCAG 1.4.3, ≥ 4,5:1).
+ */
+:root {
+  /* Marca y estados */
+  --lb-color-primario: #0a58ca;            /* 5,6:1 sobre fondo, 6,3:1 sobre superficie */
+  --lb-color-primario-fuerte: #084298;
+  --lb-color-primario-suave: #cfe2ff;
+  --lb-color-peligro: #b02a37;             /* 6,4:1 con texto blanco */
+  --lb-color-secundario: #565e64;
+  --lb-color-foco: #0a58ca;
+
+  /* Neutros */
+  --lb-color-texto: #212529;
+  --lb-color-texto-secundario: #5c636a;    /* 5,5:1 sobre fondo */
+  --lb-color-texto-hora: #4a5056;
+  --lb-color-texto-invertido: #ffffff;
+  --lb-color-fondo: #f3f4f6;
+  --lb-color-superficie: #ffffff;
+  --lb-color-borde: #dee2e6;
+  --lb-color-fondo-chat: #eef1f5;
+
+  /* Tipos de publicación (similitud, Gestalt): fondo de etiqueta · texto (≥ 7:1) · borde de tarjeta */
+  --lb-color-necesito-fondo: #ffe8b3;
+  --lb-color-necesito-texto: #5c3c00;
+  --lb-color-necesito-borde: #d99a00;
+  --lb-color-ofrezco-fondo: #cfeedd;
+  --lb-color-ofrezco-texto: #0b3d22;
+  --lb-color-ofrezco-borde: #2f9e63;
+  --lb-color-actividad-fondo: #d6e4ff;
+  --lb-color-actividad-texto: #0b2a66;
+  --lb-color-actividad-borde: #3b6fd8;
+
+  /* Tipografía */
+  --lb-fuente-familia-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --lb-fuente-tamano-xs: 0.75rem;          /* 12 px: horas, insignias */
+  --lb-fuente-tamano-sm: 0.875rem;         /* 14 px: texto secundario */
+  --lb-fuente-tamano-base: 1rem;           /* 16 px: texto y campos */
+  --lb-fuente-tamano-lg: 1.25rem;          /* 20 px: títulos de página (móvil) */
+  --lb-fuente-tamano-xl: 1.5rem;           /* 24 px: títulos de página (≥ 768 px) */
+  --lb-fuente-peso-regular: 400;
+  --lb-fuente-peso-semibold: 600;
+  --lb-interlineado-base: 1.5;
+  --lb-interlineado-ajustado: 1.25;
+
+  /* Espaciado (escala de 4 px) */
+  --lb-espacio-1: 0.25rem;
+  --lb-espacio-2: 0.5rem;
+  --lb-espacio-3: 0.75rem;
+  --lb-espacio-4: 1rem;
+  --lb-espacio-5: 1.25rem;
+  --lb-espacio-6: 1.5rem;
+  --lb-espacio-8: 2rem;
+
+  /* Radios */
+  --lb-radio-sm: 0.25rem;
+  --lb-radio-md: 0.5rem;
+  --lb-radio-lg: 1rem;
+  --lb-radio-pildora: 50rem;
+
+  /* Tamaños */
+  --lb-punto-movil: 360px;
+  --lb-punto-tableta: 768px;
+  --lb-punto-escritorio: 1024px;
+  --lb-punto-objetivo-minimo: 24px;        /* WCAG 2.5.8 */
+}

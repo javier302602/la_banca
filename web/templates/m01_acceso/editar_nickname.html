@@ -5,8 +5,7 @@
 {% block pagina %}perfil{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6 col-lg-5">
+<div class="contenedor-estrecho">
     <h1 class="h4 mb-3">{{ t("perfil.titulo") }}</h1>
     <div id="mensajes" aria-live="polite"></div>
     <form id="form-nickname" novalidate>
@@ -21,7 +20,6 @@
     <hr>
     <p class="small mb-1"><a href="/terminos">{{ t("pie.terminos") }}</a></p>
     <button class="btn btn-link btn-sm px-0" type="button" data-cerrar-sesion>{{ t("nav.cerrar_sesion") }}</button>
-  </div>
 </div>
 {% endblock %}
 
