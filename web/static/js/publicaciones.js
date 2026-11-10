@@ -13,10 +13,18 @@
     contador(document.getElementById("titulo"), document.getElementById("contador-titulo"), 80);
     contador(document.getElementById("descripcion"), document.getElementById("contador-descripcion"), 500);
 
+    const avisoCupo = document.getElementById("aviso-cupo");
     const cargarCupo = async () => {  // RF-PUB-13
       try {
         const c = await api("/api/publicaciones/cupo");
         cupo.textContent = `Publicaciones activas: ${c.activas} de ${c.maximo}`;
+        // Nielsen H5 (prevenir errores): sin cupo, se avisa antes de escribir y no se permite enviar
+        const lleno = c.activas >= c.maximo;
+        avisoCupo.replaceChildren(...(lleno ? [
+          el("span", { text: `Ya tienes ${c.maximo} publicaciones activas, el máximo permitido. Cierra una o espera a que expire. ` }),
+          el("a", { class: "alert-link", href: "/publicaciones/mias", text: "Ir a Mis publicaciones" })] : []));
+        avisoCupo.classList.toggle("d-none", !lleno);
+        formulario.querySelector("[type=submit]").disabled = lleno;
       } catch (e) { /* informativo */ }
     };
     cargarCupo();
@@ -49,7 +57,7 @@
 
     const fila = (p) => el("li", { class: "list-group-item d-flex justify-content-between align-items-center gap-2" },
       el("div", {},
-        el("span", { class: "badge text-bg-secondary me-2", text: TIPOS[p.tipo] }),
+        el("span", { class: `badge etiqueta-tipo tipo-${p.tipo} me-2`, text: TIPOS[p.tipo] }),
         el("a", { href: `/publicaciones/${encodeURIComponent(p.id)}`, text: p.titulo }),
         el("div", { class: "small text-body-secondary" }, "Tiempo restante: ",
           el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))),

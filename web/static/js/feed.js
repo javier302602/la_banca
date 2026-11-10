@@ -15,12 +15,12 @@
     let siguiente = null, bloquesCargados = 0, cargando = false;
 
     const tarjeta = (p) => el("div", { class: "col-md-6 col-lg-4" },
-      el("a", { class: "card h-100 text-decoration-none text-body tarjeta-publicacion",
+      el("a", { class: `card h-100 text-decoration-none text-body tarjeta-publicacion tipo-${p.tipo}`,
                 href: `/publicaciones/${encodeURIComponent(p.id)}` },
         el("div", { class: "card-body" },
           el("div", { class: "d-flex gap-2 mb-2" },
-            el("span", { class: "badge text-bg-secondary", text: TIPOS[p.tipo] }),
-            p.es_propia ? el("span", { class: "badge text-bg-info etiqueta-propia", text: "Tu publicación" }) : null),
+            el("span", { class: "badge etiqueta-tipo", text: TIPOS[p.tipo] }),
+            p.es_propia ? el("span", { class: "badge etiqueta-propia", text: "Tu publicación" }) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
           el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), " · ",
             el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) })))));
@@ -95,7 +95,9 @@
     const enlaceId = encodeURIComponent(id);
 
     api(`/api/publicaciones/${enlaceId}`).then((p) => {
-      document.getElementById("tipo").textContent = TIPOS[p.tipo];
+      const tipo = document.getElementById("tipo");
+      tipo.textContent = TIPOS[p.tipo];
+      tipo.classList.add(`tipo-${p.tipo}`);  // Gestalt: mismo color que en el feed (similitud)
       document.getElementById("titulo").textContent = p.titulo;
       document.getElementById("descripcion").textContent = p.descripcion;
       document.getElementById("autor").textContent = p.nickname_autor;

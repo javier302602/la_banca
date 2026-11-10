@@ -183,6 +183,25 @@ const Banca = (() => {
 
   setInterval(() => refrescarRestantes(), 30000);
 
+  /* Nielsen H1: el menú indica cuántos chats tienen mensajes sin leer (los chats expiran tras 24 h sin
+   * mensajes; sin este aviso solo se veían entrando en «Mis chats»). Sondeo automático: no reinicia la
+   * inactividad de la sesión (RF-AUT-25). */
+  async function actualizarNoLeidos() {
+    const insignia = document.getElementById("nav-no-leidos");
+    try {
+      const r = await api("/api/chats", { automatica: true });
+      const n = r.items.filter((c) => c.no_leidos).length;
+      insignia.textContent = n ? `${n} ${n === 1 ? "nuevo" : "nuevos"}` : "";
+      insignia.classList.toggle("d-none", n === 0);
+      insignia.dataset.cargado = "1";
+    } catch (e) { /* informativo */ }
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!document.getElementById("nav-no-leidos")) return;  // sin sesión no hay menú de chats
+    actualizarNoLeidos();
+    setInterval(() => { if (document.visibilityState === "visible") actualizarNoLeidos(); }, 30000);
+  });
+
   document.addEventListener("click", async (evento) => {
     const boton = evento.target.closest("[data-cerrar-sesion]");
     if (!boton) return;

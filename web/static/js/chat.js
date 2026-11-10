@@ -21,6 +21,20 @@
   if (pagina === "responder") {
     const id = encodeURIComponent(document.getElementById("publicacion").dataset.id);
     const formulario = document.getElementById("form-mensaje");
+    // Nielsen H6 (reconocer en vez de recordar): se muestra la publicación a la que se responde
+    api(`/api/publicaciones/${id}`).then((p) => {
+      document.getElementById("contexto-autor").textContent = p.nickname_autor;
+      const tipo = document.getElementById("contexto-tipo");
+      tipo.textContent = TIPOS[p.tipo];
+      tipo.classList.add(`tipo-${p.tipo}`);
+      document.getElementById("contexto-titulo").textContent = p.titulo;
+      document.getElementById("contexto-descripcion").textContent = p.descripcion;
+      document.getElementById("contexto").classList.remove("d-none");
+    }).catch((error) => {
+      if (error.status === 401) return;
+      alerta(mensajes, error.message, error.status === 410 ? "secondary" : "danger");
+      if (error.status === 410) formulario.querySelectorAll("textarea, input, button").forEach((n) => { n.disabled = true; });
+    });
     contador(document.getElementById("texto"), document.getElementById("contador-texto"), 500);
     formulario.addEventListener("submit", async (evento) => {
       evento.preventDefault();
@@ -43,7 +57,7 @@
   if (pagina === "mis-chats") {
     const lista = document.getElementById("lista");
     const vacio = document.getElementById("vacio");
-    const fila = (c) => el("a", { class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center",
+    const fila = (c) => el("a", { class: "list-group-item list-group-item-action fila-chat",
                                   href: `/chats/${encodeURIComponent(c.id)}` },
       el("div", {},
         el("div", { class: "fw-semibold", text: c.nickname_contraparte }),
@@ -69,17 +83,19 @@
     const aviso = document.getElementById("aviso");
     const formulario = document.getElementById("form-mensaje");
     const vistos = new Set();
-    let ultimo = null, temporizador = null, expirado = false;
+    let ultimo = null, temporizador = null, expirado = false, ladoAnterior = null;
     contador(document.getElementById("texto"), document.getElementById("contador-texto"), 500);
 
     function burbuja(m) {
       if (vistos.has(m.id)) return null;
       vistos.add(m.id);
       if (!ultimo || m.fecha_envio > ultimo) ultimo = m.fecha_envio;
+      const continua = ladoAnterior === m.es_propio;  // Gestalt: mensajes seguidos del mismo autor se agrupan
+      ladoAnterior = m.es_propio;
       const contenido = m.imagen_url
         ? el("img", { src: m.imagen_url, alt: `Imagen de ${m.nickname_emisor}`, loading: "lazy" })
         : el("div", { class: "contenido-libre", text: m.texto });
-      return el("div", { class: `burbuja ${m.es_propio ? "propia" : "ajena"}` }, contenido,
+      return el("div", { class: `burbuja ${m.es_propio ? "propia" : "ajena"}${continua ? " continua" : ""}` }, contenido,
         el("div", { class: "hora", text: m.hora }));  // HH:MM en America/Lima, calculada en el servidor (RN-34)
     }
 
