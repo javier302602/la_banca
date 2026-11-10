@@ -1,8 +1,8 @@
 # Auditoría de cumplimiento — La Banca
 
-**Fecha:** 8 de noviembre de 2026 · **Rama auditada:** `correcciones-auditoria` (commit `fc66244`, sobre `main` en `1621607`) · **Referencias:** SRS v1.9 (`docs/La_Banca_Especificacion_de_Requisitos_2026_v1_9.docx`) y Entregable 2 v2.0 corregido (`docs/Entregable_2_v2_Corregido.docx`).
+**Fecha:** 10 de noviembre de 2026 · **Rama auditada:** `correcciones-auditoria` (fusionada en `main`) · **Referencias:** SRS v1.9 (`docs/La_Banca_Especificacion_de_Requisitos_2026_v1_9.docx`) y Entregable 2 v2.0 corregido (`docs/Entregable_2_v2_Corregido.docx`).
 
-Segunda versión. La primera auditoría (sobre `1621607`) dio 124 RF OK, 44 RN OK y 15 RNF OK. Las correcciones se hicieron en commits separados, uno por punto, y este documento refleja el estado tras ellas.
+Tercera versión. Historial: la auditoría inicial (sobre `1621607`) dio 124/136 RF, 44/50 RN y 15/38 RNF en OK; la segunda, 136/136, 50/50 y 18/38. Esta versión refleja la segunda tanda de correcciones (usabilidad, compatibilidad, carga, robustez y respaldos).
 
 ## 1. Resumen
 
@@ -10,41 +10,50 @@ Segunda versión. La primera auditoría (sobre `1621607`) dio 124 RF OK, 44 RN O
 |---|---|---|---|---|
 | Requisitos funcionales (RF) | 136 | 136 | 0 | 0 |
 | Reglas de negocio (RN) | 50 | 50 | 0 | 0 |
-| Requisitos no funcionales (RNF) | 38 | 18 | 19 | 1 |
+| Requisitos no funcionales (RNF) | 38 | 34 | 3 | 1 |
 
-**Ejecución de pruebas:** 252 pruebas unitarias pasan (`pytest`). Las 3 pruebas e2e (`pytest -m e2e`) también pasan, contra MongoDB 7 en Docker configurado como replica set `rs0`; el contenedor se eliminó al terminar.
+**Pruebas:**
+- **Unitarias:** 297 pasan (`pytest`).
+- **e2e:** 36 pasan y 2 se omiten con motivo (`pytest -m e2e`), contra MongoDB 7 en Docker como replica set `rs0`.
+- **Navegador:** Playwright en Chromium, Firefox y WebKit, con Pixel 7 e iPhone 14 emulados.
+- **Carga:** Locust, 100 usuarios durante 15 min (sección 6).
 
-### Correcciones aplicadas
+### Qué depende del despliegue o del grupo
+
+| RNF / RN | Depende de | Qué falta |
+|---|---|---|
+| RNF-DIS-01 (FALTA) | Despliegue | Monitor externo que consulte la página de inicio cada minuto y mida la disponibilidad mensual. |
+| RNF-SEG-03 (PARCIAL) | Despliegue | Comprobar contra el dominio publicado que se rechaza TLS 1.0/1.1 (la app ya redirige a HTTPS y envía HSTS). |
+| RNF-REN-01 a REN-06 (OK en local) | Despliegue | Repetir `tests/carga/ejecutar_carga.py` contra Vercel + Atlas, con el SMTP y el Object Storage reales. |
+| RNF-PRI-02 (PARCIAL) | Grupo y despliegue | Crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE` para activar el respaldo diario; si se usan snapshots de Atlas, fijar su retención en ≤ 7 días. |
+| RNF-COM-01 (PARCIAL) | Grupo | Probar en las dos últimas versiones de Chrome, Firefox y Edge, y en Chrome Android y Safari iOS reales. |
+| RN-31, RNF-LEG-01/02/03 (OK) | Grupo | Texto legal aprobado y los valores de `TERMINOS_VERSION`, `TERMINOS_FECHA` y `CANAL_ARCO`. |
+| RF-CFG-01 (OK) | Grupo | El SRS deja el dominio institucional «pendiente de decisión»: definir `DOMINIO_INSTITUCIONAL`. |
+
+### Correcciones de esta versión
 
 | Commit | Cambio | Requisitos |
 |---|---|---|
-| `0147a2a` | Ventana móvil de 15 min para el bloqueo de inicio de sesión (`login_attempts.failedAt`) | RF-AUT-19, RN-39 |
-| `f6a3b3f` | HH:MM calculada en el servidor en America/Lima (`hora`, `hora_ultimo_mensaje`); `tzdata` | RF-CHT-11, RF-CHT-18, RN-34 |
-| `5820650` | Tests de frontend en Node, de confidencialidad de reportes y de configuración | RF-AUT-45, PUB-12, FED-11, FED-16, FED-17, REP-11, REP-15, CFG-11, CFG-12 |
-| `cbf2b44` | Política sin marca de borrador, con respaldos y canal ARCO configurable (`CANAL_ARCO`, obligatorio en producción); tests de RN-36/37/45 | RN-31, RN-36, RN-37, RN-45, RNF-LEG-02, RNF-LEG-03 |
-| `dd25f08` | Formato del tiempo restante; errores de validación traducidos al español | RNF-USA-01, RNF-USA-05 |
-| `a8fea89` | EA-07 consulta por `ix_accounts_activation_exp` | RF-AUT-34, RN-43, Entregable 2 §5.4 |
-| `4840b69` | EA-07 depura `sessions` con retención de 30 días | Entregable 2 §7.3 |
-| `a3bab5b` | `capturedAt`, `publicationData` y `messagesSnapshot` según el Entregable 2; `storageBucket` en mensajes | RF-REP-06, RF-REP-17, Entregable 2 §5.3 |
-| `fc66244` | `scripts/respaldo_mongodb.py` (mongodump con rotación de 7 días) | RNF-PRI-02, Entregable 2 §8.1 |
+| `dcf8de8` | README: variables de la política en el despliegue | RN-31 |
+| `4d13b49` | 404 y 405 en español (página HTML o JSON) | RNF-USA-05 |
+| `b064ebc` | Corrige un error de sintaxis en chat.js introducido en `f6a3b3f` (el chat dejaba de funcionar); test `node --check` de todo el JS | RF-CHT-* |
+| `50d19ec` | Errores junto al campo, contraseñas vaciadas tras un error, etiquetas visibles; pruebas en navegador | RNF-USA-03/06/07 |
+| `921075a` | 360 px, axe-core y teclado; contraste de los botones outline | RNF-USA-02/04/08 |
+| `23e4241` | Chromium, Firefox y WebKit; flujos principales en escritorio y móvil emulado | RNF-COM-01 |
+| `01f8636` | Prueba de carga con Locust y resultados | RNF-REN-01 a 06 |
+| `7e2af77` | Plazos vencidos al arrancar, HTTPS/HSTS, registros sin contenido de chats, reloj de pruebas; EA-07 tolera la falta del índice | RNF-FIA-02, SEG-03, PRI-05, MAN-02 |
+| `3f99195` | Respaldo diario cifrado como artifact de 7 días | RNF-PRI-02 |
+
+### Observaciones
+
+- **Latencia en el arranque de la carga:** los máximos de 3,5 a 8,5 s coinciden con la rampa de inicio, cuando 130 sesiones se inician casi a la vez. `bcrypt` verifica la contraseña de forma síncrona dentro de un endpoint async y bloquea el event loop del worker mientras tanto. Los p95 cumplen, pero conviene moverlo a un hilo (`asyncio.to_thread`), igual que el recodificado de imágenes con Pillow.
+- **Imágenes en memoria:** con `IMAGE_STORAGE=memoria` y varios workers, una imagen guardada por un worker no la ve otro. En producción se exige `s3` (`verificar_entorno`). La medición de RNF-REN-04 usó un solo worker.
 
 ### Criterios de estado
 
-- **OK:** implementado y verificado por al menos un test automatizado.
-- **PARCIAL:** (a) implementación incompleta o que se desvía del SRS, o (b) implementado pero sin ningún test que lo verifique. La columna *Observación* indica cuál de los dos casos aplica.
+- **OK:** el criterio se verificó con al menos una prueba automatizada (los RNF de carga, con la prueba que describe el SRS, en local).
+- **PARCIAL:** (a) implementación incompleta o que se desvía del SRS, o (b) una parte del criterio no se puede verificar desde el repositorio. La columna *Observación* lo indica.
 - **FALTA:** no implementado.
-
-Los RNF de rendimiento, disponibilidad y compatibilidad solo se verifican con mediciones (carga, monitor, navegadores). Si hay medidas de diseño pero ninguna medición, se marcan PARCIAL; si no hay nada en el repositorio, FALTA.
-
-### Pendientes
-
-1. **RNF-DIS-01 (FALTA):** no hay monitor externo de disponibilidad.
-2. **Rendimiento y compatibilidad sin medir:** RNF-REN-01 a REN-06 y RNF-COM-01 (sin pruebas de carga ni de navegadores).
-3. **RNF-USA-05:** las respuestas genéricas de Starlette para rutas o métodos inexistentes siguen en inglés («Not Found», «Method Not Allowed»).
-4. **RNF-USA-02/03/04/06/07/08:** sin verificación de 360 px, contraste ni teclado; errores en una alerta global en lugar de junto al campo; contraseñas que no se vacían tras un error; etiquetas `visually-hidden` en el chat y en el filtro del feed.
-5. **RNF-PRI-02:** el script de respaldo existe, pero su ejecución diaria no está programada.
-6. **RNF-FIA-02, RNF-SEG-03, RNF-PRI-05, RNF-MAN-02:** ver la tabla de RNF.
-7. **Datos que debe aportar la institución:** `CANAL_ARCO`, `TERMINOS_VERSION` y `TERMINOS_FECHA` del texto legal aprobado (la app no arranca en producción sin ellos).
 
 ### Leyenda de rutas
 
@@ -58,11 +67,12 @@ Los RNF de rendimiento, disponibilidad y compatibilidad solo se verifican con me
 | `*.html` | `web/templates/<módulo>/` · `*.js` → `web/static/js/` |
 | `T:cuNN::test_x` | `tests/features/<módulo>/cuNN_<nombre>/test_handler.py::test_x` |
 | `T:eaNN::test_x` | `tests/jobs/eaNN_<nombre>/test_handler.py::test_x` |
-| `T:shared::` · `T:tx::` | `tests/shared/test_base_compartida.py` · `tests/shared/test_transacciones.py` |
-| `T:web::` · `T:webjs::` · `T:webval::` | `tests/web/test_paginas.py` · `tests/web/test_frontend_js.py` · `tests/web/test_validacion_espanol.py` |
+| `T:shared::` · `T:tx::` · `T:rob::` | `tests/shared/test_base_compartida.py` · `test_transacciones.py` · `test_robustez.py` |
+| `T:web::` · `T:webjs::` · `T:webval::` · `T:webhttp::` | `tests/web/test_paginas.py` · `test_frontend_js.py` · `test_validacion_espanol.py` · `test_errores_http.py` |
 | `T:conf::` | `tests/features/m05_reportes/test_confidencialidad.py` |
-| `T:scripts::` | `tests/scripts/test_respaldo_mongodb.py` |
-| `T:e2e::` · `T:e2e-cupo::` | `tests/e2e/test_flujo_completo.py` · `tests/e2e/test_cupo_concurrente.py` (requieren MongoDB con replica set) |
+| `T:scripts::` · `T:wf::` | `tests/scripts/test_respaldo_mongodb.py` · `tests/scripts/test_workflow_respaldo.py` |
+| `T:nav-form::` · `T:nav-a11y::` · `T:nav-compat::` | `tests/e2e/navegador/test_formularios.py` · `test_accesibilidad.py` · `test_compatibilidad.py` (Playwright) |
+| `T:e2e::` · `T:e2e-cupo::` · `T:e2e-rob::` | `tests/e2e/test_flujo_completo.py` · `test_cupo_concurrente.py` · `test_robustez.py` (requieren MongoDB con replica set) |
 
 ## 2. Requisitos funcionales (136)
 
@@ -291,42 +301,42 @@ Los RNF de rendimiento, disponibilidad y compatibilidad solo se verifican con me
 
 | RNF | Exigencia (resumen) | Implementación | Test / evidencia | Estado | Observación |
 |---|---|---|---|---|---|
-| RNF-REN-01 | 100 usuarios simultáneos, < 1 % de errores | Índices, sondeo incremental | — | **PARCIAL** | No hay prueba de carga en el repositorio. |
-| RNF-REN-02 | Primer bloque del feed ≤ 3 s (p95) con 3 000 activas | `ix_publications_feed`, bloques de 20 con cursor | T:e2e::test_feed_paginado_y_jobs (funcional, sin medir tiempo) | **PARCIAL** | No hay medición de rendimiento. |
-| RNF-REN-03 | Texto visible ≤ 2 s (p95) | Sondeo cada 1 s (chat.js) | T:web::test_archivos_estaticos | **PARCIAL** | No hay medición bajo carga. |
-| RNF-REN-04 | Imagen de 5 MB visible ≤ 10 s (p95) | Compresión en el cliente > 4 MB; image_storage.py | T:web::test_comprime_imagenes_de_mas_de_4mb | **PARCIAL** | No hay medición. |
-| RNF-REN-05 | Correo en cola ≤ 30 s (p95) | email/sender.py (SMTP en la propia solicitud) | — | **PARCIAL** | No hay medición; el envío es síncrono dentro de la solicitud. |
-| RNF-REN-06 | REN-02/03 con 10 000 cuentas | Índices | — | **PARCIAL** | No hay prueba de escala. |
-| RNF-DIS-01 | Disponibilidad ≥ 99 % / 30 días | — | — | **FALTA** | No hay monitor externo ni configuración versionada. |
+| RNF-REN-01 | 100 usuarios simultáneos, < 1 % de errores | Índices, sondeo incremental | Locust 15 min, perfil del criterio: tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | 0 errores en 29 135 solicitudes (local). **Despliegue:** repetir contra Vercel + Atlas. |
+| RNF-REN-02 | Primer bloque del feed ≤ 3 s (p95) con 3 000 activas | `ix_publications_feed`, bloques de 20 con cursor | Locust: tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | p95 0,68 s sin filtro y 0,31 s con filtro (local). **Despliegue:** repetir en producción. |
+| RNF-REN-03 | Texto visible ≤ 2 s (p95) | Sondeo cada 1 s (chat.js) | Locust (entrega medida en el otro participante): tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | p95 0,39 s (local). **Despliegue:** repetir en producción. |
+| RNF-REN-04 | Imagen de 5 MB visible ≤ 10 s (p95) | Compresión en el cliente > 4 MB; image_storage.py | 20 envíos de ~5 MB: tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | p95 7,63 s = tiempo local + transferencia calculada a 10 Mbps (la red no se emula). **Despliegue:** repetir con red real y Object Storage. |
+| RNF-REN-05 | Correo en cola ≤ 30 s (p95) | email/sender.py (envío dentro de la solicitud) | 100 registros: tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | p95 0,34 s con el emisor de desarrollo. **Despliegue:** repetir con el SMTP real. |
+| RNF-REN-06 | REN-02/03 con 10 000 cuentas | Índices | Locust con 10 000 cuentas y 3 000 publicaciones activas: tests/carga/ejecutar_carga.py (resultados/resumen.json) | **OK** | **Despliegue:** repetir en producción. |
+| RNF-DIS-01 | Disponibilidad ≥ 99 % / 30 días | — | — | **FALTA** | **Despliegue:** requiere un monitor externo que consulte la página de inicio cada minuto (p. ej. UptimeRobot o Better Stack); no es código de la app. |
 | RNF-FIA-01 | Plazos con desviación ≤ 1 min | Evaluación al consultar (DD-03), FakeClock | T:cu02::test_bloqueo_*; T:cu12::test_aviso_*; T:shared::test_sesion_* | **OK** |  |
-| RNF-FIA-02 | Tras una caída, aplicar plazos vencidos en ≤ 1 min | Vigencia evaluada al consultar; borrado físico por cron cada hora | — | **PARCIAL** | El acceso se corta de inmediato, pero la eliminación física de reportes y chats vencidos espera al cron (hasta 1 h). Sin test. |
+| RNF-FIA-02 | Tras una caída, aplicar plazos vencidos en ≤ 1 min | app/jobs/arranque.py (EA-03/05/07 al arrancar); EA-07 sin hint si falta el índice | T:e2e-rob::test_fia_02_plazos_vencidos_durante_la_caida_se_aplican_al_arrancar; T:rob::test_el_arranque_programa_los_plazos_vencidos | **OK** |  |
 | RNF-FIA-03 | Operaciones atómicas | mongo.py `en_transaccion`; cu05, cu10, cu11 | T:tx::*; T:cu10::test_imagen_corrupta_no_deja_chat, test_fallo_al_crear_borra_la_imagen; T:cu14::test_fallo_al_registrar_no_deja_copias | **OK** |  |
 | RNF-SEG-01 | Sesión obligatoria salvo funciones exceptuadas | `get_sesion_actual` / `get_sesion_opcional` | T:web::test_paginas_privadas_sin_sesion_redirigen; T:e2e::test_flujo_completo | **OK** |  |
 | RNF-SEG-02 | bcrypt con costo ≥ 10 | hashing.py (costo 12 + prehash SHA-256) | T:shared::test_bcrypt_con_sal_y_contrasena_larga, test_costo_por_defecto_es_12 | **OK** |  |
-| RNF-SEG-03 | HTTPS con TLS ≥ 1.2 | Delegado a Vercel; cookie `Secure` | — | **PARCIAL** | No hay redirección HTTP→HTTPS ni HSTS en el código; depende de la plataforma y no se verifica. |
+| RNF-SEG-03 | HTTPS con TLS ≥ 1.2 | app/shared/web/https.py: HTTP → HTTPS (308) y HSTS con ENTORNO=produccion | T:rob::test_http_se_redirige_a_https_en_produccion, test_proxy_que_termina_tls_x_forwarded_proto | **PARCIAL** | La redirección y HSTS están probadas. **Despliegue:** la versión de TLS (rechazar 1.0/1.1) la negocia Vercel y solo se verifica contra el dominio publicado. |
 | RNF-SEG-04 | Chat e imágenes solo para participantes | cu11/cu12 `_chat_vigente`; ruta de imagen con sesión | T:cu12::test_imagen_solo_para_participantes; T:e2e::test_flujo_completo | **OK** |  |
 | RNF-SEG-05 | Texto literal, sin HTML | Autoescape de Jinja2; `textContent` en JS | T:web::test_nickname_se_escapa, test_archivos_estaticos | **OK** |  |
 | RNF-SEG-06 | Identificador ≥ 128 bits; HttpOnly, Secure, SameSite=Lax | hashing.py (256 bits); session.py | T:cu02::test_endpoint_escribe_cookie_segura; T:shared::test_tokens_* | **OK** |  |
 | RNF-SEG-07 | Sesión invalidada no reutilizable | session.py; cu03 | T:shared::test_sesion_expirada_queda_invalidada; T:cu03::* | **OK** |  |
 | RNF-PRI-01 | Correo no visible para otros | DTO sin correo | T:cu08::test_no_expone_correo_*; T:e2e::test_flujo_completo | **OK** |  |
-| RNF-PRI-02 | Contenido reportado eliminado ≤ 24 h; respaldos ≤ 7 días | ea05 (cron horario); scripts/respaldo_mongodb.py (rotación ≤ 7 días); la política informa los respaldos | T:ea05::*; T:scripts::test_rota_respaldos_de_mas_de_7_dias, test_retencion_fuera_de_rango_se_rechaza | **PARCIAL** | El script de respaldo existe y está probado, pero su ejecución diaria no está programada en el repositorio. Si se usan snapshots de Atlas, su retención (≤ 7 días) se configura fuera del código. |
-| RNF-PRI-03 | Chat expirado eliminado ≤ 24 h | ea03 (cron horario) | T:ea03::*; T:ea07::test_workflow_* | **OK** |  |
+| RNF-PRI-02 | Contenido reportado eliminado ≤ 24 h; respaldos ≤ 7 días | ea05 (cron horario y al arrancar); scripts/respaldo_mongodb.py; .github/workflows/backup.yml (artifact cifrado, 7 días) | T:ea05::*; T:scripts::test_rota_respaldos_de_mas_de_7_dias; T:wf::* | **PARCIAL** | **Grupo:** el respaldo diario se activa al crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE`. **Despliegue:** si se usan snapshots de Atlas, su retención (≤ 7 días) se configura en Atlas. |
+| RNF-PRI-03 | Chat expirado eliminado ≤ 24 h | ea03 (cron horario y al arrancar) | T:ea03::*; T:ea07::test_workflow_* | **OK** |  |
 | RNF-PRI-04 | Imágenes sin EXIF | image_storage.py `recodificar_sin_metadatos` | T:shared::test_imagen_se_recodifica_sin_exif; T:cu10::test_primer_mensaje_con_imagen_sin_exif | **OK** |  |
-| RNF-PRI-05 | Logs sin texto ni imágenes de chats | Ningún `log.*` incluye contenido de mensajes | — | **PARCIAL** | Se cumple al revisar el código, pero ningún test lo verifica. |
-| RNF-LEG-01 | Consentimiento expreso y registrado | registro.html; cu01 `termsAcceptance` | T:web::test_registro_casilla_desmarcada; T:cu01::test_registro_* | **OK** | La versión queda como «pendiente» si no se configura `TERMINOS_VERSION`. |
-| RNF-LEG-02 | Política: datos, finalidad, plazos, quién accede | web/terminos/terminos.txt (incluye respaldos, PA-37) | T:cu16::test_politica_completa_rn31_con_canal_arco_configurado | **OK** |  |
-| RNF-LEG-03 | Canal ARCO en la política | terminos.txt con la marca `{{CANAL_ARCO}}` + variable `CANAL_ARCO`, obligatoria en producción | T:cu16::test_politica_completa_rn31_con_canal_arco_configurado; T:shared::test_produccion_exige_version_fecha_y_canal_arco_de_la_politica | **OK** | El canal concreto debe proporcionarlo la institución (no está en los documentos del proyecto). |
-| RNF-USA-01 | Formato «X h Y min» / «X h» / «Y min» / «menos de 1 min» | app.js `restante` | T:web::test_utilidades_js_con_node | **OK** | Corregido (commit `dd25f08`). |
-| RNF-USA-02 | Uso en PC y móvil desde 360 px | Bootstrap 5, viewport | — | **PARCIAL** | No hay verificación en 360 px. |
-| RNF-USA-03 | Mensaje junto al campo afectado | app.js `alerta` en `#mensajes` | — | **PARCIAL** | Los errores se muestran en una alerta global en la parte superior, no junto al campo. |
-| RNF-USA-04 | Contraste ≥ 4,5:1 | Estilos por defecto de Bootstrap | — | **PARCIAL** | No hay medición. |
-| RNF-USA-05 | Interfaz y mensajes en español | app/shared/web/validacion.py (traduce los errores de Pydantic) | T:webval::test_errores_de_validacion_en_espanol | **PARCIAL** | Los errores de validación ya salen en español. Siguen en inglés las respuestas genéricas de Starlette para rutas o métodos inexistentes: «Not Found» (404) y «Method Not Allowed» (405), visibles al abrir una URL inexistente. |
-| RNF-USA-06 | Conservar datos tras un error, excepto contraseñas | acceso.js (no reinicia el formulario si hay error) | — | **PARCIAL** | Tras un error no se vacían los campos de contraseña. |
-| RNF-USA-07 | Etiqueta visible en todo campo | Plantillas | — | **PARCIAL** | En el chat (texto e imagen) y en el filtro del feed las etiquetas tienen la clase `visually-hidden`. |
-| RNF-USA-08 | Todo usable con teclado | Controles HTML nativos | — | **PARCIAL** | No hay verificación. |
-| RNF-COM-01 | Chrome, Firefox, Edge, Chrome Android y Safari iOS | APIs estándar (fetch, IntersectionObserver, canvas) | — | **PARCIAL** | No hay pruebas en navegadores. |
+| RNF-PRI-05 | Logs sin texto ni imágenes de chats | Ningún `log.*` incluye contenido de mensajes | T:rob::test_registros_tecnicos_sin_texto_ni_imagenes_de_chats | **OK** |  |
+| RNF-LEG-01 | Consentimiento expreso y registrado | registro.html; cu01 `termsAcceptance` | T:web::test_registro_casilla_desmarcada; T:cu01::test_registro_* | **OK** | **Grupo:** `TERMINOS_VERSION` y `TERMINOS_FECHA` del texto aprobado (obligatorias en producción). |
+| RNF-LEG-02 | Política: datos, finalidad, plazos, quién accede | web/terminos/terminos.txt (incluye respaldos, PA-37) | T:cu16::test_politica_completa_rn31_con_canal_arco_configurado | **OK** | **Grupo:** aprobación del texto legal. |
+| RNF-LEG-03 | Canal ARCO en la política | terminos.txt + variable `CANAL_ARCO` (obligatoria en producción) | T:cu16::test_politica_completa_rn31_con_canal_arco_configurado; T:shared::test_produccion_exige_version_fecha_y_canal_arco_de_la_politica | **OK** | **Grupo:** el canal concreto lo define la institución. |
+| RNF-USA-01 | Formato «X h Y min» / «X h» / «Y min» / «menos de 1 min» | app.js `restante` | T:web::test_utilidades_js_con_node | **OK** |  |
+| RNF-USA-02 | Uso en PC y móvil desde 360 px | Bootstrap 5, viewport | T:nav-a11y::test_360_px_sin_desplazamiento_horizontal (17 pantallas, 3 motores) | **OK** |  |
+| RNF-USA-03 | Mensaje junto al campo afectado | app.js `mostrarErrores` (aria-describedby, aria-invalid, foco); `campo` en errores de dominio | T:nav-form::* | **OK** |  |
+| RNF-USA-04 | Contraste ≥ 4,5:1 | app.css (botones outline oscurecidos) | T:nav-a11y::test_axe_sin_violaciones_serias_de_contraste_ni_etiquetas (axe-core, 360 y 1366 px) | **OK** |  |
+| RNF-USA-05 | Interfaz y mensajes en español | validacion.py (errores de Pydantic); main.py (404/405 en HTML o JSON) | T:webval::*; T:webhttp::* | **OK** |  |
+| RNF-USA-06 | Conservar datos tras un error, excepto contraseñas | app.js `vaciarContrasenas`; acceso.js | T:nav-form::test_registro_error_de_dominio_junto_al_correo_y_vacia_contrasenas, test_login_fallido_vacia_la_contrasena_y_conserva_el_correo | **OK** |  |
+| RNF-USA-07 | Etiqueta visible en todo campo | Plantillas (sin visually-hidden) | T:web::test_campos_con_etiqueta_visible; T:nav-form::test_filtro_del_feed_tiene_etiqueta_visible; axe-core | **OK** |  |
+| RNF-USA-08 | Todo usable con teclado (PC) | Controles nativos; el chat devuelve el foco al campo tras enviar | T:nav-a11y::test_flujo_principal_solo_con_teclado (Chromium y Firefox) | **OK** | En WebKit se omite: como en Safari por defecto, Tab no recorre enlaces, y Safari en PC no está entre los navegadores de RNF-COM-01. |
+| RNF-COM-01 | Chrome, Firefox, Edge (PC); Chrome Android; Safari iOS | APIs estándar | T:nav-compat::test_flujos_principales (Chromium, Firefox y WebKit; Pixel 7 e iPhone 14 emulados) | **PARCIAL** | Los flujos pasan en los tres motores y en móviles emulados. **Grupo:** el criterio pide las dos últimas versiones estables de cada navegador y Chrome en Android y Safari en iOS reales; la emulación no lo sustituye. |
 | RNF-MAN-01 | Parámetros sin recompilar | config/provider.py (variables de entorno) | T:shared::test_config_*; T:cu15::* | **OK** |  |
-| RNF-MAN-02 | Reloj de pruebas controlable | clock.py `FakeClock` | Todos los tests de handlers | **PARCIAL** | `FakeClock` solo se usa en las pruebas unitarias: `get_clock()` siempre devuelve `SystemClock` y no hay forma de activar un reloj controlable en un entorno de pruebas desplegado. |
+| RNF-MAN-02 | Reloj de pruebas controlable | clock.py `RelojDePruebas` + /pruebas/reloj con ENTORNO=pruebas | T:e2e-rob::test_man_02_adelantar_24_y_72_horas; T:rob::test_reloj_de_pruebas_* | **OK** | Un solo worker en el entorno de pruebas (el desfase vive en memoria). |
 | RNF-SEG-08 | Tokens de enlaces ≥ 128 bits | hashing.py (256 bits, `secrets`) | T:shared::test_tokens_de_128_bits_o_mas_y_unicos | **OK** |  |
 | RNF-SEG-09 | Tokens de un solo uso | cu17/cu18 `find_one_and_update` atómico | T:cu17::test_activa_con_enlace_vigente_una_sola_vez; T:cu18::test_flujo_completo_* | **OK** |  |
 
@@ -386,7 +396,38 @@ Las 8 coinciden: `accounts`, `login_attempts`, `sessions`, `publications`, `chat
 
 - **Sesiones:** resuelto (`4840b69`). EA-07 elimina las sesiones cuyo vencimiento supera los 30 días (§7.3: «conservando solo los últimos 30 días»). Se ejecuta en cada corrida del job (cada hora), no una vez al mes; el efecto es la misma retención de 30 días.
 - **Publicaciones históricas:** no se purgan (el Entregable 2 lo acepta como «depuración histórica posterior», sin job definido).
-- **Respaldos (§8.1):** `scripts/respaldo_mongodb.py` (`fc66244`) hace `mongodump --gzip --archive` y rota a 7 días. Falta programar su ejecución diaria; la regla de ciclo de vida del bucket de imágenes y la retención de snapshots de Atlas siguen siendo configuración de infraestructura no versionada.
+- **Respaldos (§8.1):** `scripts/respaldo_mongodb.py` (`fc66244`) hace `mongodump --gzip --archive`. `.github/workflows/backup.yml` (`3f99195`) lo ejecuta a diario y guarda el volcado cifrado como artifact con retención de 7 días; se activa al crear los secrets `MONGO_URI` y `BACKUP_PASSPHRASE`. La regla de ciclo de vida del bucket de imágenes y la retención de snapshots de Atlas siguen siendo configuración de infraestructura no versionada.
 - **Frecuencia de los jobs:** GitHub Actions cada hora más crons diarios de Vercel como respaldo (el Entregable 2 habla de «cron diario»).
 - **Contradicción del Entregable 2 con el SRS:** §1.1 presenta como parámetros configurables la duración de 24 h de las publicaciones y la inactividad de 24 h del chat, que en el SRS v1.9 son constantes (§3.3, PA-31). El código sigue al SRS.
 - **Coincidencias relevantes:** bcrypt con costo 12, tokens guardados como SHA-256, `authorNickname`/`senderNickname` desnormalizados y propagados al cambiar el nickname, imágenes fuera de MongoDB (prefijos `chats/` y `reports/`) y snapshot embebido 1:1 en `reports`.
+
+## 6. Prueba de carga (RNF-REN-01 a RNF-REN-06)
+
+Ejecutada con `python tests/carga/ejecutar_carga.py` el 2026-11-10 (01:23–01:39 UTC):
+- **Escala:** 100 usuarios durante 15m; app con uvicorn y 4 workers; MongoDB 7 replica set en Docker, todo en el mismo equipo.
+- **Datos:** 10000 cuentas y 3000 publicaciones activas al inicio (3030 al final).
+- **Perfil (el del criterio de RNF-REN-01):** 60 % consulta el feed cada 30 s (la mitad con filtro), 30 % intercambia un mensaje cada 20 s con sondeo de 1 s del otro participante, y 10 % crea o cierra una publicación cada 2 min.
+- **Mediciones fuera de Locust:** RNF-REN-04 y RNF-REN-05 se midieron después, con 1 worker (20 imágenes y 100 registros).
+
+| RNF | Métrica | Valor | Límite | Cumple |
+|---|---|---|---|---|
+| RNF-REN-01 | tasa de errores (0/29135) | 0,0 % | 1,0 % | sí |
+| RNF-REN-02 | p95 primer bloque del feed (con y sin filtro) | 0,68 s | 3,0 s | sí |
+| RNF-REN-03 | p95 entrega de un mensaje de texto | 0,39 s | 2,0 s | sí |
+| RNF-REN-04 | p95 imagen de 5 MB visible (incluye red de 10 Mbps) | 7,629 s | 10,0 s | sí |
+| RNF-REN-05 | p95 registro → correo entregado al emisor | 0,338 s | 30,0 s | sí |
+| RNF-REN-06 | REN-02 y REN-03 con 10000 cuentas y 3000 activas | 10000,0 cuentas | 10000 cuentas | sí |
+
+| Medición | Solicitudes | Fallos | p50 | p95 | Máx. |
+|---|---|---|---|---|---|
+| REN-02 feed: primer bloque | 899 | 0 | 0,07 s | 0,68 s | 3,54 s |
+| REN-02 feed: primer bloque con filtro | 901 | 0 | 0,06 s | 0,31 s | 3,51 s |
+| REN-03 entrega de texto al otro participante | 1350 | 0 | 0,07 s | 0,39 s | 7,00 s |
+| cerrar publicación | 40 | 0 | 0,07 s | 0,14 s | 0,16 s |
+| crear publicación | 70 | 0 | 0,10 s | 2,80 s | 3,95 s |
+| enviar mensaje de texto | 1350 | 0 | 0,04 s | 0,24 s | 6,82 s |
+| iniciar sesión | 130 | 0 | 1,90 s | 4,10 s | 4,20 s |
+| responder publicación | 30 | 0 | 0,07 s | 3,50 s | 4,23 s |
+| sondeo del chat abierto (1 s) | 24365 | 0 | 0,02 s | 0,10 s | 8,47 s |
+
+**Validez:** son mediciones en local, sin latencia de red real. Para RNF-REN-04 se sumó la transferencia de subida y bajada calculada a 10 Mbps. Los resultados deben confirmarse en el despliegue (Vercel + Atlas).
