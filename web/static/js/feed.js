@@ -14,8 +14,7 @@
     const quitarFiltro = document.getElementById("quitar-filtro");
     let siguiente = null, bloquesCargados = 0, cargando = false;
 
-    const tarjeta = (p) => el("div", { class: "col-md-6 col-lg-4" },
-      el("a", { class: `card h-100 text-decoration-none text-body tarjeta-publicacion tipo-${p.tipo}`,
+    const tarjeta = (p) => el("a", { class: `card h-100 text-decoration-none text-body tarjeta-publicacion tipo-${p.tipo}`,
                 href: `/publicaciones/${encodeURIComponent(p.id)}` },
         el("div", { class: "card-body" },
           el("div", { class: "d-flex gap-2 mb-2" },
@@ -23,7 +22,7 @@
             p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null),
           el("h2", { class: "h6 card-title", text: p.titulo }),
           el("p", { class: "small text-body-secondary mb-0" }, el("span", { text: p.nickname_autor }), t("separador"),
-            el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) })))));
+            el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))));
 
     const url = (cursor) => {
       const q = new URLSearchParams();

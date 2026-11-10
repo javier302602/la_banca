@@ -5,8 +5,7 @@
 {% block pagina %}login{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6 col-lg-4">
+<div class="contenedor-estrecho">
     <h1 class="h4 mb-3">{{ t("login.titulo") }}</h1>
     <div id="mensajes" aria-live="polite">
       {% if motivo == "inactividad" %}
@@ -31,7 +30,6 @@
       <a href="/registro">{{ t("login.crear_cuenta") }}</a>
       <a href="/activar">{{ t("login.nuevo_enlace") }}</a>
     </div>
-  </div>
 </div>
 {% endblock %}
 
