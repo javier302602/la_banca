@@ -134,6 +134,7 @@ def _validador_accounts(dominio: str | None) -> dict:
             "tokenHash": {"bsonType": ["string", "null"]},
             "expiresAt": {"bsonType": ["date", "null"]},
             "sentCount": {"bsonType": "int", "minimum": minimo, "maximum": 5},
+            "attempts": {"bsonType": "int", "minimum": 0},
         },
     }
     return {"$jsonSchema": {

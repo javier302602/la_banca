@@ -28,7 +28,7 @@ PRIVADAS = {
     "/perfil": ("acceso.js", "Mi perfil"),
 }
 PUBLICAS = {
-    "/login": "Iniciar sesión", "/registro": "Crear cuenta", "/activar": "Solicitar un nuevo enlace de activación",
+    "/login": "Iniciar sesión", "/registro": "Crear cuenta", "/activar": "Código de 6 dígitos",
     "/recuperar": "Recuperar contraseña", "/restablecer?token=t": "Nueva contraseña",
     "/terminos": "Términos de uso y política de privacidad",
 }

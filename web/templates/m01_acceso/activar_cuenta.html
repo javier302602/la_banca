@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{# CU-17 — Activar la cuenta #}
+{# CU-17 — Activar la cuenta con el código de 6 dígitos enviado al correo #}
 
 {% block title %}{{ t("activar.titulo") }}{% endblock %}
 {% block pagina %}activar{% endblock %}
@@ -8,26 +8,30 @@
 <div class="contenedor-estrecho card tarjeta-formulario">
   <div class="card-body">
     <h1 class="h4 mb-3"><i class="bi bi-envelope-check icono-titulo" aria-hidden="true"></i>{{ t("activar.titulo") }}</h1>
-    <div id="mensajes" aria-live="polite">
-      {% if token %}<div class="alert alert-info" role="status">{{ t("activar.activando") }}</div>{% endif %}
-    </div>
+    <p class="text-body-secondary">{{ t("activar.instrucciones") }}</p>
+    <div id="mensajes" aria-live="polite"></div>
     <div id="continuar" class="d-none mb-4">
       <a class="btn btn-primary" href="/login">{{ t("activar.continuar") }}</a>
     </div>
-    <section id="reenvio" class="{% if token %}d-none{% endif %}">
-      <h2 class="h6">{{ t("activar.subtitulo") }}</h2>
-      <form id="form-reenvio" novalidate>
-        <div class="mb-3">
-          <label class="form-label" for="correo">{{ t("activar.correo") }}</label>
-          <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required
-                 data-recordar="correo">
-        </div>
-        <button class="btn btn-outline-primary" type="submit">{{ t("activar.enviar") }}</button>
-      </form>
-    </section>
+    <form id="form-activar" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="correo">{{ t("activar.correo") }}</label>
+        <input class="form-control" id="correo" name="correo" type="email" autocomplete="email" required
+               data-recordar="correo">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="codigo">{{ t("activar.codigo") }}</label>
+        <input class="form-control campo-codigo" id="codigo" name="codigo" type="text" inputmode="numeric"
+               autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      </div>
+      <button class="btn btn-primary" type="submit">{{ t("activar.verificar") }}</button>
+    </form>
+    <form id="form-reenvio" class="mt-3" novalidate>
+      <span class="text-body-secondary">{{ t("activar.no_llego") }}</span>
+      <button class="btn btn-link p-0 align-baseline" type="submit">{{ t("activar.enviar") }}</button>
+    </form>
   </div>
 </div>
-<span id="token" data-token="{{ token or '' }}" hidden></span>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/acceso.js"></script>{% endblock %}

@@ -84,16 +84,16 @@ def servidor(base_navegador, registro_servidor):
     proceso.wait(timeout=10)
 
 
-def ultimo_enlace(registro: Path, ruta: str) -> str:
-    """Último enlace (/activar o /restablecer) que el emisor de correo de desarrollo dejó en el registro."""
+def ultimo_codigo(registro: Path) -> str:
+    """Último código de activación que el emisor de correo de desarrollo dejó en el registro."""
     limite = time.monotonic() + 10
     while time.monotonic() < limite:
-        enlaces = [linea.rsplit("-> ", 1)[1].strip() for linea in registro.read_text(errors="replace").splitlines()
-                   if "[correo de desarrollo]" in linea and f"{ruta}?token=" in linea]
-        if enlaces:
-            return enlaces[-1]
+        codigos = [linea.rsplit("-> ", 1)[1].strip() for linea in registro.read_text(errors="replace").splitlines()
+                   if "[correo de desarrollo] Tu código" in linea]
+        if codigos:
+            return codigos[-1]
         time.sleep(0.2)
-    raise AssertionError(f"No se envió ningún enlace {ruta}")
+    raise AssertionError("No se envió ningún código de activación")
 
 
 @pytest.fixture(scope="session")

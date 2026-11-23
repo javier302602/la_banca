@@ -45,13 +45,13 @@ def _o(valor: str | None) -> ObjectId | None:
 def enlace_a_doc(enlace: EnlaceUnUso, ahora: datetime | None = None) -> dict:
     envios = [t for t in enlace.envios_en if ahora is None or t > ahora - VENTANA_ENLACES]
     return {"tokenHash": enlace.token_hash, "expiresAt": enlace.expira_en,
-            "sentCount": len(envios), "sentAt": envios}
+            "sentCount": len(envios), "sentAt": envios, "attempts": enlace.intentos}
 
 
 def doc_a_enlace(doc: dict | None) -> EnlaceUnUso:
     doc = doc or {}
     return EnlaceUnUso(token_hash=doc.get("tokenHash"), expira_en=doc.get("expiresAt"),
-                       envios_en=list(doc.get("sentAt") or []))
+                       envios_en=list(doc.get("sentAt") or []), intentos=doc.get("attempts") or 0)
 
 
 def estudiante_a_doc(e: Estudiante) -> dict:

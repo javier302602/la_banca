@@ -1,14 +1,10 @@
-"""CU-17 — Activar la cuenta. Controlador MVC (APIRouter), sin lógica de negocio.
-
-La activación se confirma con POST desde la página /activar (no con el GET del enlace), para que los
-escáneres de correo que abren enlaces automáticamente no consuman el token de un solo uso.
-"""
+"""CU-17 — Activar la cuenta con el código del correo. Controlador MVC (APIRouter), sin lógica de negocio."""
 from fastapi import APIRouter, Depends, Request
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
-from app.shared.email.sender import get_email_sender, url_base
+from app.shared.email.sender import get_email_sender
 from app.shared.security.hashing import SecureTokenService
 from app.shared.security.session import SesionActual, get_sesion_opcional
 from app.shared.web.plantillas import render
@@ -26,7 +22,6 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> ActivarCuentaHandl
         tokens=SecureTokenService(),
         correo=get_email_sender(),
         clock=get_clock(),
-        url_base=url_base(),
     )
 
 
@@ -48,4 +43,4 @@ async def reenviar_activacion(
 
 @router.get("/activar", include_in_schema=False)
 async def pagina_activar(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
-    return render(request, "m01_acceso/activar_cuenta.html", sesion, token=request.query_params.get("token"))
+    return render(request, "m01_acceso/activar_cuenta.html", sesion)

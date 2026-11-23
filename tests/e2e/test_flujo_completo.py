@@ -37,11 +37,14 @@ def registrar_y_activar(c, correo, nick):
     r = c.post("/api/cuentas", json={"correo": correo, "contrasena": "clave123", "confirmacion": "clave123",
                                      "nickname": nick, "acepta_terminos": True})
     ok(r.status_code == 201, f"registro {nick}: {r.json()}")
-    token = correos.enviados[-1].enlace.split("token=")[1]
+    codigo = correos.enviados[-1].codigo
     r = c.post("/api/sesiones", json={"correo": correo, "contrasena": "clave123"})
     ok(r.status_code == 403 and r.json()["codigo"] == "cuenta_no_activada", "pendiente no inicia sesión")
-    ok(c.post("/api/cuentas/activar", json={"token": token}).status_code == 200, f"activar {nick}")
-    ok(c.post("/api/cuentas/activar", json={"token": token}).status_code == 410, "token de un solo uso")
+    erroneo = f"{(int(codigo) + 1) % 1_000_000:06d}"
+    r = c.post("/api/cuentas/activar", json={"correo": correo, "codigo": erroneo})
+    ok(r.status_code == 422 and r.json()["codigo"] == "codigo_incorrecto", "código incorrecto suma un intento")
+    ok(c.post("/api/cuentas/activar", json={"correo": correo, "codigo": codigo}).status_code == 200, f"activar {nick}")
+    ok(c.post("/api/cuentas/activar", json={"correo": correo, "codigo": codigo}).status_code == 410, "código de un solo uso")
     r = c.post("/api/sesiones", json={"correo": correo.upper(), "contrasena": "clave123"})
     ok(r.status_code == 200 and r.json() == {"nickname": nick}, f"login {nick}")
 
@@ -212,14 +215,14 @@ def test_feed_paginado_y_jobs(db):
         # EA-07: cuenta pendiente con 72 h
         c.post("/api/cuentas", json={"correo": "tarde@unas.edu.pe", "contrasena": "clave123",
                                      "confirmacion": "clave123", "nickname": "tarde", "acepta_terminos": True})
-        # cuenta con reenvío a las 71 h 59 min: su enlace vence 95 h 59 min después del registro
+        # cuenta con reenvío a las 71 h 59 min: su código vence 72 h 9 min después del registro
         # (se registran ambas antes de envejecerlas: cada registro purga las vencidas, RN-43)
         c.post("/api/cuentas", json={"correo": "reenvio@unas.edu.pe", "contrasena": "clave123",
                                      "confirmacion": "clave123", "nickname": "reenvio", "acepta_terminos": True})
         db.accounts.update_one({"email": "tarde@unas.edu.pe"}, {"$set": {"createdAt": ahora - timedelta(hours=72)}})
         db.accounts.update_one({"email": "reenvio@unas.edu.pe"},
                                {"$set": {"createdAt": ahora - timedelta(hours=72, minutes=1),
-                                         "activation.expiresAt": ahora + timedelta(hours=23, minutes=58)}})
+                                         "activation.expiresAt": ahora + timedelta(minutes=8)}})
         from app.jobs.ea07_eliminar_cuentas_no_activadas.repository import INDICE, filtro_no_activadas
 
         plan = db.accounts.find(filtro_no_activadas(datetime.now(timezone.utc) - timedelta(hours=72))) \

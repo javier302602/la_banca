@@ -6,7 +6,7 @@ from app.shared.clock import get_clock
 from app.shared.config.provider import get_config, variable
 from app.shared.db.mongo import get_database
 from app.shared.domain.entities import ClaveParametro
-from app.shared.email.sender import get_email_sender, url_base
+from app.shared.email.sender import get_email_sender
 from app.shared.security.hashing import BcryptPasswordHasher, SecureTokenService
 from app.shared.security.session import SesionActual, get_sesion_opcional
 from app.shared.web.plantillas import redirigir, render
@@ -26,7 +26,6 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> RegistrarCuentaHan
         correo=get_email_sender(),
         config=get_config(),
         clock=get_clock(),
-        url_base=url_base(),
         version_terminos=variable("TERMINOS_VERSION", "pendiente") or "pendiente",
     )
 

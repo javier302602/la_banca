@@ -67,15 +67,19 @@ class ITokenService(ABC):
         """Devuelve (token_plano ≥ 128 bits, hash SHA-256). Solo el hash se persiste (RNF-SEG-08)."""
         raise NotImplementedError
 
+    def generar_codigo(self) -> tuple[str, str]:
+        """Devuelve (código de 6 dígitos, hash SHA-256) para la activación por correo."""
+        raise NotImplementedError
+
     def hash(self, token_plano: str) -> str:
         raise NotImplementedError
 
 
 class IEmailSender(ABC):
-    """Envío de los únicos correos del MVP: enlaces de activación y de recuperación."""
+    """Envío de los únicos correos del MVP: código de activación y enlace de recuperación."""
 
-    async def enviar_activacion(self, correo: str, nickname: str, enlace: str) -> None:
-        """CU-01 / CU-17 — RF-AUT-28: el cuerpo contiene el enlace y el nickname."""
+    async def enviar_activacion(self, correo: str, nickname: str, codigo: str) -> None:
+        """CU-01 / CU-17 — el cuerpo contiene el código de 6 dígitos y el nickname."""
         raise NotImplementedError
 
     async def enviar_recuperacion(self, correo: str, enlace: str) -> None:
@@ -133,8 +137,11 @@ class IAccountRepository(ABC):
     async def registrar_enlace(self, estudiante_id: str, proposito: PropositoEnlace, enlace: EnlaceUnUso) -> None:
         """Reemplaza el token vigente (RF-AUT-46 / RF-AUT-50) y guarda el historial de envíos."""
         raise NotImplementedError
-    async def activar_con_enlace(self, token_hash: str, ahora: datetime) -> Estudiante | None:
-        """Atómico: activa la cuenta pendiente con token vigente e invalida el token (RNF-SEG-09)."""
+    async def activar_con_codigo(self, estudiante_id: str, codigo_hash: str, ahora: datetime) -> Estudiante | None:
+        """Atómico: activa la cuenta pendiente si el código coincide, está vigente y quedan intentos."""
+        raise NotImplementedError
+    async def sumar_intento_codigo(self, estudiante_id: str) -> int:
+        """Suma un intento fallido al código de activación y devuelve el total."""
         raise NotImplementedError
     async def restablecer_con_enlace(self, token_hash: str, password_hash: str, ahora: datetime) -> Estudiante | None:
         """Atómico: cambia la contraseña de la cuenta activa con token vigente e invalida el token."""

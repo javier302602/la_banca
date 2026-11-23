@@ -13,7 +13,8 @@ from app.shared.domain.perfiles import FotoPerfil
 # --- Constantes fijas (SRS §3.3) ----------------------------------------------
 DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
-VIGENCIA_ENLACE_ACTIVACION = timedelta(hours=24)      # RN-41
+VIGENCIA_CODIGO_ACTIVACION = timedelta(minutes=10)    # código de 6 dígitos enviado al correo
+MAX_INTENTOS_CODIGO = 5                               # intentos para escribir el código antes de pedir otro
 PLAZO_CUENTA_NO_ACTIVADA = timedelta(hours=72)        # RN-43
 MAX_ENLACES_24H = 5                                   # RN-42 (activación) / RN-50 (recuperación)
 VENTANA_ENLACES = timedelta(hours=24)                 # ventana móvil de RN-42 / RN-50
@@ -112,6 +113,7 @@ class EnlaceUnUso:
     token_hash: str | None = None
     expira_en: datetime | None = None
     envios_en: list[datetime] = field(default_factory=list)
+    intentos: int = 0  # solo activación: intentos fallidos con el código vigente
 
     def envios_en_ventana(self, ahora: datetime) -> int:
         return sum(1 for t in self.envios_en if t > ahora - VENTANA_ENLACES)

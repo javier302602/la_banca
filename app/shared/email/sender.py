@@ -1,4 +1,4 @@
-"""Implementaciones de IEmailSender (enlaces de activación CU-01/CU-17 y de recuperación CU-18).
+"""Implementaciones de IEmailSender (código de activación CU-01/CU-17 y enlace de recuperación CU-18).
 
 - `ConsoleEmailSender`: guarda los correos en memoria y los escribe en el registro (desarrollo y pruebas).
 - `SmtpEmailSender`: SMTP con STARTTLS (por omisión), TLS implícito (SMTP_TLS=ssl, puerto 465) o sin cifrar
@@ -22,12 +22,13 @@ class CorreoEnviado:
     destinatario: str
     asunto: str
     cuerpo: str
-    enlace: str
+    enlace: str = ""
+    codigo: str = ""
 
 
-def _cuerpo_activacion(nickname: str, enlace: str) -> str:
-    return (f"Hola {nickname}:\n\nPara activar tu cuenta de La Banca abre este enlace "
-            f"(vigente 24 horas, de un solo uso):\n\n{enlace}\n\n"
+def _cuerpo_activacion(nickname: str, codigo: str) -> str:
+    return (f"Hola {nickname}:\n\nTu código para activar tu cuenta de La Banca es:\n\n    {codigo}\n\n"
+            "Vence en 10 minutos y tienes 5 intentos para escribirlo.\n\n"
             "Si no creaste esta cuenta, ignora este mensaje.")
 
 
@@ -41,9 +42,9 @@ class ConsoleEmailSender(IEmailSender):
     def __init__(self) -> None:
         self.enviados: list[CorreoEnviado] = []
 
-    async def enviar_activacion(self, correo: str, nickname: str, enlace: str) -> None:
-        self._registrar(CorreoEnviado(correo, "Activa tu cuenta de La Banca",
-                                      _cuerpo_activacion(nickname, enlace), enlace))
+    async def enviar_activacion(self, correo: str, nickname: str, codigo: str) -> None:
+        self._registrar(CorreoEnviado(correo, "Tu código de La Banca", _cuerpo_activacion(nickname, codigo),
+                                      codigo=codigo))
 
     async def enviar_recuperacion(self, correo: str, enlace: str) -> None:
         self._registrar(CorreoEnviado(correo, "Cambia tu contraseña de La Banca",
@@ -51,7 +52,7 @@ class ConsoleEmailSender(IEmailSender):
 
     def _registrar(self, correo: CorreoEnviado) -> None:
         self.enviados.append(correo)
-        log.info("[correo de desarrollo] %s -> %s", correo.asunto, correo.enlace)
+        log.info("[correo de desarrollo] %s -> %s", correo.asunto, correo.enlace or correo.codigo)
 
 
 MODOS_TLS = ("starttls", "ssl", "ninguno")
@@ -65,8 +66,8 @@ class SmtpEmailSender(IEmailSender):
         self._host, self._puerto, self._tls = host, puerto, tls
         self._usuario, self._clave, self._remitente = usuario, clave, remitente
 
-    async def enviar_activacion(self, correo: str, nickname: str, enlace: str) -> None:
-        await self._enviar(correo, "Activa tu cuenta de La Banca", _cuerpo_activacion(nickname, enlace))
+    async def enviar_activacion(self, correo: str, nickname: str, codigo: str) -> None:
+        await self._enviar(correo, "Tu código de La Banca", _cuerpo_activacion(nickname, codigo))
 
     async def enviar_recuperacion(self, correo: str, enlace: str) -> None:
         await self._enviar(correo, "Cambia tu contraseña de La Banca", _cuerpo_recuperacion(enlace))

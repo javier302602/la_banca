@@ -5,7 +5,21 @@ from app.shared.domain.reglas import normalizar_correo
 
 
 class ActivarCuentaRequest(BaseModel):
-    token: str = Field(..., min_length=1, max_length=256)
+    correo: str = Field(..., max_length=254)
+    codigo: str = Field(..., max_length=16)
+
+    @field_validator("correo")
+    @classmethod
+    def _correo(cls, v: str) -> str:
+        return normalizar_correo(v)
+
+    @field_validator("codigo")
+    @classmethod
+    def _codigo(cls, v: str) -> str:
+        v = v.replace(" ", "")
+        if len(v) != 6 or not (v.isascii() and v.isdigit()):
+            raise ValueError("El código tiene 6 dígitos")
+        return v
 
 
 class ReenviarActivacionRequest(BaseModel):

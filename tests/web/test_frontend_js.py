@@ -137,12 +137,13 @@ def test_activacion_ofrece_continuar_al_inicio_de_sesion():
     """RF-AUT-45: junto a la confirmación de activación hay un control Continuar que lleva a /login."""
     app.dependency_overrides[get_sesion_opcional] = lambda: None
     try:
-        html = TestClient(app).get("/activar?token=t").text
+        html = TestClient(app).get("/activar").text
     finally:
         app.dependency_overrides.clear()
     bloque = html[html.index('id="continuar"'):]
     bloque = bloque[:bloque.index("</div>")]
     assert 'href="/login"' in bloque and ">Continuar</a>" in bloque
     js = (RAIZ / "web/static/js/acceso.js").read_text(encoding="utf-8")
-    exito = js[js.index('api("/api/cuentas/activar"'):js.index(".catch(", js.index('api("/api/cuentas/activar"'))]
+    inicio = js.index('api("/api/cuentas/activar"')
+    exito = js[inicio:js.index("/api/cuentas/activacion/reenviar", inicio)]
     assert 'getElementById("continuar").classList.remove("d-none")' in exito  # se muestra al activar

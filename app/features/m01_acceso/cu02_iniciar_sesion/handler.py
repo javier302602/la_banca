@@ -21,7 +21,7 @@ from app.shared.domain.reglas import minutos_hacia_arriba
 from .request import IniciarSesionRequest, SesionIniciada, SesionResponse
 
 MSG_CREDENCIALES = "Correo o contraseña incorrectos"                                            # RF-AUT-09
-MSG_NO_ACTIVADA = "Tu cuenta aún no está activada. Revisa tu correo o solicita un nuevo enlace"  # RF-AUT-30
+MSG_NO_ACTIVADA = "Tu cuenta aún no está activada. Ingresa el código que te enviamos al correo"  # RF-AUT-30
 _SEÑUELOS: dict[str, str] = {}  # un hash por proceso y tipo de hasher
 
 

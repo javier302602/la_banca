@@ -39,5 +39,10 @@ class SecureTokenService(ITokenService):
         plano = secrets.token_urlsafe(self.BYTES)
         return plano, self.hash(plano)
 
+    def generar_codigo(self) -> tuple[str, str]:
+        """Código numérico de 6 dígitos para el correo de activación; se persiste solo su SHA-256."""
+        codigo = f"{secrets.randbelow(1_000_000):06d}"
+        return codigo, self.hash(codigo)
+
     def hash(self, token_plano: str) -> str:
         return hashlib.sha256(token_plano.encode("utf-8")).hexdigest()

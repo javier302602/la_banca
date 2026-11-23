@@ -1,11 +1,11 @@
 """EA-07 — Eliminar las cuentas no activadas. Implementación Mongo de lo que necesita el job.
 
 La consulta recorre el índice ix_accounts_activation_exp {activation.expiresAt: 1} (Entregable 2, §5.4):
-- toda cuenta pendiente tiene un enlace vigente o vencido con `activation.expiresAt` (al activarse pasa a null,
+- toda cuenta pendiente tiene un código vigente o vencido con `activation.expiresAt` (al activarse pasa a null,
   así que las cuentas activas quedan fuera del rango del índice);
-- un enlace solo se emite mientras la cuenta existe, es decir, antes de cumplir 72 h, y vence 24 h después;
+- un código solo se emite mientras la cuenta existe, es decir, antes de cumplir 72 h, y vence 10 min después;
   por tanto, una cuenta registrada antes de `registradas_antes_de` tiene
-  `activation.expiresAt ≤ registradas_antes_de + 72 h + 24 h`.
+  `activation.expiresAt ≤ registradas_antes_de + 72 h + 10 min`.
 Ese límite acota el recorrido del índice; la condición exacta (RN-43) sigue siendo `createdAt ≤ registradas_antes_de`.
 """
 import logging
@@ -16,7 +16,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.errors import OperationFailure
 
 from app.shared.domain.contracts import IAccountRepository
-from app.shared.domain.entities import PLAZO_CUENTA_NO_ACTIVADA, VIGENCIA_ENLACE_ACTIVACION, EstadoCuenta
+from app.shared.domain.entities import PLAZO_CUENTA_NO_ACTIVADA, VIGENCIA_CODIGO_ACTIVACION, EstadoCuenta
 
 INDICE = "ix_accounts_activation_exp"
 log = logging.getLogger("la_banca.ea07")
@@ -35,7 +35,7 @@ async def _borrar_con_indice(coleccion: AsyncCollection, filtro: dict, indice: s
 
 
 def filtro_no_activadas(registradas_antes_de: datetime) -> dict:
-    limite_enlace = registradas_antes_de + PLAZO_CUENTA_NO_ACTIVADA + VIGENCIA_ENLACE_ACTIVACION
+    limite_enlace = registradas_antes_de + PLAZO_CUENTA_NO_ACTIVADA + VIGENCIA_CODIGO_ACTIVACION
     return {"activation.expiresAt": {"$lte": limite_enlace},
             "status": EstadoCuenta.PENDIENTE_ACTIVACION.value,
             "createdAt": {"$lte": registradas_antes_de}}

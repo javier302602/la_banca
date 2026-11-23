@@ -37,7 +37,7 @@
     "ingresar": "Ingresar",
     "olvidaste": "¿Olvidaste tu contraseña?",
     "crear_cuenta": "Crear una cuenta",
-    "nuevo_enlace": "Solicitar un nuevo enlace de activación"
+    "nuevo_enlace": "Activar mi cuenta con el código"
   },
   "registro": {
     "titulo_pagina": "Registrar cuenta",
@@ -52,11 +52,13 @@
   },
   "activar": {
     "titulo": "Activar cuenta",
-    "activando": "Activando tu cuenta…",
+    "instrucciones": "Te enviamos un código de 6 dígitos a tu correo institucional. Vence en 10 minutos y tienes 5 intentos.",
     "continuar": "Continuar",
-    "subtitulo": "Solicitar un nuevo enlace de activación",
     "correo": "Correo con el que te registraste",
-    "enviar": "Enviar nuevo enlace"
+    "codigo": "Código de 6 dígitos",
+    "verificar": "Verificar código",
+    "no_llego": "¿No te llegó o ya venció?",
+    "enviar": "Enviar código nuevo"
   },
   "recuperar": {
     "titulo": "Recuperar contraseña",
@@ -179,8 +181,8 @@
   "ayuda": {
     "titulo": "Ayuda",
     "intro": "Respuestas a las dudas más comunes sobre La Banca.",
-    "p_activar": "No me llegó el correo de activación",
-    "r_activar": "Revisa la carpeta de correo no deseado. El enlace vence a las 24 horas; puedes pedir uno nuevo desde «Solicitar un nuevo enlace de activación» (hasta 5 en 24 horas). Una cuenta sin activar se elimina a las 72 horas del registro.",
+    "p_activar": "No me llegó el código de activación",
+    "r_activar": "Revisa la carpeta de correo no deseado. El código vence a los 10 minutos y admite 5 intentos; puedes pedir uno nuevo con «Enviar código nuevo» (hasta 5 en 24 horas). Una cuenta sin activar se elimina a las 72 horas del registro.",
     "p_publicacion": "¿Cuánto dura una publicación?",
     "r_publicacion": "24 horas desde que la creas. Puedes tener hasta 3 activas a la vez y cerrarlas antes desde «Mis publicaciones».",
     "p_chat": "¿Por qué desapareció un chat?",
@@ -233,7 +235,7 @@
     },
     "acceso": {
       "nickname_actualizado": "Nickname actualizado",
-      "solicitar_enlace": "Solicitar un nuevo enlace",
+      "solicitar_enlace": "Activar con código",
       "ir_a_iniciar_sesion": "Ir a iniciar sesión",
       "iniciar_sesion": "Iniciar sesión"
     },

@@ -15,6 +15,7 @@ from app.shared.domain.contracts import (
     IReportRepository,
 )
 from app.shared.domain.entities import (
+    MAX_INTENTOS_CODIGO,
     Chat,
     ClaveParametro,
     EnlaceUnUso,
@@ -147,15 +148,19 @@ class FakeAccountRepository(IAccountRepository):
         else:
             e.recuperacion = copy.deepcopy(enlace)
 
-    async def activar_con_enlace(self, token_hash, ahora):
-        for e in self.cuentas.values():
-            a = e.activacion
-            if (e.estado is EstadoCuenta.PENDIENTE_ACTIVACION and a.token_hash == token_hash
-                    and a.expira_en and ahora < a.expira_en):
-                e.estado, e.fecha_activacion = EstadoCuenta.ACTIVA, ahora
-                e.activacion = replace(a, token_hash=None, expira_en=None)
-                return copy.deepcopy(e)
+    async def activar_con_codigo(self, estudiante_id, codigo_hash, ahora):
+        e = self.cuentas.get(estudiante_id)
+        a = e.activacion if e else None
+        if (e and e.estado is EstadoCuenta.PENDIENTE_ACTIVACION and a.token_hash == codigo_hash
+                and a.expira_en and ahora < a.expira_en and a.intentos < MAX_INTENTOS_CODIGO):
+            e.estado, e.fecha_activacion = EstadoCuenta.ACTIVA, ahora
+            e.activacion = replace(a, token_hash=None, expira_en=None)
+            return copy.deepcopy(e)
         return None
+
+    async def sumar_intento_codigo(self, estudiante_id):
+        self.cuentas[estudiante_id].activacion.intentos += 1
+        return self.cuentas[estudiante_id].activacion.intentos
 
     async def restablecer_con_enlace(self, token_hash, password_hash, ahora):
         for e in self.cuentas.values():

@@ -88,8 +88,8 @@ def test_repositorio_consulta_por_ix_accounts_activation_exp():
     assert asyncio.run(MongoEliminarCuentasRepository(db).eliminar_no_activadas(corte)) == 2
     filtro, opciones = coleccion.llamadas[0]
     assert opciones == {"hint": "ix_accounts_activation_exp"}
-    # último enlace posible: emitido justo antes de las 72 h y vigente 24 h más → corte + 96 h
-    assert filtro["activation.expiresAt"] == {"$lte": corte + timedelta(hours=96)}
+    # último código posible: emitido justo antes de las 72 h y vigente 10 min más → corte + 72 h 10 min
+    assert filtro["activation.expiresAt"] == {"$lte": corte + timedelta(hours=72, minutes=10)}
     assert filtro["status"] == "PENDIENTE_ACTIVACION" and filtro["createdAt"] == {"$lte": corte}
 
 

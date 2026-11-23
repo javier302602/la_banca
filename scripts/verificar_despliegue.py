@@ -32,12 +32,12 @@ def png() -> bytes:
     return salida.getvalue()
 
 
-def ultimo_enlace(mailpit: str, correo: str, cliente: httpx.Client) -> str:
+def ultimo_codigo(mailpit: str, correo: str, cliente: httpx.Client) -> str:
     for _ in range(30):
         mensajes = cliente.get(f"{mailpit}/api/v1/search", params={"query": f"to:{correo}"}).json()["messages"]
         if mensajes:
             texto = cliente.get(f"{mailpit}/api/v1/message/{mensajes[0]['ID']}").json()["Text"]
-            return re.search(r"https?://\S+token=[\w-]+", texto).group(0)
+            return re.search(r"\b\d{6}\b", texto).group(0)
         time.sleep(1)
     raise AssertionError(f"No llegó el correo para {correo} a Mailpit")
 
@@ -61,10 +61,9 @@ def verificar(url: str, mailpit: str | None, inseguro: bool, dominio: str) -> No
                                          "nickname": nick, "acepta_terminos": True})
         assert r.status_code == 201, r.text
         with httpx.Client(timeout=10) as m:
-            enlace = ultimo_enlace(mailpit.rstrip("/"), correo, m)
-        paso(f"registro de @{nick} y correo de activación recibido en Mailpit")
-        token = enlace.split("token=")[1]
-        assert c.post("/api/cuentas/activar", json={"token": token}).status_code == 200
+            codigo = ultimo_codigo(mailpit.rstrip("/"), correo, m)
+        paso(f"registro de @{nick} y código de activación recibido en Mailpit")
+        assert c.post("/api/cuentas/activar", json={"correo": correo, "codigo": codigo}).status_code == 200
         assert c.post("/api/sesiones", json={"correo": correo, "contrasena": clave}).status_code == 200
         paso("cuenta activada e inicio de sesión")
 

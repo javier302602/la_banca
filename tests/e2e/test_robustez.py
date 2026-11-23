@@ -27,8 +27,8 @@ def _registrar(c, correo, nick, activar=True):
                                      "nickname": nick, "acepta_terminos": True})
     assert r.status_code == 201, r.text
     if activar:
-        token = get_email_sender().enviados[-1].enlace.split("token=")[1]
-        assert c.post("/api/cuentas/activar", json={"token": token}).status_code == 200
+        codigo = get_email_sender().enviados[-1].codigo
+        assert c.post("/api/cuentas/activar", json={"correo": correo, "codigo": codigo}).status_code == 200
 
 
 def _entrar(c, correo):

@@ -1,8 +1,8 @@
 """CU-01 — Registrar cuenta. Caso de uso (handler).
 
 RF: RF-AUT-01–07, RF-AUT-14–17, RF-AUT-28, RF-AUT-41–43
-Crea la cuenta en estado PENDIENTE_ACTIVACION (sin sesión) y envía el enlace de activación
-con token de un solo uso (vigencia 24 h; cuenta como 1 de los 5 envíos permitidos en 24 h).
+Solo acepta el correo institucional. Crea la cuenta en estado PENDIENTE_ACTIVACION (sin sesión) y envía
+un código de 6 dígitos (vence en 10 min, 5 intentos; cuenta como 1 de los 5 envíos permitidos en 24 h).
 """
 import logging
 
@@ -16,7 +16,7 @@ from app.shared.domain.contracts import (
 )
 from app.shared.domain.entities import (
     PLAZO_CUENTA_NO_ACTIVADA,
-    VIGENCIA_ENLACE_ACTIVACION,
+    VIGENCIA_CODIGO_ACTIVACION,
     AceptacionTerminos,
     ClaveParametro,
     EnlaceUnUso,
@@ -30,7 +30,7 @@ from .request import MensajeResponse, RegistrarCuentaRequest
 
 log = logging.getLogger("la_banca.cu01")
 
-MSG_EXITO = "Revisa tu correo para activar tu cuenta"                        # RF-AUT-42
+MSG_EXITO = "Te enviamos un código de 6 dígitos a tu correo para activar tu cuenta"
 MSG_CORREO_REGISTRADO = "Este correo ya tiene una cuenta. Inicia sesión"      # RF-AUT-03
 MSG_CORREO_PENDIENTE = "Este correo tiene una cuenta pendiente de activación"  # RF-AUT-43
 MSG_NICKNAME_OCUPADO = "Ese nickname ya está en uso. Elige otro"              # RF-AUT-06
@@ -39,14 +39,13 @@ MSG_NICKNAME_OCUPADO = "Ese nickname ya está en uso. Elige otro"              #
 class RegistrarCuentaHandler:
     def __init__(self, cuentas: IAccountRepository, hasher: IPasswordHasher, tokens: ITokenService,
                  correo: IEmailSender, config: IConfigurationProvider, clock: IClock,
-                 url_base: str, version_terminos: str) -> None:
+                 version_terminos: str) -> None:
         self._cuentas = cuentas
         self._hasher = hasher
         self._tokens = tokens
         self._correo = correo
         self._config = config
         self._clock = clock
-        self._url_base = url_base.rstrip("/")
         self._version_terminos = version_terminos
 
     async def handle(self, body: RegistrarCuentaRequest) -> MensajeResponse:
@@ -67,7 +66,7 @@ class RegistrarCuentaHandler:
         if await self._cuentas.existe_por_nickname(body.nickname):
             raise Conflicto(MSG_NICKNAME_OCUPADO, codigo="nickname_ocupado", campo="nickname")
 
-        token, token_hash = self._tokens.generar()
+        codigo, codigo_hash = self._tokens.generar_codigo()
         estudiante = Estudiante(
             id="",
             correo_institucional=body.correo,
@@ -76,7 +75,7 @@ class RegistrarCuentaHandler:
             estado=EstadoCuenta.PENDIENTE_ACTIVACION,
             fecha_registro=ahora,
             aceptacion=AceptacionTerminos(self._version_terminos, ahora),
-            activacion=EnlaceUnUso(token_hash, ahora + VIGENCIA_ENLACE_ACTIVACION, [ahora]),
+            activacion=EnlaceUnUso(codigo_hash, ahora + VIGENCIA_CODIGO_ACTIVACION, [ahora]),
         )
         try:
             await self._cuentas.crear(estudiante)
@@ -86,7 +85,7 @@ class RegistrarCuentaHandler:
             raise Conflicto(MSG_CORREO_PENDIENTE, codigo="cuenta_pendiente", campo="correo") from None
 
         try:
-            await self._correo.enviar_activacion(body.correo, body.nickname, f"{self._url_base}/activar?token={token}")
-        except Exception:  # E3: la cuenta queda pendiente; se puede pedir un nuevo enlace (CU-17 A1)
+            await self._correo.enviar_activacion(body.correo, body.nickname, codigo)
+        except Exception:  # E3: la cuenta queda pendiente; se puede pedir un nuevo código (CU-17 A1)
             log.exception("No se pudo enviar el correo de activación")
         return MensajeResponse(mensaje=MSG_EXITO)

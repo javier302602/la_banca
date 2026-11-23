@@ -7,7 +7,7 @@ import uuid
 
 import pytest
 
-from tests.e2e.navegador.conftest import CLAVE, iniciar_sesion, ultimo_enlace
+from tests.e2e.navegador.conftest import CLAVE, iniciar_sesion, ultimo_codigo
 
 DISPOSITIVOS = {"chromium": "Pixel 7", "webkit": "iPhone 14"}
 
@@ -40,7 +40,7 @@ def test_flujos_principales(navegador, servidor, usuarios, registro_servidor, pe
     nuevo = navegador.new_context(base_url=servidor, **perfil)
     autor = navegador.new_context(base_url=servidor, **perfil)
     try:
-        # Registro + activación por enlace + inicio de sesión
+        # Registro + activación con código + inicio de sesión
         p = nuevo.new_page()
         p.goto("/registro")
         p.fill("#correo", correo)
@@ -49,8 +49,9 @@ def test_flujos_principales(navegador, servidor, usuarios, registro_servidor, pe
         p.fill("#confirmacion", CLAVE)
         _pulsar(p, "#acepta_terminos", movil)  # la etiqueta contiene el enlace a /terminos
         _pulsar(p, "#form-registro button[type=submit]", movil)
-        p.locator("#mensajes .alert-success:has-text('Revisa tu correo para activar tu cuenta')").wait_for()
-        p.goto(ultimo_enlace(registro_servidor, "/activar"))
+        p.wait_for_url("**/activar")
+        p.fill("#codigo", ultimo_codigo(registro_servidor))
+        _pulsar(p, "#form-activar button[type=submit]", movil)
         p.locator("#mensajes:has-text('Activación de cuenta exitosa')").wait_for()
         _pulsar(p, "#continuar a", movil)
         p.wait_for_url("**/login")

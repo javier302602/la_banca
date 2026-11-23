@@ -55,11 +55,11 @@ def _sin_bloqueo(ticks: int, esperas: int = 1) -> None:
 
 def test_registro_no_bloquea():
     h = RegistrarCuentaHandler(FakeAccountRepository(), HasherLento(), SecureTokenService(), FakeEmailSender(),
-                               FakeConfig(), FakeClock(), "https://banca.test", "1.0")
+                               FakeConfig(), FakeClock(), "1.0")
     req = RegistrarCuentaRequest(correo="ana@unas.edu.pe", contrasena="clave123", confirmacion="clave123",
                                  nickname="ana_07", acepta_terminos=True)
     ticks, r = asyncio.run(_ticks_durante(h.handle(req)))
-    assert r.mensaje == "Revisa tu correo para activar tu cuenta"
+    assert r.mensaje == "Te enviamos un código de 6 dígitos a tu correo para activar tu cuenta"
     _sin_bloqueo(ticks)
 
 

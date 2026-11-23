@@ -22,26 +22,25 @@ def _req(**kw):
 
 def _handler(repo=None, reloj=None):
     repo, correo, reloj = repo or FakeAccountRepository(), FakeEmailSender(), reloj or FakeClock()
-    h = RegistrarCuentaHandler(repo, FakePasswordHasher(), SecureTokenService(), correo, FakeConfig(), reloj,
-                               "https://banca.test/", "1.0")
+    h = RegistrarCuentaHandler(repo, FakePasswordHasher(), SecureTokenService(), correo, FakeConfig(), reloj, "1.0")
     return h, repo, correo, reloj
 
 
-def test_registro_crea_cuenta_pendiente_y_envia_enlace():
+def test_registro_crea_cuenta_pendiente_y_envia_codigo():
     h, repo, correo, reloj = _handler()
     respuesta = asyncio.run(h.handle(_req()))
-    assert respuesta.mensaje == "Revisa tu correo para activar tu cuenta"
+    assert respuesta.mensaje == "Te enviamos un código de 6 dígitos a tu correo para activar tu cuenta"
     cuenta = next(iter(repo.cuentas.values()))
     assert cuenta.correo_institucional == "ana@unas.edu.pe"  # RF-AUT-07: minúsculas
     assert cuenta.estado is EstadoCuenta.PENDIENTE_ACTIVACION
     assert cuenta.password_hash != "clave123"  # solo hash
     assert cuenta.aceptacion.version == "1.0" and cuenta.aceptacion.fecha == reloj.ahora()  # RF-AUT-17
-    assert cuenta.activacion.expira_en == reloj.ahora() + timedelta(hours=24)
+    assert cuenta.activacion.expira_en == reloj.ahora() + timedelta(minutes=10)
     assert cuenta.activacion.envios == 1 and not repo.sesiones  # sin sesión (RF-AUT-41)
     enviado = correo.enviados[0]
-    assert enviado.enlace.startswith("https://banca.test/activar?token=") and "ana_07" in enviado.cuerpo
-    token = enviado.enlace.split("token=")[1]
-    assert cuenta.activacion.token_hash == SecureTokenService().hash(token) != token
+    assert len(enviado.codigo) == 6 and enviado.codigo.isdigit()
+    assert enviado.codigo in enviado.cuerpo and "ana_07" in enviado.cuerpo
+    assert cuenta.activacion.token_hash == SecureTokenService().hash(enviado.codigo) != enviado.codigo
     assert "correo" not in respuesta.model_dump()
 
 
@@ -99,5 +98,5 @@ def test_fallo_al_enviar_correo_deja_cuenta_pendiente():
         raise ConnectionError("smtp caído")
 
     correo.enviar_activacion = falla
-    assert asyncio.run(h.handle(_req())).mensaje.startswith("Revisa tu correo")
+    assert asyncio.run(h.handle(_req())).mensaje.startswith("Te enviamos un código")
     assert len(repo.cuentas) == 1

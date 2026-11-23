@@ -193,11 +193,11 @@ def test_imagen_copia_retencion_y_eliminacion():
 
 
 # --- correo ---------------------------------------------------------------------------
-def test_correo_de_activacion_incluye_enlace_y_nickname():
+def test_correo_de_activacion_incluye_codigo_y_nickname():
     emisor = ConsoleEmailSender()
-    asyncio.run(emisor.enviar_activacion("ana@unas.edu.pe", "ana_07", "https://x/activar?token=abc"))
+    asyncio.run(emisor.enviar_activacion("ana@unas.edu.pe", "ana_07", "123456"))
     correo = emisor.enviados[0]
-    assert "ana_07" in correo.cuerpo and "https://x/activar?token=abc" in correo.cuerpo  # RF-AUT-28
+    assert "ana_07" in correo.cuerpo and "123456" in correo.cuerpo and correo.codigo == "123456"
 
 
 # --- sesión (EA-01) ---------------------------------------------------------------------

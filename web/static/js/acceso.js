@@ -23,7 +23,7 @@
   function manejar(formulario, error) {
     const enCampo = mostrarErrores(formulario, error);  // RNF-USA-03
     const extras = [];
-    if (error.codigo === "cuenta_pendiente" || error.codigo === "cuenta_no_activada" || error.codigo === "enlace_invalido") {
+    if (error.codigo === "cuenta_pendiente" || error.codigo === "cuenta_no_activada") {
       extras.push(" ", el("a", { href: "/activar", class: "alert-link", text: t("acceso.solicitar_enlace") }));
     }
     if (error.codigo === "correo_registrado") extras.push(" ", el("a", { href: "/login", class: "alert-link", text: t("acceso.ir_a_iniciar_sesion") }));
@@ -37,8 +37,9 @@
         correo: valor("correo"), nickname: valor("nickname"), contrasena: valor("contrasena"),
         confirmacion: valor("confirmacion"), acepta_terminos: document.getElementById("acepta_terminos").checked,
       } });
-      document.getElementById("form-registro").reset();
-      alerta(mensajes, r.mensaje, "success");
+      // Se recuerda el correo para la página del código (misma clave que data-recordar).
+      try { sessionStorage.setItem("banca.correo", valor("correo").trim()); } catch (e) { /* sin almacenamiento */ }
+      location.href = "/activar";
     });
   }
 
@@ -50,14 +51,16 @@
   }
 
   if (pagina === "activar") {
-    const token = document.getElementById("token").dataset.token;
-    const reenvio = document.getElementById("reenvio");
-    if (token) {
-      history.replaceState(null, "", "/activar");  // el token no queda en el historial
-      api("/api/cuentas/activar", { metodo: "POST", cuerpo: { token } })
-        .then((r) => { alerta(mensajes, r.mensaje, "success"); document.getElementById("continuar").classList.remove("d-none"); })
-        .catch((error) => { alerta(mensajes, error.message); reenvio.classList.remove("d-none"); });
-    }
+    // Paso 1: el estudiante escribe su correo y el código de 6 dígitos que recibió.
+    const formActivar = document.getElementById("form-activar");
+    enviar(formActivar, async () => {
+      const r = await api("/api/cuentas/activar", { metodo: "POST", cuerpo: { correo: valor("correo"), codigo: valor("codigo") } });
+      formActivar.classList.add("d-none");
+      document.getElementById("form-reenvio").classList.add("d-none");
+      alerta(mensajes, r.mensaje, "success");
+      document.getElementById("continuar").classList.remove("d-none");
+    });
+    // ¿No llegó o venció? Se pide un código nuevo para el mismo correo.
     enviar(document.getElementById("form-reenvio"), async () => {
       const r = await api("/api/cuentas/activacion/reenviar", { metodo: "POST", cuerpo: { correo: valor("correo") } });
       alerta(mensajes, r.mensaje, "info");
