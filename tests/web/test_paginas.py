@@ -60,7 +60,7 @@ def test_paginas_privadas_extienden_base_y_cargan_su_js(cliente, ruta):
     script, texto = PRIVADAS[ruta]
     assert respuesta.status_code == 200, respuesta.text
     html = respuesta.text
-    assert "bootstrap@5.3.3" in html and "/static/js/app.js" in html and f"/static/js/{script}" in html
+    assert "/static/vendor/bootstrap-5.3.3/bootstrap.min.css" in html and "cdn.jsdelivr" not in html and "/static/js/app.js" in html and f"/static/js/{script}" in html
     assert texto in html and "@ana_07" in html and "data-cerrar-sesion" in html
 
 

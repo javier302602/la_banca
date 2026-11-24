@@ -38,6 +38,7 @@ def _abrir(navegador, servidor, ruta, correo, listo, **opciones):
     return contexto, pagina
 
 
+@pytest.mark.timeout(300)  # axe recorre muchas páginas; en Firefox supera el límite global de 120 s
 def test_axe_wcag22aa_sin_violaciones(navegador, servidor, escenario):
     """Todas las reglas de axe-core etiquetadas WCAG 2.0, 2.1 y 2.2 niveles A y AA (incluye target-size)."""
     from axe_playwright_python.sync_playwright import Axe
