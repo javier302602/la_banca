@@ -15,6 +15,8 @@ from app.shared.domain.entities import TipoPublicacion
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.web.plantillas import redirigir, redirigir_a_login, render
 
+from app.features.m02_publicaciones.cu21_reaccionar_publicacion.repository import MongoReaccionesRepository
+
 from .handler import ConsultarFeedHandler
 from .repository import MongoConsultarFeedRepository
 from .request import ConsultarFeedRequest, FeedResponse
@@ -24,7 +26,8 @@ router = APIRouter(tags=["M03 Feed"])
 
 def get_handler(db: AsyncDatabase = Depends(get_database)) -> ConsultarFeedHandler:
     return ConsultarFeedHandler(publicaciones=MongoConsultarFeedRepository(db), clock=get_clock(),
-                                cuentas=MongoPerfilesPublicosRepository(db))
+                                cuentas=MongoPerfilesPublicosRepository(db),
+                                reacciones=MongoReaccionesRepository(db))
 
 
 @router.get("/api/feed", response_model=FeedResponse, status_code=200)

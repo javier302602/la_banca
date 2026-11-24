@@ -107,6 +107,30 @@ def validar_imagen(contenido: bytes) -> str:
     return mime
 
 
+FORMATOS_VIDEO = ("video/mp4", "video/webm")
+
+
+def detectar_formato_video(contenido: bytes) -> str | None:
+    """MIME por la firma del archivo (no por la extensión). MP4: caja «ftyp» (sin QuickTime); WebM: EBML."""
+    if len(contenido) >= 12 and contenido[4:8] == b"ftyp" and contenido[8:12] != b"qt  ":
+        return "video/mp4"
+    if contenido.startswith(bytes.fromhex("1a45dfa3")):  # cabecera EBML
+        return "video/webm"
+    return None
+
+
+def validar_video(contenido: bytes, tamano_max: int) -> str:
+    """Devuelve el MIME detectado o lanza ValueError."""
+    if not contenido:
+        raise ValueError("El video está vacío")
+    if len(contenido) > tamano_max:
+        raise ValueError(f"El video supera el tamaño máximo de {tamano_max // (1024 * 1024)} MB")
+    mime = detectar_formato_video(contenido)
+    if mime not in FORMATOS_VIDEO:
+        raise ValueError("Formato de video no permitido. Usa MP4 o WebM")
+    return mime
+
+
 # --- Tiempos -----------------------------------------------------------------
 def segundos_restantes(vence: datetime, ahora: datetime) -> int:
     return max(0, int((vence - ahora).total_seconds()))

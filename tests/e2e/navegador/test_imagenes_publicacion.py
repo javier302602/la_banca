@@ -61,7 +61,7 @@ def test_publicar_con_imagenes_y_ver_la_galeria(contexto, usuarios, tmp_path):
     p.goto("/feed")
     tarjeta = p.locator(".tarjeta-publicacion", has_text="Vendo calculadora científica")
     tarjeta.wait_for()
-    assert tarjeta.locator("img.miniatura-publicacion").count() == 1
+    assert tarjeta.locator(".medio-publicacion img").count() == 1
     assert "2 imágenes" in tarjeta.inner_text()
 
 

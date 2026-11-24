@@ -74,10 +74,12 @@
         const campos = { tipo: tipo.value, titulo: document.getElementById("titulo").value,
                          descripcion: document.getElementById("descripcion").value };
         let p;
-        if (elegidas.length) {  // multipart; cada imagen se comprime en el navegador si supera 4 MB
+        const video = document.getElementById("video").files[0];
+        if (elegidas.length || video) {  // multipart; cada imagen se comprime en el navegador si supera 4 MB
           const datos = new FormData();
           Object.entries(campos).forEach(([clave, valor]) => datos.append(clave, valor));
           for (const archivo of elegidas) datos.append("imagenes", await comprimirImagen(archivo));
+          if (video) datos.append("video", video);
           p = await api("/api/publicaciones", { metodo: "POST", formulario: datos });
         } else {
           p = await api("/api/publicaciones", { metodo: "POST", cuerpo: campos });

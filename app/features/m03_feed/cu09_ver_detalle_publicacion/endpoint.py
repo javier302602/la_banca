@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, Request, Response
 from pymongo.asynchronous.database import AsyncDatabase
 
+from app.features.m02_publicaciones.cu21_reaccionar_publicacion.repository import MongoReaccionesRepository
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
 from app.shared.db.perfiles import MongoPerfilesPublicosRepository
@@ -23,6 +24,7 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> VerDetallePublicac
         clock=get_clock(),
         cuentas=MongoPerfilesPublicosRepository(db),
         imagenes=get_image_storage(),
+        reacciones=MongoReaccionesRepository(db),
     )
 
 
@@ -44,6 +46,17 @@ async def ver_imagen(
 ) -> Response:
     imagen = await handler.imagen(publicacion_id, indice)
     return Response(imagen.contenido, media_type=imagen.mime_type,
+                    headers={"Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff"})
+
+
+@router.get("/api/publicaciones/{publicacion_id}/video", status_code=200)
+async def ver_video(
+    publicacion_id: str,
+    sesion: SesionActual = Depends(get_sesion_actual),
+    handler: VerDetallePublicacionHandler = Depends(get_handler),
+) -> Response:
+    video = await handler.video(publicacion_id)
+    return Response(video.contenido, media_type=video.mime_type,
                     headers={"Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff"})
 
 

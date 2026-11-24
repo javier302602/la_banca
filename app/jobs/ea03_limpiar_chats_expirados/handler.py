@@ -5,8 +5,8 @@ El bloqueo de acceso ya se evalúa en cada consulta (Chat.activo). Este job elim
 los chats con ultima_actividad + 24 h ≤ ahora, sus mensajes y sus imágenes. El contenido reportado no
 se pierde: CU-14 lo copió al reporte y al área de retención de imágenes (RF-CHT-16).
 
-SRS v2.0, cambio 3.4: también borra las imágenes de las publicaciones vencidas o cerradas (las de una
-publicación reportada ya están copiadas en retención por CU-13).
+También retira imágenes y video de las publicaciones vencidas hace 29 días: la publicación vencida solo se
+oculta y se conserva 30 días (índice TTL) para que los admins puedan revisarla.
 """
 import logging
 

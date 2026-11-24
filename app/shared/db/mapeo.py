@@ -149,7 +149,8 @@ def publicacion_a_doc(p: Publicacion) -> dict:
     return {"authorId": ObjectId(p.autor_id), "authorNickname": p.nickname_autor, "type": p.tipo.value,
             "title": p.titulo, "description": p.descripcion, "createdAt": p.fecha_creacion,
             "expiresAt": p.fecha_expiracion, "closedAt": p.fecha_cierre, "status": p.estado.value,
-            "images": [imagen_a_doc(i) for i in p.imagenes]}
+            "images": [imagen_a_doc(i) for i in p.imagenes],
+            "video": imagen_a_doc(p.video) if p.video else None}
 
 
 def doc_a_publicacion(doc: dict) -> Publicacion:
@@ -157,7 +158,8 @@ def doc_a_publicacion(doc: dict) -> Publicacion:
                        tipo=TipoPublicacion(doc["type"]), titulo=doc["title"], descripcion=doc["description"],
                        fecha_creacion=doc["createdAt"], fecha_expiracion=doc["expiresAt"],
                        estado=EstadoPublicacion(doc["status"]), fecha_cierre=doc.get("closedAt"),
-                       imagenes=[doc_a_imagen(d) for d in doc.get("images") or []])
+                       imagenes=[doc_a_imagen(d) for d in doc.get("images") or []],
+                       video=doc_a_imagen(doc["video"]) if doc.get("video") else None)
 
 
 # --- chats / messages -----------------------------------------------------------------

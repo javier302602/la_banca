@@ -12,6 +12,10 @@ from app.shared.domain.perfiles import FotoPerfil
 
 # --- Constantes fijas (SRS §3.3) ----------------------------------------------
 DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
+# Una publicación vencida no se borra: solo se oculta (filtro por expiresAt). Mongo la elimina con un índice
+# TTL 30 días después de vencer; sus archivos se retiran un día antes (job EA-03) para no dejar huérfanos.
+RETENCION_PUBLICACION = timedelta(days=30)
+RETENCION_ARCHIVOS_PUBLICACION = RETENCION_PUBLICACION - timedelta(days=1)
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
 VIGENCIA_CODIGO_ACTIVACION = timedelta(minutes=10)    # código de 6 dígitos enviado al correo
 MAX_INTENTOS_CODIGO = 5                               # intentos para escribir el código antes de pedir otro
@@ -60,6 +64,15 @@ class EstadoPublicacion(str, Enum):
     ACTIVE = "ACTIVE"
     CLOSED = "CLOSED"
     EXPIRED = "EXPIRED"
+
+
+class TipoReaccion(str, Enum):
+    """Reacciones a una publicación (una por estudiante; el emoji se pinta en el frontend)."""
+    ME_GUSTA = "ME_GUSTA"
+    ME_ENCANTA = "ME_ENCANTA"
+    ME_DIVIERTE = "ME_DIVIERTE"
+    ME_ASOMBRA = "ME_ASOMBRA"
+    ME_ENTRISTECE = "ME_ENTRISTECE"
 
 
 class EstadoChat(str, Enum):
@@ -227,10 +240,19 @@ class Publicacion:
     estado: EstadoPublicacion = EstadoPublicacion.ACTIVE
     fecha_cierre: datetime | None = None
     imagenes: list[ImagenAdjunta] = field(default_factory=list)  # 0..3 (SRS v2.0, cambio 3.1)
+    video: ImagenAdjunta | None = None  # 0..1 (mismos metadatos que una imagen: clave, MIME, tamaño)
 
     def activa(self, ahora: datetime) -> bool:
         """EA-02 evaluado al consultar."""
         return self.estado is EstadoPublicacion.ACTIVE and ahora < self.fecha_expiracion
+
+
+@dataclass
+class ResumenReacciones:
+    """Conteo de reacciones de una publicación y la del estudiante que consulta."""
+
+    conteos: dict[TipoReaccion, int] = field(default_factory=dict)
+    mia: TipoReaccion | None = None
 
 
 @dataclass

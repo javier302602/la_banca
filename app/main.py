@@ -22,6 +22,7 @@ from app.features.m02_publicaciones.cu06_ver_mis_publicaciones.endpoint import r
 from app.features.m02_publicaciones.cu07_cerrar_publicacion.endpoint import router as cu07_cerrar_publicacion
 from app.features.m03_feed.cu08_consultar_feed.endpoint import router as cu08_consultar_feed
 from app.features.m03_feed.cu09_ver_detalle_publicacion.endpoint import router as cu09_ver_detalle_publicacion
+from app.features.m02_publicaciones.cu21_reaccionar_publicacion.endpoint import router as cu21_reaccionar_publicacion
 from app.features.m04_chat.cu10_responder_publicacion.endpoint import router as cu10_responder_publicacion
 from app.features.m04_chat.cu11_enviar_mensaje.endpoint import router as cu11_enviar_mensaje
 from app.features.m04_chat.cu12_ver_mis_chats.endpoint import router as cu12_ver_mis_chats
@@ -101,7 +102,7 @@ async def manejar_validacion(_: Request, error: RequestValidationError | Validat
 for router in [
     cu01_registrar_cuenta, cu02_iniciar_sesion, cu03_cerrar_sesion, cu04_editar_nickname,
     cu16_consultar_terminos, cu17_activar_cuenta, cu18_recuperar_contrasena,
-    cu05_crear_publicacion, cu06_ver_mis_publicaciones, cu07_cerrar_publicacion,
+    cu05_crear_publicacion, cu06_ver_mis_publicaciones, cu07_cerrar_publicacion, cu21_reaccionar_publicacion,
     cu08_consultar_feed, cu09_ver_detalle_publicacion,
     cu10_responder_publicacion, cu11_enviar_mensaje, cu12_ver_mis_chats,
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,

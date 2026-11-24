@@ -139,6 +139,35 @@ const Banca = (() => {
 
   function urlPerfil(nickname) { return `/perfiles/${encodeURIComponent(nickname)}`; }
 
+  /* Reacciones (CU-21): una por estudiante. Pulsar la propia la quita; pulsar otra la reemplaza. */
+  const REACCIONES = { ME_GUSTA: "👍", ME_ENCANTA: "❤️", ME_DIVIERTE: "😂", ME_ASOMBRA: "😮", ME_ENTRISTECE: "😢" };
+
+  function barraReacciones(publicacionId, inicial) {
+    const barra = el("div", { class: "barra-reacciones", role: "group", "aria-label": t("reacciones.grupo") });
+    const pintar = (r) => {
+      barra.replaceChildren(...Object.entries(REACCIONES).map(([tipo, emoji]) => {
+        const n = (r.conteos && r.conteos[tipo]) || 0;
+        const mia = r.mia === tipo;
+        return el("button", {
+          type: "button", class: `reaccion${mia ? " activa" : ""}`, "aria-pressed": String(mia),
+          "aria-label": t("reacciones.boton", { nombre: t(`reacciones.${tipo}`), n }),
+          onclick: async () => {
+            barra.querySelectorAll("button").forEach((b) => { b.disabled = true; });
+            try {
+              pintar(await api(`/api/publicaciones/${encodeURIComponent(publicacionId)}/reaccion`,
+                               { metodo: "PUT", cuerpo: { tipo: mia ? null : tipo } }));
+            } catch (error) {
+              pintar(r);
+              if (error.status !== 401) barra.title = error.message;
+            }
+          } },
+          el("span", { "aria-hidden": "true", text: emoji }), n ? el("span", { class: "conteo", text: String(n) }) : null);
+      }));
+    };
+    pintar(inicial || {});
+    return barra;
+  }
+
   function autor(nickname, apariencia, { tamano = "", enlace = true } = {}) {
     const hijos = [avatar(apariencia, tamano), el("span", { class: "nombre-autor", text: nickname })];
     return enlace ? el("a", { class: "autor", href: urlPerfil(nickname) }, ...hijos)
@@ -334,7 +363,7 @@ const Banca = (() => {
     location.href = "/login";
   });
 
-  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, avatar, pintarAvatar, autor, urlPerfil, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
+  return { api, ErrorApi, TIPOS, t, icono, etiquetaTipo, avatar, pintarAvatar, autor, barraReacciones, urlPerfil, formatoHora, formatoFecha, IDIOMA, ZONA_HORARIA, sincronizar, ahora, restante, el,
            alerta, limpiar, contador,
            limpiarErrores, errorEnCampo, mostrarErrores, vaciarContrasenas,
            refrescarRestantes, ocupado, parametro, comprimirImagen, LIMITE_SUBIDA };

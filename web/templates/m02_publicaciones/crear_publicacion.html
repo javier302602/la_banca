@@ -48,6 +48,16 @@
         <div class="form-text" id="ayuda-imagenes">{{ t("publicar.ayuda_imagenes") }}</div>
         <ul class="vista-previa list-unstyled d-flex flex-wrap gap-2 mt-2 mb-0" id="vista-previa"></ul>
       </div>
+      <div class="mb-3">
+        <label class="form-label" for="video">{{ t("publicar.video") }}</label>
+        <div class="selector-archivo">
+          <input class="entrada-archivo" type="file" id="video" name="video" accept="video/mp4,video/webm"
+                 aria-describedby="nombre-video ayuda-video">
+          <span class="btn btn-outline-secondary btn-sm boton-archivo" aria-hidden="true">{{ t("publicar.elegir_video") }}</span>
+          <span class="small text-body-secondary nombre-archivo" id="nombre-video">{{ t("publicar.ningun_video") }}</span>
+        </div>
+        <div class="form-text" id="ayuda-video">{{ t("publicar.ayuda_video", mb=video_max_mb) }}</div>
+      </div>
       <p class="small text-body-secondary">{{ t("publicar.duracion") }}</p>
       <button class="btn btn-primary" type="submit"><i class="bi bi-send" aria-hidden="true"></i> {{ t("publicar.boton") }}</button>
     </form>

@@ -124,6 +124,7 @@ async def _abortar(sesion) -> None:
 
 
 # --- Esquema físico (Entregable 2, Anexo B) ------------------------------------
+from app.shared.domain.entities import RETENCION_PUBLICACION  # noqa: E402
 from app.shared.domain.perfiles import AVATARES, BIOGRAFIA_MAX  # noqa: E402
 
 def _validador_accounts(dominio: str | None) -> dict:
@@ -173,7 +174,7 @@ VALIDADOR_LOGIN_ATTEMPTS = {"$jsonSchema": {
 }}
 
 COLECCIONES = ["accounts", "login_attempts", "sessions", "publications", "chats", "messages",
-               "reports", "system_parameters"]
+               "reports", "system_parameters", "reactions"]
 
 
 async def _asegurar_coleccion(db: AsyncDatabase, nombre: str, validador: dict | None) -> None:
@@ -218,6 +219,15 @@ async def crear_indices(db: AsyncDatabase, dominio: str | None) -> None:
                                         ("expiresAt", ASCENDING)], name="ix_publications_feed")
     await db.publications.create_index([("authorId", ASCENDING), ("status", ASCENDING), ("expiresAt", ASCENDING)],
                                        name="ix_publications_author_act")
+    # Las vencidas solo se ocultan (filtro por expiresAt); Mongo las borra 30 días después de vencer.
+    await db.publications.create_index([("expiresAt", ASCENDING)], name="ttl_publications_retencion",
+                                       expireAfterSeconds=int(RETENCION_PUBLICACION.total_seconds()))
+
+    # Reacciones: una por estudiante y publicación; se borran junto con la publicación (mismo TTL).
+    await db.reactions.create_index([("publicationId", ASCENDING), ("userId", ASCENDING)], unique=True,
+                                    name="uq_reactions_pub_user")
+    await db.reactions.create_index([("publicationExpiresAt", ASCENDING)], name="ttl_reactions_retencion",
+                                    expireAfterSeconds=int(RETENCION_PUBLICACION.total_seconds()))
 
     await db.chats.create_index([("publicationId", ASCENDING), ("responderId", ASCENDING)], unique=True,
                                 name="uq_chats_pub_responder")

@@ -121,7 +121,11 @@
     "boton": "Publicar",
     "imagenes": "Imágenes (opcional)",
     "ayuda_imagenes": "Hasta 3 imágenes JPG, PNG o WebP de hasta 5 MB cada una. Se les quitan los metadatos (EXIF), incluida la ubicación.",
-    "elegir_imagenes": "Elegir imágenes"
+    "elegir_imagenes": "Elegir imágenes",
+    "video": "Video (opcional)",
+    "elegir_video": "Elegir video",
+    "ningun_video": "Ningún video elegido",
+    "ayuda_video": "Un video MP4 o WebM de hasta {mb} MB."
   },
   "mias": {
     "titulo_pagina": "Mis publicaciones",
@@ -244,7 +248,8 @@
       "cargando_mas": "Cargando más…",
       "responder": "Responder",
       "abrir_chat": "Abrir chat",
-      "reportar": "Reportar"
+      "reportar": "Reportar",
+      "expira_en": "Expira en"
     },
     "chat": {
       "texto_o_imagen": "Un mensaje lleva texto o una imagen, no ambos",
@@ -302,7 +307,9 @@
       "miniatura": "Ver imagen {n} de {total}",
       "num_imagenes": "{n} imágenes",
       "una_imagen": "1 imagen",
-      "miniatura_alt": "Primera imagen de «{titulo}»"
+      "miniatura_alt": "Primera imagen de «{titulo}»",
+      "video_de": "Video de «{titulo}»",
+      "con_video": "Video"
     },
     "tamano": {
       "kb": "{n} KB",
@@ -337,6 +344,15 @@
       "xlsx": "bi-file-earmark-excel",
       "pptx": "bi-file-earmark-ppt",
       "txt": "bi-file-earmark-text"
+    },
+    "reacciones": {
+      "grupo": "Reacciones",
+      "boton": "{nombre}: {n}",
+      "ME_GUSTA": "Me gusta",
+      "ME_ENCANTA": "Me encanta",
+      "ME_DIVIERTE": "Me divierte",
+      "ME_ASOMBRA": "Me asombra",
+      "ME_ENTRISTECE": "Me entristece"
     }
   },
   "tema": {

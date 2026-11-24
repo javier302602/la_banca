@@ -7,6 +7,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.shared.domain.entities import TAMANO_BLOQUE_FEED, TipoPublicacion
+from app.features.m02_publicaciones.cu21_reaccionar_publicacion.request import ReaccionesResponse
 from app.shared.domain.perfiles import Apariencia
 
 
@@ -27,6 +28,9 @@ class FeedItemResponse(BaseModel):
     es_propia: bool  # «Tu publicación» (RF-FED-07); sin Responder ni Reportar (RF-FED-12)
     num_imagenes: int = 0          # SRS v2.0, cambio 3.1
     miniatura: str | None = None   # primera imagen de la galería
+    extracto: str = ""             # inicio de la descripción para la tarjeta
+    video: str | None = None       # URL del video, si tiene
+    reacciones: ReaccionesResponse = ReaccionesResponse()
 
 
 class FeedResponse(BaseModel):

@@ -45,7 +45,7 @@ def test_editar_perfil_y_verlo_en_feed_detalle_y_chat(contexto, servidor, usuari
         iniciar_sesion(otro, "beto@unas.edu.pe")
         q = otro.new_page()
         q.goto("/feed")
-        tarjeta = q.locator(f"a[href='/publicaciones/{pid}']")
+        tarjeta = q.locator(f".tarjeta-publicacion:has(a.enlace-titulo[href='/publicaciones/{pid}'])")
         tarjeta.wait_for()
         assert "/api/perfiles/ana_07/foto" in tarjeta.locator(".avatar img").get_attribute("src")
         q.goto(f"/publicaciones/{pid}")

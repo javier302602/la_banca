@@ -12,10 +12,14 @@ from app.shared.domain.contracts import (
     IParameterRepository,
     IPasswordHasher,
     IPublicationRepository,
+    IReactionRepository,
     IReportRepository,
 )
 from app.shared.domain.entities import (
     MAX_INTENTOS_CODIGO,
+    RETENCION_ARCHIVOS_PUBLICACION,
+    ResumenReacciones,
+    TipoReaccion,
     Chat,
     ClaveParametro,
     EnlaceUnUso,
@@ -232,9 +236,9 @@ class FakePublicationRepository(IPublicationRepository):
     async def retirar_imagenes_vencidas(self, ahora):
         claves = []
         for p in self.publicaciones.values():
-            if p.imagenes and not p.activa(ahora):
-                claves += [i.referencia for i in p.imagenes]
-                p.imagenes = []
+            if (p.imagenes or p.video) and p.fecha_expiracion <= ahora - RETENCION_ARCHIVOS_PUBLICACION:
+                claves += [i.referencia for i in p.imagenes] + ([p.video.referencia] if p.video else [])
+                p.imagenes, p.video = [], None
         return claves
 
     async def crear(self, publicacion):
@@ -274,6 +278,27 @@ class FakePublicationRepository(IPublicationRepository):
         bloque = lista[inicio:inicio + limite]
         siguiente = str(inicio + limite) if inicio + limite < len(lista) else None
         return [copy.deepcopy(p) for p in bloque], siguiente
+
+
+class FakeReactionRepository(IReactionRepository):
+    def __init__(self) -> None:
+        self.reacciones: dict[tuple[str, str], TipoReaccion] = {}
+
+    async def guardar(self, publicacion_id, estudiante_id, tipo, publicacion_expira, ahora):
+        self.reacciones[(publicacion_id, estudiante_id)] = tipo
+
+    async def quitar(self, publicacion_id, estudiante_id):
+        self.reacciones.pop((publicacion_id, estudiante_id), None)
+
+    async def resumen(self, publicacion_ids, estudiante_id):
+        resultado: dict[str, ResumenReacciones] = {}
+        for (pid, uid), tipo in self.reacciones.items():
+            if pid in publicacion_ids:
+                r = resultado.setdefault(pid, ResumenReacciones())
+                r.conteos[tipo] = r.conteos.get(tipo, 0) + 1
+                if uid == estudiante_id:
+                    r.mia = tipo
+        return resultado
 
 
 class FakeChatRepository(IChatRepository):
@@ -397,7 +422,7 @@ def imagen(formato: str = "PNG", tamano: tuple[int, int] = (8, 8)) -> bytes:
 
 
 __all__ = [
-    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReportRepository",
+    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReactionRepository", "FakeReportRepository",
     "FakeParameterRepository", "FakeConfig", "FakePasswordHasher", "FakeEmailSender", "FakeImageStorage",
     "FakeClock", "SecureTokenService", "nuevo_id", "estudiante", "imagen", "TipoPublicacion", "TipoObjetoReportado",
     "EstadoChat",

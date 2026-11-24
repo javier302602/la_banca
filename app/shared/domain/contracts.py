@@ -19,9 +19,11 @@ from app.shared.domain.entities import (
     PropositoEnlace,
     Publicacion,
     Reporte,
+    ResumenReacciones,
     Sesion,
     TipoObjetoReportado,
     TipoPublicacion,
+    TipoReaccion,
 )
 
 
@@ -163,7 +165,7 @@ class IAccountRepository(ABC):
 
 class IPublicationRepository(ABC):
     async def retirar_imagenes_vencidas(self, ahora: datetime) -> list[str]:
-        """SRS v2.0: vacía las imágenes de las publicaciones vencidas o cerradas; devuelve sus referencias."""
+        """Vacía imágenes y video de las publicaciones vencidas hace RETENCION_ARCHIVOS_PUBLICACION; devuelve las claves."""
         raise NotImplementedError
 
     async def contar_activas_por_usuario(self, autor_id: str, ahora: datetime) -> int: raise NotImplementedError
@@ -182,6 +184,17 @@ class IPublicationRepository(ABC):
         self, ahora: datetime, tipo: TipoPublicacion | None, cursor: str | None, limite: int
     ) -> tuple[list[Publicacion], str | None]:
         """Activas al consultar (EA-02), más recientes primero; devuelve (bloque, siguiente_cursor)."""
+        raise NotImplementedError
+
+
+class IReactionRepository(ABC):
+    async def guardar(self, publicacion_id: str, estudiante_id: str, tipo: TipoReaccion,
+                      publicacion_expira: datetime, ahora: datetime) -> None:
+        """Crea o reemplaza la reacción del estudiante (una por publicación)."""
+        raise NotImplementedError
+    async def quitar(self, publicacion_id: str, estudiante_id: str) -> None: raise NotImplementedError
+    async def resumen(self, publicacion_ids: list[str], estudiante_id: str) -> dict[str, ResumenReacciones]:
+        """Conteos por publicación (solo las que tienen alguna reacción)."""
         raise NotImplementedError
 
 

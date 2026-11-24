@@ -112,9 +112,13 @@ def test_reporte_copia_las_imagenes_a_retencion_y_ea03_ea05_limpian(mundo):
     assert len(retenidas) == 2 and all(k.startswith("reports/") for k in retenidas)
     assert contenido.datos_publicacion["imageKeys"] == retenidas
 
-    # EA-03: vencida la publicación, sus imágenes se borran; las retenidas siguen
+    # EA-03: vencida la publicación, sus imágenes se conservan (solo se oculta) para revisión de los admins
     reloj.avanzar(hours=24)
     ea03 = LimpiarChatsExpiradosHandler(mundo["chats"], imgs, reloj, mundo["pubs"])
+    assert correr(ea03.handle())["imagenes_de_publicaciones_eliminadas"] == 0
+    assert all(k in imgs.objetos for k in originales)
+    # ...y se retiran 29 días después de vencer (un día antes de que el TTL borre el documento)
+    reloj.avanzar(days=29)
     assert correr(ea03.handle())["imagenes_de_publicaciones_eliminadas"] == 2
     assert not any(k in imgs.objetos for k in originales) and all(k in imgs.objetos for k in retenidas)
     assert correr(ea03.handle())["imagenes_de_publicaciones_eliminadas"] == 0  # idempotente

@@ -2,7 +2,7 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.domain.contracts import IChatRepository, IPublicationRepository
-from app.shared.domain.entities import EstadoPublicacion
+from app.shared.domain.entities import RETENCION_ARCHIVOS_PUBLICACION
 
 LOTE = 500
 
@@ -30,22 +30,26 @@ class MongoLimpiarChatsRepository(IChatRepository):
 
 
 class MongoRetirarImagenesPublicacionesRepository(IPublicationRepository):
-    """Vacía la lista de imágenes de las publicaciones vencidas o cerradas y devuelve sus claves."""
+    """Retira imágenes y video de las publicaciones que vencieron hace 29 días (un día antes de que el índice
+    TTL borre el documento), para que los admins puedan revisarlas mientras tanto. Devuelve las claves."""
 
     def __init__(self, db: AsyncDatabase) -> None:
         self._db = db
 
     async def retirar_imagenes_vencidas(self, ahora):
-        filtro = {"images.0": {"$exists": True},
-                  "$or": [{"expiresAt": {"$lte": ahora}}, {"status": {"$ne": EstadoPublicacion.ACTIVE.value}}]}
+        filtro = {"expiresAt": {"$lte": ahora - RETENCION_ARCHIVOS_PUBLICACION},
+                  "$or": [{"images.0": {"$exists": True}}, {"video": {"$ne": None}}]}
         claves: list[str] = []
         while True:
-            lote = await self._db.publications.find(filtro, {"images.objectKey": 1}).limit(LOTE).to_list(LOTE)
+            lote = await (self._db.publications.find(filtro, {"images.objectKey": 1, "video.objectKey": 1})
+                          .limit(LOTE).to_list(LOTE))
             if not lote:
                 return claves
             for doc in lote:
-                # Se vacía solo si sigue con las mismas imágenes (otra ejecución simultánea no las duplica)
-                r = await self._db.publications.update_one({"_id": doc["_id"], "images": {"$exists": True, "$ne": []}},
-                                                           {"$set": {"images": []}})
+                # Se vacía solo si sigue con archivos (otra ejecución simultánea no los duplica)
+                r = await self._db.publications.update_one({"_id": doc["_id"], "$or": filtro["$or"]},
+                                                           {"$set": {"images": [], "video": None}})
                 if r.modified_count:
-                    claves += [i["objectKey"] for i in doc["images"]]
+                    claves += [i["objectKey"] for i in doc.get("images") or []]
+                    if doc.get("video"):
+                        claves.append(doc["video"]["objectKey"])

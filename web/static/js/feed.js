@@ -2,7 +2,7 @@
 "use strict";
 
 (() => {
-  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo, autor } = Banca;
+  const { api, alerta, limpiar, el, restante, refrescarRestantes, TIPOS, t, icono, etiquetaTipo, autor, barraReacciones } = Banca;
   const pagina = document.body.dataset.pagina;
   const mensajes = document.getElementById("mensajes");
 
@@ -14,20 +14,41 @@
     const quitarFiltro = document.getElementById("quitar-filtro");
     let siguiente = null, bloquesCargados = 0, cargando = false;
 
-    const tarjeta = (p) => el("a", { class: `card h-100 text-decoration-none text-body tarjeta-publicacion tipo-${p.tipo}`,
-                href: `/publicaciones/${encodeURIComponent(p.id)}` },
-        p.miniatura ? el("img", { class: "miniatura-publicacion", src: p.miniatura, loading: "lazy",
-                                  alt: t("galeria.miniatura_alt", { titulo: p.titulo }) }) : null,
+    /* Tarjeta: medio (imagen o video) → tipo y caducidad → título y extracto → autor → reacciones.
+     * El enlace al detalle va en el medio y en el título; las reacciones quedan fuera del enlace. */
+    const medio = (p, href) => {
+      if (p.miniatura) {
+        return el("a", { class: "medio-publicacion", href, tabindex: "-1", "aria-hidden": "true" },
+          el("img", { src: p.miniatura, loading: "lazy", alt: "" }),
+          p.video ? el("span", { class: "marca-video" }, icono("bi-play-fill")) : null);
+      }
+      if (p.video) {
+        return el("div", { class: "medio-publicacion" },
+          el("video", { src: p.video, controls: true, preload: "metadata", playsinline: true,
+                        "aria-label": t("galeria.video_de", { titulo: p.titulo }) }));
+      }
+      return null;
+    };
+
+    const tarjeta = (p) => {
+      const href = `/publicaciones/${encodeURIComponent(p.id)}`;
+      return el("article", { class: `card h-100 tarjeta-publicacion tipo-${p.tipo}` },
+        medio(p, href),
         el("div", { class: "card-body" },
-          el("div", { class: "d-flex flex-wrap gap-2 mb-2" },
+          el("div", { class: "d-flex flex-wrap align-items-center gap-2" },
             el("span", { class: "badge etiqueta-tipo" }, ...etiquetaTipo(p.tipo)),
             p.es_propia ? el("span", { class: "badge etiqueta-propia", text: t("feed.tu_publicacion") }) : null,
-            p.num_imagenes ? el("span", { class: "badge cantidad-imagenes" }, icono("bi-images"),
-              ` ${p.num_imagenes === 1 ? t("galeria.una_imagen") : t("galeria.num_imagenes", { n: p.num_imagenes })}`) : null),
-          el("h2", { class: "h6 card-title", text: p.titulo }),
-          el("p", { class: "small text-body-secondary mb-0 d-flex align-items-center flex-wrap" },
-            autor(p.nickname_autor, p.apariencia_autor, { enlace: false }), t("separador"),
-            el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))));
+            el("span", { class: "chip-expira ms-auto" }, icono("bi-clock"), ` ${t("feed.expira_en")} `,
+              el("span", { "data-expira": p.fecha_expiracion, text: restante(p.fecha_expiracion) }))),
+          el("h2", { class: "h6 card-title" }, el("a", { href, class: "enlace-titulo", text: p.titulo })),
+          p.extracto ? el("p", { class: "extracto text-body-secondary", text: p.extracto }) : null,
+          el("p", { class: "small text-body-secondary d-flex align-items-center flex-wrap gap-2" },
+            autor(p.nickname_autor, p.apariencia_autor, { enlace: false }),
+            p.num_imagenes ? el("span", {}, icono("bi-images"),
+              ` ${p.num_imagenes === 1 ? t("galeria.una_imagen") : t("galeria.num_imagenes", { n: p.num_imagenes })}`) : null,
+            p.video ? el("span", {}, icono("bi-camera-video"), ` ${t("galeria.con_video")}`) : null)),
+        el("div", { class: "card-footer" }, barraReacciones(p.id, p.reacciones)));
+    };
 
     const url = (cursor) => {
       const q = new URLSearchParams();
@@ -125,6 +146,13 @@
       document.getElementById("titulo").textContent = p.titulo;
       document.getElementById("descripcion").textContent = p.descripcion;
       mostrarGaleria(p);
+      if (p.video) {
+        const video = document.getElementById("video");
+        video.src = p.video;
+        video.setAttribute("aria-label", t("galeria.video_de", { titulo: p.titulo }));
+        video.hidden = false;
+      }
+      document.getElementById("reacciones").replaceChildren(barraReacciones(p.id, p.reacciones));
       document.getElementById("autor").replaceChildren(autor(p.nickname_autor, p.apariencia_autor));  // enlace al perfil
       const r = document.getElementById("restante");
       r.dataset.expira = p.fecha_expiracion;

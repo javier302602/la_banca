@@ -63,9 +63,15 @@ def test_imagenes_de_publicacion_reporte_y_limpieza(db, monkeypatch):
         assert snapshot["publicationData"]["imageKeys"] == retenidas
         assert len(retenidas) == 2 and all(k.startswith("reports/") and k in almacen.objetos for k in retenidas)
 
-        # EA-03: publicación vencida → sus imágenes se borran; las retenidas siguen
+        # EA-03: recién vencida → se oculta pero conserva sus imágenes (revisión de los admins)
         db.publications.update_one({"_id": doc["_id"]},
                                    {"$set": {"expiresAt": datetime.now(timezone.utc) - timedelta(minutes=1)}})
+        r = a.get("/jobs/ea03-limpiar-chats-expirados", headers=cron)
+        assert r.status_code == 200 and r.json()["imagenes_de_publicaciones_eliminadas"] == 0, r.json()
+        assert all(k in almacen.objetos for k in claves)
+        # Vencida hace 29 días → sus imágenes se borran; las retenidas del reporte siguen
+        db.publications.update_one({"_id": doc["_id"]},
+                                   {"$set": {"expiresAt": datetime.now(timezone.utc) - timedelta(days=29, minutes=1)}})
         r = a.get("/jobs/ea03-limpiar-chats-expirados", headers=cron)
         assert r.status_code == 200 and r.json()["imagenes_de_publicaciones_eliminadas"] == 2, r.json()
         assert db.publications.find_one({"_id": doc["_id"]})["images"] == []

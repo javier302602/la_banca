@@ -39,6 +39,7 @@ class PublicacionResponse(BaseModel):
     fecha_expiracion: datetime
     segundos_restantes: int
     imagenes: list[str] = []  # URLs de la galería (SRS v2.0, cambio 3.1)
+    video: str | None = None
 
 
 class CupoResponse(BaseModel):

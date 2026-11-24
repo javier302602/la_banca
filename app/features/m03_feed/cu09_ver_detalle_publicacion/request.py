@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.features.m02_publicaciones.cu21_reaccionar_publicacion.request import ReaccionesResponse
 from app.shared.domain.entities import TipoPublicacion
 from app.shared.domain.perfiles import Apariencia
 
@@ -23,6 +24,8 @@ class DetallePublicacionResponse(BaseModel):
     puede_reportar: bool
     chat_existente_id: str | None = None  # RF-CHT-23: ofrecer abrir el chat activo existente
     imagenes: list[str] = []  # galería: URLs de hasta 3 imágenes (SRS v2.0, cambio 3.1)
+    video: str | None = None
+    reacciones: ReaccionesResponse = ReaccionesResponse()
 
 
 @dataclass(frozen=True)
