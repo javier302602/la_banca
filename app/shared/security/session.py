@@ -12,8 +12,9 @@ servidor solo se guarda su SHA-256.
 """
 from dataclasses import dataclass
 from datetime import timedelta
+from urllib.parse import urlsplit
 
-from fastapi import Depends, Request, Response
+from fastapi import Depends, Request, Response, WebSocket
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
@@ -98,6 +99,18 @@ async def get_sesion_actual(request: Request, db: AsyncDatabase = Depends(get_da
     """Dependencia para la API: exige sesión activa (RNF-SEG-01)."""
     es_interaccion = request.headers.get(HEADER_AUTOMATICA) != "1"
     return await _validador(db).validar(request.cookies.get(COOKIE_SESION), es_interaccion)
+
+
+async def sesion_de_websocket(websocket: WebSocket, db: AsyncDatabase) -> SesionActual | None:
+    """Sesión de un WebSocket desde la cookie. None si no hay sesión válida o si la conexión viene de otro
+    sitio (el navegador manda la cookie en el handshake; el Origin evita que otra página la use)."""
+    origen = urlsplit(websocket.headers.get("origin") or "").netloc
+    if not origen or origen != websocket.headers.get("host"):
+        return None
+    try:
+        return await _validador(db).validar(websocket.cookies.get(COOKIE_SESION), False)
+    except NoAutenticado:
+        return None
 
 
 async def get_sesion_opcional(request: Request,

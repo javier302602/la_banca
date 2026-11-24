@@ -85,6 +85,9 @@
     const texto = document.getElementById("texto");
     const entradaImagen = document.getElementById("imagen");
     const entradaDocumento = document.getElementById("documento");
+    const entradaAudio = document.getElementById("audio");
+    const AUDIO_MAX_MB = Number(document.getElementById("chat-id").dataset.audioMaxMb) || 20;
+    const TIPOS_AUDIO = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
     const adjuntoElegido = document.getElementById("adjunto-elegido");
     const vistos = new Set();
     let ultimo = null, temporizador = null, expirado = false;
@@ -104,6 +107,13 @@
     function contenido(m) {
       if (m.imagen_url) return el("img", { src: m.imagen_url, alt: t("imagen.alt", { nickname: m.nickname_emisor }), loading: "lazy" });
       if (m.sticker_url) return el("img", { src: m.sticker_url, alt: t(`stickers.${m.sticker}`), loading: "lazy" });
+      if (m.documento && TIPOS_AUDIO.includes(m.documento.tipo)) {  // audio o música: reproductor + descarga
+        const d = m.documento;
+        return el("div", { class: "adjunto-audio" },
+          el("audio", { controls: true, preload: "metadata", src: d.url, "aria-label": d.nombre }),
+          el("a", { href: d.url, download: d.nombre, class: "small" }, icono("bi-download"),
+            ` ${t("chat.descargar_audio", { nombre: d.nombre })} (${tamanoLegible(d.tamano_bytes)})`));
+      }
       if (m.documento) {
         const d = m.documento;
         return el("a", { class: "tarjeta-documento", href: d.url, download: d.nombre },
@@ -171,6 +181,8 @@
       alerta(mensajes, t("chat.expiro"), "secondary");
       formulario.querySelectorAll("textarea, input, button").forEach((n) => { n.disabled = true; });
       document.getElementById("reportar").classList.add("disabled");
+      detenerUbicacion();      // un chat expirado no sigue compartiendo la ubicación
+      if (socket) socket.close();
     }
 
     async function sondear() {
@@ -204,6 +216,81 @@
       if (document.visibilityState === "visible" && !expirado) { clearTimeout(temporizador); sondear(); }
     });
 
+    /* ---- Ubicación en vivo (CU-22): Geolocation API + WebSocket ----------------------------------------
+     * El WebSocket se abre al entrar al chat para RECIBIR la ubicación de la otra persona. Solo se ENVÍA la
+     * propia después de confirmar y dar permiso; «Dejar de compartir», salir de la página o que expire el
+     * chat la detienen. */
+    const botonUbicacion = document.getElementById("boton-ubicacion");
+    const textoUbicacion = document.getElementById("texto-ubicacion");
+    const panelUbicacion = document.getElementById("panel-ubicacion");
+    let socket = null, vigilancia = null, compartiendo = false, otra = null;
+
+    function pintarUbicacion() {
+      const partes = [];
+      if (compartiendo) partes.push(el("span", {}, icono("bi-broadcast"), ` ${t("ubicacion.compartiendo")}`));
+      if (otra) {
+        const mapa = `https://www.openstreetmap.org/?mlat=${otra.lat}&mlon=${otra.lng}#map=17/${otra.lat}/${otra.lng}`;
+        partes.push(el("span", {}, icono("bi-geo-alt-fill"), ` ${t("ubicacion.de_otra", {
+          nickname: otra.nickname, precision: Math.round(otra.precision), hora: formatoHora(otra.actualizado) })} `),
+          el("a", { href: mapa, target: "_blank", rel: "noopener", text: t("ubicacion.ver_mapa") }));
+      }
+      panelUbicacion.replaceChildren(...partes);
+      panelUbicacion.classList.toggle("d-none", partes.length === 0);
+      botonUbicacion.setAttribute("aria-pressed", String(compartiendo));
+      textoUbicacion.textContent = t(compartiendo ? "ubicacion.dejar" : "ubicacion.compartir");
+    }
+
+    function conectarUbicacion() {
+      if (!("WebSocket" in window) || expirado) return;
+      const esquema = location.protocol === "https:" ? "wss" : "ws";
+      socket = new WebSocket(`${esquema}://${location.host}/ws/chats/${chatId}/ubicacion`);
+      socket.addEventListener("open", () => { botonUbicacion.hidden = !("geolocation" in navigator); });
+      socket.addEventListener("message", (evento) => {
+        const datos = JSON.parse(evento.data);
+        if (datos.tipo === "posicion") otra = datos;
+        else if (datos.tipo === "detenido") { otra = null; alerta(mensajes, t("ubicacion.otra_detuvo"), "info"); }
+        else if (datos.tipo === "error") alerta(mensajes, datos.mensaje);
+        pintarUbicacion();
+      });
+      socket.addEventListener("close", (evento) => {
+        detenerUbicacion(false);
+        otra = null;
+        pintarUbicacion();
+        botonUbicacion.hidden = true;
+        // 4401 sin sesión / 4404 chat inexistente o expirado: no se reintenta. Otro corte: reintento en 5 s
+        if (evento.code !== 4401 && evento.code !== 4404 && !expirado) setTimeout(conectarUbicacion, 5000);
+      });
+    }
+
+    function enviarPosicion(posicion) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ tipo: "posicion", lat: posicion.coords.latitude, lng: posicion.coords.longitude,
+                                     precision: posicion.coords.accuracy }));
+      }
+    }
+
+    function detenerUbicacion(avisar = true) {
+      if (vigilancia !== null) navigator.geolocation.clearWatch(vigilancia);
+      vigilancia = null;
+      if (avisar && compartiendo && socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ tipo: "detener" }));
+      compartiendo = false;
+      pintarUbicacion();
+    }
+
+    botonUbicacion.addEventListener("click", () => {
+      if (compartiendo) { detenerUbicacion(); return; }
+      if (!("geolocation" in navigator)) { alerta(mensajes, t("ubicacion.no_disponible")); return; }
+      if (!confirm(t("ubicacion.confirmar"))) return;
+      vigilancia = navigator.geolocation.watchPosition((posicion) => {
+        if (!compartiendo) { compartiendo = true; pintarUbicacion(); }
+        enviarPosicion(posicion);
+      }, (error) => {
+        detenerUbicacion();
+        alerta(mensajes, t(error.code === error.PERMISSION_DENIED ? "ubicacion.sin_permiso" : "ubicacion.no_disponible"));
+      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    });
+    conectarUbicacion();
+
     async function enviar(datos) {
       const m = await api(`/api/chats/${chatId}/mensajes`, { metodo: "POST", formulario: datos });
       limpiar(mensajes);
@@ -217,10 +304,10 @@
     function errorDeAdjunto(error) {
       const datos = error.datos || {};
       const campos = [datos.campo, ...(datos.errores || []).map((e) => e.campo)];
-      const campo = campos.find((c) => c === "imagen" || c === "documento");
+      const campo = campos.find((c) => c === "imagen" || c === "documento" || c === "audio");
       if (!campo) return false;
       limpiarErrores(formulario);
-      const entrada = campo === "imagen" ? entradaImagen : entradaDocumento;
+      const entrada = { imagen: entradaImagen, documento: entradaDocumento, audio: entradaAudio }[campo];
       adjuntoElegido.insertAdjacentElement("afterend", el("div", {
         class: "invalid-feedback d-block", id: `error-${campo}`, "data-error-de": campo, text: error.message }));
       entrada.setAttribute("aria-invalid", "true");
@@ -241,12 +328,12 @@
       adjuntoElegido.classList.toggle("d-none", !adjunto);
       if (!adjunto) { adjuntoElegido.replaceChildren(); return; }
       adjuntoElegido.replaceChildren(
-        icono(adjunto.tipo === "imagen" ? "bi-image" : "bi-paperclip"),
+        icono({ imagen: "bi-image", documento: "bi-paperclip", audio: "bi-music-note-beamed" }[adjunto.tipo]),
         el("span", { text: t("chat.adjunto", { nombre: adjunto.archivo.name, tamano: tamanoLegible(adjunto.archivo.size) }) }),
         el("button", { type: "button", class: "btn btn-link btn-sm p-0", onclick: () => { adjunto = null; mostrarAdjunto(); texto.focus(); } },
           t("chat.quitar_adjunto")));
     }
-    for (const [entrada, tipo] of [[entradaImagen, "imagen"], [entradaDocumento, "documento"]]) {
+    for (const [entrada, tipo] of [[entradaImagen, "imagen"], [entradaDocumento, "documento"], [entradaAudio, "audio"]]) {
       entrada.addEventListener("change", () => {
         limpiarErrores(formulario);
         if (entrada.files.length) adjunto = { tipo, archivo: entrada.files[0] };
@@ -262,7 +349,10 @@
       const datos = new FormData();
       if (!adjunto) datos.append("texto", texto.value);
       else if (adjunto.tipo === "imagen") datos.append("imagen", await Banca.comprimirImagen(adjunto.archivo));
-      else {
+      else if (adjunto.tipo === "audio") {
+        if (adjunto.archivo.size > AUDIO_MAX_MB * 1024 * 1024) throw invalido(t("chat.audio_grande", { mb: AUDIO_MAX_MB }));
+        datos.append("audio", adjunto.archivo);
+      } else {
         if (adjunto.archivo.size > 10 * 1024 * 1024) throw invalido(t("chat.documento_grande"));
         datos.append("documento", adjunto.archivo);
       }

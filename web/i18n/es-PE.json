@@ -162,8 +162,9 @@
     "documento": "Documento",
     "emojis": "Emojis",
     "stickers": "Stickers",
-    "ayuda_adjuntos": "Imagen JPG, PNG o WebP de hasta 5 MB. Documento PDF, DOCX, XLSX, PPTX o TXT de hasta 10 MB (sin macros).",
-    "historial": "Mensajes"
+    "ayuda_adjuntos": "Imagen JPG, PNG o WebP de hasta 5 MB. Documento PDF, DOCX, XLSX, PPTX o TXT de hasta 10 MB (sin macros). Audio o música MP3, WAV, OGG, M4A, AAC o FLAC.",
+    "historial": "Mensajes",
+    "audio": "Audio"
   },
   "responder": {
     "titulo": "Responder",
@@ -257,8 +258,8 @@
       "nuevo": "Nuevo",
       "expiro": "Este chat expiró",
       "abrir_chat": "Abrir el chat",
-      "vacio_v2": "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker",
-      "un_contenido": "Un mensaje lleva texto, una imagen, un sticker o un documento: solo uno",
+      "vacio_v2": "Escribe un mensaje, adjunta una imagen, un documento o un audio, o elige un sticker",
+      "un_contenido": "Un mensaje lleva texto, una imagen, un sticker, un documento o un audio: solo uno",
       "enviado": "Enviado",
       "visto": "Visto",
       "descargar": "Descargar",
@@ -266,7 +267,9 @@
       "adjunto": "Adjunto: {nombre} ({tamano})",
       "documento_grande": "El documento supera el tamaño máximo de 10 MB",
       "panel_emojis": "Elegir un emoji",
-      "panel_stickers": "Enviar un sticker"
+      "panel_stickers": "Enviar un sticker",
+      "audio_grande": "El audio supera el tamaño máximo de {mb} MB",
+      "descargar_audio": "Descargar {nombre}"
     },
     "publicaciones": {
       "cupo": "Publicaciones activas: {activas} de {maximo}",
@@ -343,7 +346,13 @@
       "docx": "bi-file-earmark-word",
       "xlsx": "bi-file-earmark-excel",
       "pptx": "bi-file-earmark-ppt",
-      "txt": "bi-file-earmark-text"
+      "txt": "bi-file-earmark-text",
+      "mp3": "bi-file-earmark-music",
+      "wav": "bi-file-earmark-music",
+      "ogg": "bi-file-earmark-music",
+      "m4a": "bi-file-earmark-music",
+      "aac": "bi-file-earmark-music",
+      "flac": "bi-file-earmark-music"
     },
     "reacciones": {
       "grupo": "Reacciones",
@@ -353,6 +362,26 @@
       "ME_DIVIERTE": "Me divierte",
       "ME_ASOMBRA": "Me asombra",
       "ME_ENTRISTECE": "Me entristece"
+    },
+    "camara": {
+      "tomar_foto": "Tomar foto",
+      "titulo": "Tomar una foto",
+      "capturar": "Capturar",
+      "cancelar": "Cancelar",
+      "esperando": "Esperando el permiso para usar la cámara…",
+      "sistema": "Usar la cámara del sistema",
+      "sin_permiso": "No se pudo abrir la cámara aquí. Usa la cámara del sistema o revisa el permiso del navegador."
+    },
+    "ubicacion": {
+      "compartir": "Compartir ubicación",
+      "dejar": "Dejar de compartir",
+      "compartiendo": "Estás compartiendo tu ubicación en tiempo real.",
+      "de_otra": "{nickname} comparte su ubicación · precisión ± {precision} m · {hora}",
+      "ver_mapa": "Ver en el mapa",
+      "otra_detuvo": "La otra persona dejó de compartir su ubicación.",
+      "sin_permiso": "No diste permiso para usar tu ubicación. Puedes activarlo en la configuración del navegador.",
+      "no_disponible": "Tu navegador no puede obtener la ubicación.",
+      "confirmar": "Tu ubicación se mostrará en tiempo real solo a la otra persona de este chat hasta que la detengas. ¿Compartirla?"
     }
   },
   "tema": {

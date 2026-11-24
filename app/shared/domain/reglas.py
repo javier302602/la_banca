@@ -190,8 +190,8 @@ def validar_parametro(clave: ClaveParametro, valor_crudo: str | int) -> str | in
 
 
 # --- Contenido de un mensaje del chat (RN-19, RF-CHT-08–10) ---------------------
-MSG_UN_CONTENIDO = "Un mensaje lleva texto, una imagen, un sticker o un documento: solo uno"
-MSG_SIN_CONTENIDO = "Escribe un mensaje, adjunta una imagen o un documento, o elige un sticker"
+MSG_UN_CONTENIDO = "Un mensaje lleva texto, una imagen, un sticker, un documento o un audio: solo uno"
+MSG_SIN_CONTENIDO = "Escribe un mensaje, adjunta una imagen, un documento o un audio, o elige un sticker"
 
 
 def validar_contenido_chat(texto: str | None, imagen: bytes | None, sticker: str | None,

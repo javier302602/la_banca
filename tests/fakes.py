@@ -13,6 +13,7 @@ from app.shared.domain.contracts import (
     IPasswordHasher,
     IPublicationRepository,
     IReactionRepository,
+    IUbicacionRepository,
     IReportRepository,
 )
 from app.shared.domain.entities import (
@@ -20,6 +21,7 @@ from app.shared.domain.entities import (
     RETENCION_ARCHIVOS_PUBLICACION,
     ResumenReacciones,
     TipoReaccion,
+    UbicacionEnVivo,
     Chat,
     ClaveParametro,
     EnlaceUnUso,
@@ -301,6 +303,21 @@ class FakeReactionRepository(IReactionRepository):
         return resultado
 
 
+class FakeUbicacionRepository(IUbicacionRepository):
+    def __init__(self) -> None:
+        self.ubicaciones: dict[tuple[str, str], UbicacionEnVivo] = {}
+
+    async def guardar(self, ubicacion):
+        self.ubicaciones[(ubicacion.chat_id, ubicacion.estudiante_id)] = copy.deepcopy(ubicacion)
+
+    async def buscar(self, chat_id, estudiante_id):
+        u = self.ubicaciones.get((chat_id, estudiante_id))
+        return copy.deepcopy(u) if u else None
+
+    async def borrar(self, chat_id, estudiante_id):
+        self.ubicaciones.pop((chat_id, estudiante_id), None)
+
+
 class FakeChatRepository(IChatRepository):
     def __init__(self) -> None:
         self.chats: dict[str, Chat] = {}
@@ -422,7 +439,7 @@ def imagen(formato: str = "PNG", tamano: tuple[int, int] = (8, 8)) -> bytes:
 
 
 __all__ = [
-    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReactionRepository", "FakeReportRepository",
+    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReactionRepository", "FakeUbicacionRepository", "FakeReportRepository",
     "FakeParameterRepository", "FakeConfig", "FakePasswordHasher", "FakeEmailSender", "FakeImageStorage",
     "FakeClock", "SecureTokenService", "nuevo_id", "estudiante", "imagen", "TipoPublicacion", "TipoObjetoReportado",
     "EstadoChat",

@@ -293,6 +293,76 @@ const Banca = (() => {
       insignia.dataset.cargado = "1";
     } catch (e) { /* informativo */ }
   }
+  /* Cámara (Fase 3): un botón con data-tomar-foto="idDelInput" toma una foto y la deja en ese <input type=file>
+   * como si se hubiera elegido un archivo (se dispara «change», así cada formulario la trata igual).
+   * El diálogo se abre al instante: muestra la vista previa cuando el navegador da permiso (getUserMedia) y
+   * siempre ofrece «Usar la cámara del sistema» (selector nativo con capture, que en el celular abre la cámara).
+   * Así nunca queda esperando si el permiso no se responde o se niega. */
+  function dejarEnEntrada(entrada, archivo) {
+    const lista = new DataTransfer();
+    lista.items.add(archivo);
+    entrada.files = lista.files;
+    entrada.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function camaraNativa(entrada) {
+    const temporal = el("input", { type: "file", accept: "image/*", capture: "environment", hidden: true });
+    temporal.addEventListener("change", () => { if (temporal.files[0]) dejarEnEntrada(entrada, temporal.files[0]); temporal.remove(); });
+    document.body.append(temporal);
+    temporal.click();
+  }
+
+  function tomarFoto(entrada) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camaraNativa(entrada); return; }
+    let flujo = null;
+    const estado = el("p", { class: "small text-body-secondary", role: "status", text: t("camara.esperando") });
+    const video = el("video", { class: "vista-camara", autoplay: true, playsinline: true, muted: true, hidden: true });
+    const capturar = el("button", { type: "button", class: "btn btn-primary", disabled: true },
+      icono("bi-camera"), ` ${t("camara.capturar")}`);
+    const cerrar = () => {
+      if (flujo) flujo.getTracks().forEach((pista) => pista.stop());
+      if (dialogo.open) dialogo.close();
+      dialogo.remove();
+    };
+    const sistema = el("button", { type: "button", class: "btn btn-outline-secondary", "data-camara-sistema": "",
+                                   text: t("camara.sistema"), onclick: () => { cerrar(); camaraNativa(entrada); } });
+    const dialogo = el("dialog", { class: "dialogo-camara", "aria-label": t("camara.titulo") },
+      el("h2", { class: "h5", text: t("camara.titulo") }), estado, video,
+      el("div", { class: "d-flex flex-wrap gap-2 justify-content-end mt-3" },
+        el("button", { type: "button", class: "btn btn-outline-secondary", text: t("camara.cancelar"), onclick: cerrar }),
+        sistema, capturar));
+    capturar.addEventListener("click", () => {
+      const lienzo = document.createElement("canvas");
+      lienzo.width = video.videoWidth;
+      lienzo.height = video.videoHeight;
+      lienzo.getContext("2d").drawImage(video, 0, 0);
+      lienzo.toBlob((blob) => {
+        cerrar();
+        if (blob) dejarEnEntrada(entrada, new File([blob], `foto-${Date.now()}.jpg`, { type: "image/jpeg" }));
+      }, "image/jpeg", 0.9);
+    });
+    dialogo.addEventListener("close", () => { if (flujo) flujo.getTracks().forEach((pista) => pista.stop()); });
+    document.body.append(dialogo);
+    dialogo.showModal();
+    sistema.focus();
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false }).then((f) => {
+      if (!dialogo.isConnected) { f.getTracks().forEach((pista) => pista.stop()); return; }  // ya se cerró
+      flujo = f;
+      video.srcObject = f;
+      video.hidden = false;
+      estado.textContent = "";
+      capturar.disabled = false;
+      capturar.focus();
+    }).catch(() => { estado.textContent = t("camara.sin_permiso"); });
+  }
+
+  document.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-tomar-foto]");
+    if (!boton) return;
+    evento.preventDefault();
+    tomarFoto(document.getElementById(boton.dataset.tomarFoto));
+  });
+
   /* Selector de imagen propio: el texto del control nativo depende del idioma del navegador («Choose File»);
    * el botón visible y el nombre del archivo salen del catálogo. El <input> real sigue siendo el control
    * accesible (etiqueta, foco y teclado) y queda superpuesto, transparente, sobre el botón visible. */

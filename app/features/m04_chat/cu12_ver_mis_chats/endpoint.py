@@ -9,12 +9,14 @@ from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query, Request, Response
 from pymongo.asynchronous.database import AsyncDatabase
 
+from app.features.m04_chat.cu11_enviar_mensaje.endpoint import tamano_max_audio
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
 from app.shared.db.mongo import get_database
 from app.shared.db.perfiles import MongoPerfilesPublicosRepository
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.storage.image_storage import get_image_storage
+from app.shared.web.medios import respuesta_con_rango
 from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import VerMisChatsHandler
@@ -66,13 +68,14 @@ async def ver_imagen(
 
 @router.get("/api/chats/{chat_id}/mensajes/{mensaje_id}/documento", status_code=200)
 async def descargar_documento(
+    request: Request,
     chat_id: str,
     mensaje_id: str,
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: VerMisChatsHandler = Depends(get_handler),
 ) -> Response:
     """Siempre como descarga (attachment) y sin que el navegador adivine el tipo (nosniff): un documento nunca
-    se interpreta como página dentro del sitio."""
+    se interpreta como página dentro del sitio. Acepta «Range» para que <audio> reproduzca los audios."""
     d = await handler.documento(sesion.estudiante_id, chat_id, mensaje_id)
     # RFC 6266 / 5987. Con un nombre no ASCII solo se envía filename*: algunos navegadores (WebKit) prefieren
     # la forma simple si existe, y esa no puede llevar tildes ni «ñ»
@@ -80,7 +83,7 @@ async def descargar_documento(
     if d.nombre.isascii():
         disposicion = f'attachment; filename="{d.nombre.replace(chr(34), "_")}"; ' + disposicion.removeprefix("attachment; ")
     tipo = f"{d.mime_type}; charset=utf-8" if d.mime_type == "text/plain" else d.mime_type
-    return Response(d.contenido, media_type=tipo, headers={
+    return respuesta_con_rango(request, d.contenido, tipo, {
         "Content-Disposition": disposicion, "X-Content-Type-Options": "nosniff",
         "Cache-Control": "private, no-store", "Content-Security-Policy": "default-src 'none'; sandbox"})
 
@@ -96,4 +99,5 @@ async def pagina_mis_chats(request: Request, sesion: SesionActual | None = Depen
 async def pagina_chat(request: Request, chat_id: str, sesion: SesionActual | None = Depends(get_sesion_opcional)):
     if sesion is None:
         return redirigir_a_login(request)
-    return render(request, "m04_chat/chat.html", sesion, chat_id=chat_id)
+    return render(request, "m04_chat/chat.html", sesion, chat_id=chat_id,
+                  audio_max_mb=tamano_max_audio() // (1024 * 1024))

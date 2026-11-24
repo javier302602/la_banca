@@ -14,8 +14,14 @@
         <div class="fw-semibold" id="contraparte"></div>
         <div class="small text-body-secondary"><span id="tipo"></span>{{ t("js.separador") }}<span id="titulo"></span></div>
       </div>
-      <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar"><i class="bi bi-flag" aria-hidden="true"></i> {{ t("chat.reportar") }}</a>
+      <div class="d-flex flex-wrap gap-2 justify-content-end">
+        <button class="btn btn-outline-secondary btn-sm" type="button" id="boton-ubicacion" aria-pressed="false" hidden>
+          <i class="bi bi-geo-alt" aria-hidden="true"></i> <span id="texto-ubicacion">{{ t("js.ubicacion.compartir") }}</span></button>
+        <a class="btn btn-outline-danger btn-sm" id="reportar" href="/chats/{{ chat_id }}/reportar"><i class="bi bi-flag" aria-hidden="true"></i> {{ t("chat.reportar") }}</a>
+      </div>
     </header>
+    {# Fase 3: ubicación en vivo. Solo se muestra mientras alguien la comparte. #}
+    <div class="panel-ubicacion d-none" id="panel-ubicacion" role="status" aria-live="polite"></div>
     <div class="alert alert-warning rounded-0 mb-0 d-none aviso-expiracion" id="aviso" role="status"></div>
     <div class="card-body chat-mensajes" id="historial" role="log" aria-live="polite" aria-label="{{ t('chat.historial') }}"></div>
     <footer class="card-footer">
@@ -37,6 +43,10 @@
           <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="imagen"><i class="bi bi-image" aria-hidden="true"></i> {{ t("chat.imagen_corto") }}
             <input class="entrada-oculta" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
                    aria-describedby="ayuda-adjuntos"></label>
+          <button class="btn btn-outline-secondary btn-sm" type="button" data-tomar-foto="imagen"><i class="bi bi-camera" aria-hidden="true"></i> {{ t("js.camara.tomar_foto") }}</button>
+          <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="audio"><i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t("chat.audio") }}
+            <input class="entrada-oculta" type="file" id="audio" name="audio" aria-describedby="ayuda-adjuntos"
+                   accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/flac"></label>
           <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="documento"><i class="bi bi-paperclip" aria-hidden="true"></i> {{ t("chat.documento") }}
             <input class="entrada-oculta" type="file" id="documento" name="documento" aria-describedby="ayuda-adjuntos"
                    accept=".pdf,.docx,.xlsx,.pptx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation"></label>
@@ -50,7 +60,7 @@
     </footer>
   </section>
 </div>
-<span id="chat-id" data-id="{{ chat_id }}" hidden></span>
+<span id="chat-id" data-id="{{ chat_id }}" data-audio-max-mb="{{ audio_max_mb }}" hidden></span>
 {% endblock %}
 
 {% block scripts %}<script src="/static/js/chat.js"></script>{% endblock %}

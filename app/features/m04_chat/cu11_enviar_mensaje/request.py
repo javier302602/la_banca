@@ -19,6 +19,7 @@ class MensajeEntrante(BaseModel):
     sticker: str | None = None
     documento: bytes | None = None
     documento_nombre: str | None = None
+    es_audio: bool = False  # llegó por el campo «audio»: se valida como audio, no como documento
 
     @model_validator(mode="after")
     def _contenido(self) -> "MensajeEntrante":
@@ -29,7 +30,7 @@ class MensajeEntrante(BaseModel):
 
 class DocumentoResponse(BaseModel):
     nombre: str
-    tipo: str          # pdf | docx | xlsx | pptx | txt (para el icono)
+    tipo: str          # pdf | docx | xlsx | pptx | txt | mp3 | wav | ogg | m4a | aac | flac (icono o reproductor)
     tamano_bytes: int
     url: str
 

@@ -8,6 +8,7 @@ from app.shared.db.mongo import get_database
 from app.shared.db.perfiles import MongoPerfilesPublicosRepository
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.storage.image_storage import get_image_storage
+from app.shared.web.medios import respuesta_con_rango
 from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import VerDetallePublicacionHandler
@@ -51,13 +52,14 @@ async def ver_imagen(
 
 @router.get("/api/publicaciones/{publicacion_id}/video", status_code=200)
 async def ver_video(
+    request: Request,
     publicacion_id: str,
     sesion: SesionActual = Depends(get_sesion_actual),
     handler: VerDetallePublicacionHandler = Depends(get_handler),
 ) -> Response:
     video = await handler.video(publicacion_id)
-    return Response(video.contenido, media_type=video.mime_type,
-                    headers={"Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff"})
+    return respuesta_con_rango(request, video.contenido, video.mime_type,
+                               {"Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/publicaciones/{publicacion_id}", include_in_schema=False)

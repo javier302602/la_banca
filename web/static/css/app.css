@@ -316,3 +316,15 @@ a.autor:hover .nombre-autor, a.autor:focus-visible .nombre-autor { text-decorati
 .reaccion:focus-visible { outline: 2px solid var(--lb-color-foco); outline-offset: 2px; }
 .reaccion.activa { border-color: var(--lb-color-primario); background: var(--lb-color-primario-suave); font-weight: 600; }
 .reaccion .conteo { font-variant-numeric: tabular-nums; }
+
+/* Fase 3 — Cámara, audio en el chat y ubicación en vivo */
+.dialogo-camara { border: 0; border-radius: var(--lb-radio-xl); padding: var(--lb-espacio-4); max-width: min(40rem, 94vw);
+                  background: var(--lb-color-superficie); color: var(--lb-color-texto); box-shadow: var(--lb-sombra-elevada); }
+.dialogo-camara::backdrop { background: rgb(0 0 0 / .6); }
+.vista-camara { width: 100%; border-radius: var(--lb-radio-lg); background: var(--lb-color-fondo); }
+.adjunto-audio { display: flex; flex-direction: column; gap: var(--lb-espacio-1); min-width: min(18rem, 60vw); }
+.adjunto-audio audio { width: 100%; }
+.panel-ubicacion { display: flex; flex-wrap: wrap; align-items: center; gap: var(--lb-espacio-2);
+                   padding: var(--lb-espacio-2) var(--lb-espacio-4); border-bottom: 1px solid var(--lb-color-borde);
+                   background: var(--lb-color-primario-suave); color: var(--lb-color-texto); }
+#boton-ubicacion[aria-pressed="true"] { border-color: var(--lb-color-primario); background: var(--lb-color-primario-suave); }

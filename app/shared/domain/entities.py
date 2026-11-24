@@ -16,6 +16,7 @@ DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
 # TTL 30 días después de vencer; sus archivos se retiran un día antes (job EA-03) para no dejar huérfanos.
 RETENCION_PUBLICACION = timedelta(days=30)
 RETENCION_ARCHIVOS_PUBLICACION = RETENCION_PUBLICACION - timedelta(days=1)
+VIGENCIA_UBICACION = timedelta(minutes=2)  # una ubicación en vivo sin actualizarse se borra sola (TTL)
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
 VIGENCIA_CODIGO_ACTIVACION = timedelta(minutes=10)    # código de 6 dígitos enviado al correo
 MAX_INTENTOS_CODIGO = 5                               # intentos para escribir el código antes de pedir otro
@@ -248,6 +249,20 @@ class Publicacion:
 
 
 @dataclass
+class UbicacionEnVivo:
+    """Última posición que un estudiante comparte en un chat (colección live_locations). Sin historial."""
+
+    chat_id: str
+    estudiante_id: str
+    nickname: str
+    lat: float
+    lng: float
+    precision: float  # metros
+    actualizado: datetime
+    expira_en: datetime
+
+
+@dataclass
 class ResumenReacciones:
     """Conteo de reacciones de una publicación y la del estudiante que consulta."""
 
@@ -322,7 +337,7 @@ class DocumentoAdjunto:
     mime_type: str
     tamano_bytes: int  # 1 .. TAMANO_MAX_DOCUMENTO
     nombre: str        # saneado, con la extensión del tipo detectado por contenido
-    tipo: str          # pdf | docx | xlsx | pptx | txt
+    tipo: str          # pdf | docx | xlsx | pptx | txt, o audio: mp3 | wav | ogg | m4a | aac | flac
     bucket: str | None = None
 
 

@@ -21,6 +21,8 @@ from app.shared.domain.errors import ErrorValidacion
 _FORMATO_PIL = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
 _EXTENSION = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
               "video/mp4": "mp4", "video/webm": "webm",  # video de publicación
+              "audio/mpeg": "mp3", "audio/wav": "wav", "audio/ogg": "ogg", "audio/mp4": "m4a",  # audios del chat
+              "audio/aac": "aac", "audio/flac": "flac",
               # Documentos del chat (SRS v2.0): la clave conserva la extensión del tipo detectado por contenido
               "application/pdf": "pdf", "text/plain": "txt",
               "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",

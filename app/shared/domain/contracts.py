@@ -24,6 +24,7 @@ from app.shared.domain.entities import (
     TipoObjetoReportado,
     TipoPublicacion,
     TipoReaccion,
+    UbicacionEnVivo,
 )
 
 
@@ -196,6 +197,14 @@ class IReactionRepository(ABC):
     async def resumen(self, publicacion_ids: list[str], estudiante_id: str) -> dict[str, ResumenReacciones]:
         """Conteos por publicación (solo las que tienen alguna reacción)."""
         raise NotImplementedError
+
+
+class IUbicacionRepository(ABC):
+    async def guardar(self, ubicacion: UbicacionEnVivo) -> None:
+        """Reemplaza la ubicación del estudiante en el chat (no guarda historial)."""
+        raise NotImplementedError
+    async def buscar(self, chat_id: str, estudiante_id: str) -> UbicacionEnVivo | None: raise NotImplementedError
+    async def borrar(self, chat_id: str, estudiante_id: str) -> None: raise NotImplementedError
 
 
 class IChatRepository(ABC):

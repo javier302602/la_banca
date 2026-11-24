@@ -174,7 +174,7 @@ VALIDADOR_LOGIN_ATTEMPTS = {"$jsonSchema": {
 }}
 
 COLECCIONES = ["accounts", "login_attempts", "sessions", "publications", "chats", "messages",
-               "reports", "system_parameters", "reactions"]
+               "reports", "system_parameters", "reactions", "live_locations"]
 
 
 async def _asegurar_coleccion(db: AsyncDatabase, nombre: str, validador: dict | None) -> None:
@@ -228,6 +228,12 @@ async def crear_indices(db: AsyncDatabase, dominio: str | None) -> None:
                                     name="uq_reactions_pub_user")
     await db.reactions.create_index([("publicationExpiresAt", ASCENDING)], name="ttl_reactions_retencion",
                                     expireAfterSeconds=int(RETENCION_PUBLICACION.total_seconds()))
+
+    # Ubicación en vivo (CU-22): una por estudiante y chat; se borra sola al vencer expiresAt
+    await db.live_locations.create_index([("chatId", ASCENDING), ("userId", ASCENDING)], unique=True,
+                                         name="uq_live_locations_chat_user")
+    await db.live_locations.create_index([("expiresAt", ASCENDING)], expireAfterSeconds=0,
+                                         name="ttl_live_locations")
 
     await db.chats.create_index([("publicationId", ASCENDING), ("responderId", ASCENDING)], unique=True,
                                 name="uq_chats_pub_responder")

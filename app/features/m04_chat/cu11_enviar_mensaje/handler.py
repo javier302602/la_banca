@@ -7,6 +7,7 @@ atómica al registrar el mensaje, por si expira entre la lectura y la escritura.
 """
 from app.shared.clock import hora_hhmm
 from app.shared.domain.contracts import IChatRepository, IClock, ImageStorage
+from app.shared.domain.audios import validar_audio
 from app.shared.domain.documentos import validar_documento
 from app.shared.domain.entities import INACTIVIDAD_CHAT, DocumentoAdjunto, ImagenAdjunta, Mensaje
 from app.shared.domain.errors import ErrorValidacion, NoDisponible, NoEncontrado
@@ -38,8 +39,10 @@ def documento_response(chat_id: str, mensaje_id: str, d: DocumentoAdjunto | None
 
 
 class EnviarMensajeHandler:
-    def __init__(self, chats: IChatRepository, imagenes: ImageStorage, clock: IClock) -> None:
+    def __init__(self, chats: IChatRepository, imagenes: ImageStorage, clock: IClock,
+                 tamano_max_audio: int = 20 * 1024 * 1024) -> None:
         self._chats = chats
+        self._tamano_max_audio = tamano_max_audio
         self._imagenes = imagenes
         self._clock = clock
 
@@ -53,10 +56,12 @@ class EnviarMensajeHandler:
 
         imagen = documento = None
         if body.documento is not None:
+            campo = "audio" if body.es_audio else "documento"
             try:
-                validado = validar_documento(body.documento, body.documento_nombre)
+                validado = (validar_audio(body.documento, body.documento_nombre, self._tamano_max_audio)
+                            if body.es_audio else validar_documento(body.documento, body.documento_nombre))
             except ValueError as e:
-                raise ErrorValidacion(str(e), codigo="documento_invalido", campo="documento") from None
+                raise ErrorValidacion(str(e), codigo=f"{campo}_invalido", campo=campo) from None
             referencia = await self._imagenes.guardar_procesado(body.documento, validado.mime_type, PREFIJO_DOCUMENTOS)
             documento = DocumentoAdjunto(referencia, validado.mime_type, len(body.documento), validado.nombre,
                                          validado.tipo, self._imagenes.bucket)
