@@ -2,7 +2,7 @@
 
 RF: RF-REP-08, RF-REP-09, RF-REP-11 · RNF-PRI-02
 Elimina definitivamente cada Reporte con su ContenidoReportado cuando fecha_retencion_fin ≤ ahora,
-junto con las imágenes copiadas al área de retención.
+junto con las imágenes copiadas al área de retención. Fase 5: solo los ya revisados por un administrador.
 """
 import logging
 

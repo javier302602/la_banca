@@ -403,3 +403,23 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-titulo); font-weight: va
 .dialogo-reporte { border: 0; border-radius: var(--lb-radio-xxl); padding: var(--lb-espacio-6); width: min(28rem, 94vw);
                    background: var(--lb-color-superficie); color: var(--lb-color-texto); box-shadow: var(--lb-sombra-elevada); }
 .dialogo-reporte::backdrop { background: rgb(0 0 0 / .6); }
+
+/* --- Panel de administración (Fase 5) ------------------------------------------------------------------------ */
+.pestanas-admin { display: flex; flex-wrap: wrap; gap: var(--lb-espacio-2); }
+.lista-reportes { display: grid; gap: var(--lb-espacio-4); }
+.tarjeta-reporte[data-estado="PENDIENTE"] { border-left: var(--lb-espacio-1) solid var(--lb-color-acento); }
+.estado-reporte { background: var(--lb-color-primario-suave); color: var(--lb-color-texto); }
+.datos-reporte { display: grid; grid-template-columns: max-content 1fr; gap: var(--lb-espacio-1) var(--lb-espacio-3); margin: 0 0 var(--lb-espacio-3); }
+.datos-reporte dt { font-weight: var(--lb-fuente-peso-semibold); color: var(--lb-color-texto-secundario); }
+.datos-reporte dd { margin: 0; overflow-wrap: anywhere; }
+.contenido-reportado { padding: var(--lb-espacio-3); border-radius: var(--lb-radio-lg); background: var(--lb-color-fondo); }
+.mensajes-admin { margin: 0; padding-left: var(--lb-espacio-5); display: grid; gap: var(--lb-espacio-1); }
+.miniatura-admin { max-width: 10rem; max-height: 8rem; border-radius: var(--lb-radio-md); display: block; margin-top: var(--lb-espacio-1); }
+.tabla-historial { --bs-table-bg: var(--lb-color-superficie); --bs-table-color: var(--lb-color-texto); }
+
+/* Fase 5: el menú de un admin tiene «Admin»; para que quepa entre 768 y 1199 px, el perfil queda solo con el
+ * ícono (el texto sigue disponible para lectores de pantalla y como tooltip) */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .barra:has(#nav-admin) #nav-nickname .texto-nickname { position: absolute; width: 1px; height: 1px; overflow: hidden;
+                                                          clip: rect(0 0 0 0); white-space: nowrap; }
+}

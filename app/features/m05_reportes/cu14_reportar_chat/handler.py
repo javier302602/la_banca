@@ -11,6 +11,7 @@ from datetime import timedelta
 from app.shared.domain.contracts import IChatRepository, IClock, IConfigurationProvider, ImageStorage, IReportRepository
 from app.shared.domain.entities import ClaveParametro, ContenidoReportado, Reporte, TipoObjetoReportado
 from app.shared.domain.errors import NoDisponible, NoEncontrado
+from app.shared.notificaciones import avisar_a_admins
 
 from .request import ReporteRequest, ReporteResponse
 
@@ -19,7 +20,8 @@ MSG_REGISTRADO = "Reporte registrado. Gracias por avisar"  # RF-REP-14
 
 class ReportarChatHandler:
     def __init__(self, chats: IChatRepository, reportes: IReportRepository, imagenes: ImageStorage,
-                 config: IConfigurationProvider, clock: IClock) -> None:
+                 config: IConfigurationProvider, clock: IClock, avisos=None) -> None:
+        self._avisos = avisos  # Fase 5: correo para avisar a los administradores
         self._chats = chats
         self._reportes = reportes
         self._imagenes = imagenes
@@ -69,4 +71,5 @@ class ReportarChatHandler:
             for copia in copias:  # sin evidencia huérfana si el reporte no se registra (RNF-FIA-03)
                 await self._imagenes.eliminar(copia)
             raise
+        await avisar_a_admins(self._avisos, f"Nuevo reporte de un chat, motivo {body.codigo_motivo.value}.")
         return ReporteResponse(mensaje=MSG_REGISTRADO)

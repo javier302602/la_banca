@@ -61,7 +61,8 @@ def servidor(base_navegador, registro_servidor):
     entorno = {**os.environ, "MONGO_URI": uri, "MONGO_DB": BASE, "DOMINIO_INSTITUCIONAL": "unas.edu.pe",
                "COOKIE_SECURE": "false", "EMAIL_SENDER": "consola", "IMAGE_STORAGE": "memoria",
                "ENTORNO": "desarrollo", "CRON_SECRET": "s3cr3t", "APP_BASE_URL": url,
-               "TERMINOS_VERSION": "1.0", "TERMINOS_FECHA": "2026-11-01", "CANAL_ARCO": "datospersonales@unas.edu.pe"}
+               "TERMINOS_VERSION": "1.0", "TERMINOS_FECHA": "2026-11-01", "CANAL_ARCO": "datospersonales@unas.edu.pe",
+               "ADMIN_EMAILS": "dani@unas.edu.pe"}  # Fase 5: una cuenta administradora
     # A un archivo y no a una tubería: una tubería sin leer se llena y bloquea al servidor
     with open(registro_servidor, "wb") as salida:
         proceso = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
@@ -109,7 +110,7 @@ def usuarios(base_navegador, servidor):
     hash_ = BcryptPasswordHasher(costo=4).hash(CLAVE)  # costo bajo solo para acelerar las pruebas
     ahora = datetime.now(timezone.utc)
     cuentas = {"ana": ("ana@unas.edu.pe", "ana_07"), "beto": ("beto@unas.edu.pe", "beto_9"),
-               "caro": ("caro@unas.edu.pe", "caro_3")}
+               "caro": ("caro@unas.edu.pe", "caro_3"), "dani": ("dani@unas.edu.pe", "dani_admin")}
     for correo, nick in cuentas.values():
         doc = estudiante_a_doc(Estudiante("", correo, hash_, nick, EstadoCuenta.ACTIVA, ahora,
                                           AceptacionTerminos("1.0", ahora),

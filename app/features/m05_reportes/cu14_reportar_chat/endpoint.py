@@ -6,6 +6,7 @@ from app.shared.clock import get_clock
 from app.shared.config.provider import get_config
 from app.shared.db.mongo import get_database
 from app.shared.domain.entities import MOTIVOS_REPORTE
+from app.shared.email.sender import get_email_sender
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
 from app.shared.storage.image_storage import get_image_storage
 from app.shared.web.plantillas import redirigir_a_login, render
@@ -23,7 +24,7 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> ReportarChatHandle
         reportes=MongoReportarChatRepository(db),
         imagenes=get_image_storage(),
         config=get_config(),
-        clock=get_clock(),
+        clock=get_clock(),        avisos=get_email_sender(),
     )
 
 

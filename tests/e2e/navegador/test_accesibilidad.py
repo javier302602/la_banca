@@ -47,6 +47,7 @@ def paginas(e):
         ("/perfil", "ana@unas.edu.pe", "#vista-avatar[data-iniciales], #vista-avatar img"),
         ("/perfiles/beto_9", "ana@unas.edu.pe", "#perfil:not([hidden])"),
         ("/videollamada", "ana@unas.edu.pe", "#inicio-llamada"),          # Fase 4
+        ("/admin", "dani@unas.edu.pe", "#lista-reportes article, #sin-reportes:not(.d-none)"),  # Fase 5
     ]
 
 

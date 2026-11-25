@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{# CU-25 — Panel de reportes · CU-26 — Moderar · CU-27 — Historial (solo administradores) #}
+
+{% block title %}{{ t("admin.titulo") }}{% endblock %}
+{% block pagina %}admin{% endblock %}
+
+{% block content %}
+<div class="contenedor-ancho">
+  <h1><i class="bi bi-shield-lock icono-titulo" aria-hidden="true"></i>{{ t("admin.titulo") }}</h1>
+  <p class="subtitulo-pagina">{{ t("admin.subtitulo") }}</p>
+  <div id="mensajes" aria-live="polite"></div>
+
+  <div class="d-flex flex-wrap gap-3 align-items-end mb-4">
+    <div role="tablist" class="pestanas-admin" aria-label="{{ t('admin.secciones') }}">
+      <button class="btn btn-primary" type="button" role="tab" id="tab-reportes" aria-selected="true" aria-controls="seccion-reportes">
+        {{ t("admin.reportes") }} <span class="badge rounded-pill contador-no-leidos" id="total-pendientes"></span></button>
+      <button class="btn btn-outline-secondary" type="button" role="tab" id="tab-historial" aria-selected="false" aria-controls="seccion-historial">
+        {{ t("admin.historial") }}</button>
+    </div>
+    <div id="filtros-reportes">
+      <label class="form-label mb-1" for="filtro-estado">{{ t("admin.estado") }}</label>
+      <select class="form-select" id="filtro-estado">
+        <option value="PENDIENTE">{{ t("admin.estados.PENDIENTE") }}</option>
+        <option value="RESUELTO">{{ t("admin.estados.RESUELTO") }}</option>
+        <option value="DESCARTADO">{{ t("admin.estados.DESCARTADO") }}</option>
+        <option value="TODOS">{{ t("admin.estados.TODOS") }}</option>
+      </select>
+    </div>
+  </div>
+
+  <section id="seccion-reportes" role="tabpanel" aria-labelledby="tab-reportes">
+    <p class="text-body-secondary d-none" id="sin-reportes">{{ t("admin.sin_reportes") }}</p>
+    <div class="lista-reportes" id="lista-reportes"></div>
+  </section>
+
+  <section id="seccion-historial" role="tabpanel" aria-labelledby="tab-historial" hidden>
+    <div class="table-responsive">
+      <table class="table tabla-historial">
+        <caption class="visually-hidden">{{ t("admin.historial") }}</caption>
+        <thead><tr>
+          <th scope="col">{{ t("admin.col_fecha") }}</th><th scope="col">{{ t("admin.col_admin") }}</th>
+          <th scope="col">{{ t("admin.col_accion") }}</th><th scope="col">{{ t("admin.col_usuario") }}</th>
+          <th scope="col">{{ t("admin.col_tipo") }}</th><th scope="col">{{ t("admin.col_detalle") }}</th>
+        </tr></thead>
+        <tbody id="filas-historial"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <dialog class="dialogo-reporte" id="dialogo-accion" aria-labelledby="titulo-accion">
+    <form id="form-accion" method="dialog" novalidate>
+      <h2 class="h5" id="titulo-accion"></h2>
+      <p class="text-body-secondary" id="texto-accion"></p>
+      <div class="mb-3" id="campo-dias" hidden>
+        <label class="form-label" for="dias">{{ t("admin.dias") }}</label>
+        <input class="form-control" type="number" id="dias" min="1" max="365" value="7">
+      </div>
+      <div class="mb-3" id="campo-mensaje" hidden>
+        <label class="form-label" for="mensaje-accion">{{ t("admin.mensaje") }}</label>
+        <textarea class="form-control" id="mensaje-accion" maxlength="500" rows="3"></textarea>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button class="btn btn-outline-secondary" type="button" id="cancelar-accion">{{ t("admin.cancelar") }}</button>
+        <button class="btn btn-danger" type="submit" id="confirmar-accion">{{ t("admin.confirmar") }}</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/admin.js"></script>{% endblock %}

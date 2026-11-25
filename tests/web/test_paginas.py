@@ -128,7 +128,7 @@ def test_feed_ofrece_todos_y_los_tres_tipos(cliente):
 def test_reportar_ofrece_los_cinco_motivos(cliente):
     con_sesion()
     html = cliente.get("/chats/c1/reportar").text
-    for nombre in ("Contenido inapropiado", "Acoso o comportamiento ofensivo", "Spam", "Fraude o engaño", "Otro"):
+    for nombre in ("Contenido obsceno o inapropiado", "Insultos o acoso", "Spam", "Fraude o engaño", "Otro"):
         assert nombre in html
     assert 'data-url="/api/chats/c1/reportes"' in html
 

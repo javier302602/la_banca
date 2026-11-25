@@ -34,8 +34,10 @@ from .request import CrearPublicacionRequest, CupoResponse, PublicacionResponse
 
 class CrearPublicacionHandler:
     def __init__(self, publicaciones: IPublicationRepository, config: IConfigurationProvider, clock: IClock,
-                 imagenes: ImageStorage | None = None, tamano_max_video: int = 15 * 1024 * 1024) -> None:
+                 imagenes: ImageStorage | None = None, tamano_max_video: int = 15 * 1024 * 1024,
+                 filtro=None) -> None:
         self._publicaciones = publicaciones
+        self._filtro = filtro  # Fase 5: filtro automático de palabras ofensivas (CU-28)
         self._tamano_max_video = tamano_max_video
         self._config = config
         self._clock = clock
@@ -71,6 +73,8 @@ class CrearPublicacionHandler:
             await self._borrar(archivos)
             raise self._sin_cupo(maximo)
         publicacion.id = publicacion_id
+        if self._filtro is not None:
+            await self._filtro.revisar_publicacion(publicacion)  # marca para revisión; no bloquea
         return PublicacionResponse(
             id=publicacion.id, tipo=publicacion.tipo, titulo=publicacion.titulo,
             descripcion=publicacion.descripcion, nickname_autor=nickname, fecha_creacion=ahora,

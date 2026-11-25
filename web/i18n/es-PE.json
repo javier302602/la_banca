@@ -18,7 +18,9 @@
     "cerrar_sesion": "Cerrar sesión",
     "iniciar_sesion": "Iniciar sesión",
     "registrarse": "Registrarse",
-    "videollamada": "Videollamada"
+    "videollamada": "Videollamada",
+    "admin": "Admin",
+    "mi_perfil": "Mi perfil"
   },
   "pie": {
     "terminos": "Términos de uso y política de privacidad",
@@ -112,8 +114,8 @@
     "ACTIVIDAD": "Actividad"
   },
   "motivos": {
-    "INAPPROPRIATE": "Contenido inapropiado",
-    "HARASSMENT": "Acoso o comportamiento ofensivo",
+    "INAPPROPRIATE": "Contenido obsceno o inapropiado",
+    "HARASSMENT": "Insultos o acoso",
     "SPAM": "Spam",
     "FRAUD": "Fraude o engaño",
     "OTHER": "Otro"
@@ -410,6 +412,53 @@
       "fallo": "No se pudo conectar el video. Prueba con «Siguiente».",
       "desconectado": "Se perdió la conexión con el servidor. Cuelga y vuelve a empezar.",
       "sin_permiso": "Necesitamos permiso para usar tu cámara y tu micrófono. Revísalo en la configuración del navegador."
+    },
+    "admin": {
+      "pendientes": "{n} reportes pendientes",
+      "motivos": {
+        "INAPPROPRIATE": "Contenido obsceno o inapropiado",
+        "HARASSMENT": "Insultos o acoso",
+        "SPAM": "Spam",
+        "FRAUD": "Fraude o engaño",
+        "OTHER": "Otro",
+        "OBSCENO": "Contenido obsceno",
+        "INSULTOS": "Insultos",
+        "OTRO": "Otro"
+      },
+      "tipos": {
+        "PUBLICACION": "Publicación",
+        "CHAT": "Chat",
+        "VIDEOLLAMADA": "Videollamada"
+      },
+      "estados": {
+        "PENDIENTE": "Pendiente",
+        "RESUELTO": "Resuelto",
+        "DESCARTADO": "Descartado"
+      },
+      "acciones": {
+        "ELIMINAR_CONTENIDO": "Eliminar contenido",
+        "ADVERTIR": "Advertir",
+        "SUSPENDER": "Suspender",
+        "BANEAR": "Banear",
+        "DESCARTAR": "Descartar"
+      },
+      "confirmaciones": {
+        "ELIMINAR_CONTENIDO": "Se ocultará la publicación o se borrará el chat de @{nickname}. No se puede deshacer.",
+        "ADVERTIR": "@{nickname} verá una advertencia al entrar y la recibirá por correo.",
+        "SUSPENDER": "@{nickname} no podrá entrar durante los días indicados; se cierran sus sesiones.",
+        "BANEAR": "@{nickname} no podrá volver a entrar a La Banca; se cierran sus sesiones.",
+        "DESCARTAR": "El reporte se marcará como descartado (no procede)."
+      },
+      "automatico": "Filtro automático",
+      "filtro": "Filtro automático de palabras",
+      "reporto": "Reportó",
+      "reportado": "Reportado",
+      "detalle": "Detalle",
+      "sin_video": "Las videollamadas no se graban: solo queda el registro de la sala.",
+      "sala": "Llamada del {inicio} al {fin}.",
+      "chat_de": "Chat sobre la publicación «{titulo}»",
+      "imagen_reportada": "Imagen guardada al reportar",
+      "hecho": "Acción aplicada y registrada en el historial."
     }
   },
   "tema": {
@@ -487,5 +536,34 @@
     "detalle": "Cuéntanos qué pasó (opcional)",
     "cancelar": "Cancelar",
     "enviar_reporte": "Enviar reporte"
+  },
+  "aviso": {
+    "titulo": "Advertencia de un administrador:",
+    "entendido": "Entendido"
+  },
+  "admin": {
+    "titulo": "Panel de administración",
+    "subtitulo": "Reportes de publicaciones, chats y videollamadas, y acciones de moderación.",
+    "secciones": "Secciones del panel",
+    "reportes": "Reportes",
+    "historial": "Historial",
+    "estado": "Estado",
+    "estados": {
+      "PENDIENTE": "Pendientes",
+      "RESUELTO": "Resueltos",
+      "DESCARTADO": "Descartados",
+      "TODOS": "Todos"
+    },
+    "sin_reportes": "No hay reportes en este estado.",
+    "dias": "Días de suspensión (1 a 365)",
+    "mensaje": "Mensaje para la persona (opcional)",
+    "cancelar": "Cancelar",
+    "confirmar": "Confirmar",
+    "col_fecha": "Fecha",
+    "col_admin": "Administrador",
+    "col_accion": "Acción",
+    "col_usuario": "Persona",
+    "col_tipo": "Tipo",
+    "col_detalle": "Detalle"
   }
 }

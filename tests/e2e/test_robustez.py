@@ -53,7 +53,7 @@ def test_fia_02_plazos_vencidos_durante_la_caida_se_aplican_al_arrancar(db):
                               "imageAttachment": None, "sentAt": ahora} for c in (vencido, vigente)])
     snapshot = {"offenderUserId": usuario, "capturedAt": ahora, "publicationData": None, "messagesSnapshot": [],
                 "retainedImageKeys": []}
-    reportes = db.reports.insert_many([{"reporterId": ObjectId(), "targetType": "CHAT", "targetId": vencido,
+    reportes = db.reports.insert_many([{"reporterId": ObjectId(), "targetType": "CHAT", "targetId": vencido, "status": "RESUELTO",
                                         "reasonCode": "SPAM", "reportedAt": ahora - timedelta(days=7, minutes=10),
                                         "retentionEndsAt": fin, "reportedContentSnapshot": snapshot}
                                        for fin in (ahora - timedelta(minutes=10), ahora + timedelta(days=1))]

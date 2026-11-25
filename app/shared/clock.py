@@ -14,6 +14,13 @@ def hora_hhmm(instante: datetime) -> str:
     return instante.astimezone(ZONA_SISTEMA).strftime("%H:%M")
 
 
+def formato_fecha_hora(instante: datetime) -> str:
+    """dd/mm/aaaa HH:MM en la hora del sistema (America/Lima), p. ej. para avisos de suspensión."""
+    if instante.tzinfo is None:
+        instante = instante.replace(tzinfo=timezone.utc)
+    return instante.astimezone(ZONA_SISTEMA).strftime("%d/%m/%Y %H:%M")
+
+
 class SystemClock(IClock):
     def ahora(self) -> datetime:
         return datetime.now(timezone.utc)

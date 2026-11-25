@@ -13,6 +13,7 @@ from app.shared.domain.contracts import (IClock, IConfigurationProvider, ImageSt
                                         IReportRepository)
 from app.shared.domain.entities import ClaveParametro, ContenidoReportado, Reporte, TipoObjetoReportado
 from app.shared.domain.errors import Conflicto, NoDisponible, Prohibido
+from app.shared.notificaciones import avisar_a_admins
 
 from .request import ReporteRequest, ReporteResponse
 
@@ -23,7 +24,8 @@ MSG_NO_DISPONIBLE = "Esta publicación ya no está disponible"
 
 class ReportarPublicacionHandler:
     def __init__(self, publicaciones: IPublicationRepository, reportes: IReportRepository,
-                 config: IConfigurationProvider, clock: IClock, imagenes: ImageStorage | None = None) -> None:
+                 config: IConfigurationProvider, clock: IClock, imagenes: ImageStorage | None = None, avisos=None) -> None:
+        self._avisos = avisos  # Fase 5: correo para avisar a los administradores
         self._imagenes = imagenes
         self._publicaciones = publicaciones
         self._reportes = reportes
@@ -64,4 +66,5 @@ class ReportarPublicacionHandler:
             for copia in copias:  # sin evidencia huérfana si el reporte no se registra (RNF-FIA-03)
                 await self._imagenes.eliminar(copia)
             raise
+        await avisar_a_admins(self._avisos, f"Nuevo reporte de una publicación («{p.titulo}»), motivo {body.codigo_motivo.value}.")
         return ReporteResponse(mensaje=MSG_REGISTRADO)

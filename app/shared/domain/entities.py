@@ -69,6 +69,22 @@ class EstadoPublicacion(str, Enum):
     ACTIVE = "ACTIVE"
     CLOSED = "CLOSED"
     EXPIRED = "EXPIRED"
+    REMOVED = "REMOVED"   # Fase 5: eliminada por un administrador (se oculta; el TTL la borra a los 30 días)
+
+
+class EstadoReporte(str, Enum):
+    """Fase 5: los reportes sin estado (anteriores al panel) se tratan como PENDIENTE."""
+    PENDIENTE = "PENDIENTE"
+    RESUELTO = "RESUELTO"
+    DESCARTADO = "DESCARTADO"
+
+
+class AccionAdmin(str, Enum):
+    ELIMINAR_CONTENIDO = "ELIMINAR_CONTENIDO"
+    ADVERTIR = "ADVERTIR"
+    SUSPENDER = "SUSPENDER"
+    BANEAR = "BANEAR"
+    DESCARTAR = "DESCARTAR"
 
 
 class TipoReaccion(str, Enum):
@@ -188,6 +204,13 @@ class Estudiante:
     # Fase 4: datos reales para la videollamada (no anónima). No se muestran en el perfil público.
     nombre: str = ""
     carrera: str = ""
+    # Fase 5: moderación. Una cuenta suspendida o baneada no puede iniciar sesión ni usar sus sesiones.
+    suspendido_hasta: datetime | None = None
+    baneado: bool = False
+    aviso_pendiente: str | None = None   # advertencia de un admin; se muestra hasta que la persona la lee
+
+    def bloqueada(self, ahora: datetime) -> bool:
+        return self.baneado or (self.suspendido_hasta is not None and ahora < self.suspendido_hasta)
 
     @property
     def fecha_ingreso(self) -> datetime:
@@ -308,6 +331,26 @@ class ReporteVideollamada:
 
 
 @dataclass
+class ReporteAdmin:
+    """Fase 5: un reporte tal como lo ve el panel, venga de reports (publicación/chat) o de videocall_reports."""
+
+    origen: str                    # "contenido" (colección reports) | "videollamada" (videocall_reports)
+    id: str
+    tipo: str                      # PUBLICACION | CHAT | VIDEOLLAMADA
+    motivo: str                    # código del motivo
+    detalle: str
+    fecha: datetime
+    estado: EstadoReporte
+    automatico: bool               # creado por el filtro de palabras, no por una persona
+    reportante_id: str | None
+    reportado_id: str
+    objeto_id: str | None          # publicación, chat o sala
+    contenido: dict = field(default_factory=dict)   # copia guardada al reportar (sin video en videollamadas)
+    imagenes: list[str] = field(default_factory=list)  # claves en el área de retención
+    acciones: list[dict] = field(default_factory=list)
+
+
+@dataclass
 class ResumenReacciones:
     """Conteo de reacciones de una publicación y la del estudiante que consulta."""
 
@@ -399,8 +442,8 @@ class MotivoReporte:
 MOTIVOS_REPORTE: dict[CodigoMotivo, MotivoReporte] = {
     m.codigo: m
     for m in [  # RF-REP-03
-        MotivoReporte(CodigoMotivo.INAPPROPRIATE, "Contenido inapropiado"),
-        MotivoReporte(CodigoMotivo.HARASSMENT, "Acoso o comportamiento ofensivo"),
+        MotivoReporte(CodigoMotivo.INAPPROPRIATE, "Contenido obsceno o inapropiado"),
+        MotivoReporte(CodigoMotivo.HARASSMENT, "Insultos o acoso"),
         MotivoReporte(CodigoMotivo.SPAM, "Spam"),
         MotivoReporte(CodigoMotivo.FRAUD, "Fraude o engaño"),
         MotivoReporte(CodigoMotivo.OTHER, "Otro"),

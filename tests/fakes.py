@@ -137,6 +137,9 @@ class FakeAccountRepository(IAccountRepository):
     async def actualizar_foto(self, estudiante_id, foto):
         self.cuentas[estudiante_id].foto = foto
 
+    async def quitar_aviso(self, estudiante_id):
+        self.cuentas[estudiante_id].aviso_pendiente = None
+
     async def actualizar_identidad(self, estudiante_id, nombre, carrera):
         self.cuentas[estudiante_id].nombre, self.cuentas[estudiante_id].carrera = nombre, carrera
 

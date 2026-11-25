@@ -41,6 +41,13 @@ async def editar_identidad(body: EditarIdentidadRequest, sesion: SesionActual = 
     return await handler.actualizar_identidad(sesion.estudiante_id, body)
 
 
+@router.delete("/api/cuentas/me/aviso", status_code=204)
+async def marcar_aviso_leido(sesion: SesionActual = Depends(get_sesion_actual),
+                             handler: EditarPerfilHandler = Depends(get_handler)) -> None:
+    """Fase 5: la persona leyó la advertencia de un administrador; deja de mostrarse."""
+    await handler.quitar_aviso(sesion.estudiante_id)
+
+
 @router.put("/api/cuentas/me/foto", response_model=MiPerfilResponse, status_code=200)
 async def subir_foto(foto: UploadFile | None = File(default=None), sesion: SesionActual = Depends(get_sesion_actual),
                      handler: EditarPerfilHandler = Depends(get_handler)) -> MiPerfilResponse:

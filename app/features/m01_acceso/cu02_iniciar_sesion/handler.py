@@ -18,6 +18,8 @@ from app.shared.domain.entities import (
 from app.shared.domain.errors import DemasiadosIntentos, NoAutenticado, Prohibido
 from app.shared.domain.reglas import minutos_hacia_arriba
 
+from app.shared.security.session import mensaje_bloqueo
+
 from .request import IniciarSesionRequest, SesionIniciada, SesionResponse
 
 MSG_CREDENCIALES = "Correo o contraseña incorrectos"                                            # RF-AUT-09
@@ -63,6 +65,8 @@ class IniciarSesionHandler:
             raise NoAutenticado(MSG_CREDENCIALES, codigo="credenciales_invalidas")
         if estudiante.estado is EstadoCuenta.PENDIENTE_ACTIVACION:
             raise Prohibido(MSG_NO_ACTIVADA, codigo="cuenta_no_activada")
+        if estudiante.bloqueada(ahora):  # Fase 5: suspendida o baneada por un administrador
+            raise Prohibido(mensaje_bloqueo(estudiante), codigo="cuenta_bloqueada")
 
         await self._cuentas.reiniciar_intentos(body.correo)  # RF-AUT-22
         token, token_hash = self._tokens.generar()

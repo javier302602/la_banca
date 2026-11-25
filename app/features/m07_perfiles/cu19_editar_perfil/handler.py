@@ -43,6 +43,9 @@ class EditarPerfilHandler:
         await self._cuentas.actualizar_identidad(estudiante_id, body.nombre, body.carrera)
         return await self.ver(estudiante_id)
 
+    async def quitar_aviso(self, estudiante_id: str) -> None:
+        await self._cuentas.quitar_aviso(estudiante_id)
+
     async def subir_foto(self, estudiante_id: str, contenido: bytes | None) -> MiPerfilResponse:
         if not contenido:
             raise ErrorValidacion("Selecciona una foto", codigo="foto_vacia", campo="foto")

@@ -17,13 +17,14 @@ from urllib.parse import urlsplit
 from fastapi import Depends, Request, Response, WebSocket
 from pymongo.asynchronous.database import AsyncDatabase
 
-from app.shared.clock import get_clock
+from app.shared.clock import formato_fecha_hora, get_clock
+from app.shared.config.moderacion import es_admin
 from app.shared.config.provider import get_config, variable
 from app.shared.db.mapeo import doc_a_estudiante, doc_a_sesion
 from app.shared.db.mongo import get_database, oid
 from app.shared.domain.contracts import IAccountRepository, IClock, IConfigurationProvider
 from app.shared.domain.entities import ClaveParametro, EstadoCuenta, EstadoSesion, Estudiante, Sesion
-from app.shared.domain.errors import NoAutenticado
+from app.shared.domain.errors import NoAutenticado, Prohibido
 from app.shared.security.hashing import SecureTokenService
 
 COOKIE_SESION = "la_banca_sesion"
@@ -37,6 +38,15 @@ class SesionActual:
     sesion_id: str
     estudiante_id: str
     nickname: str
+    es_admin: bool = False           # Fase 5: su correo está en ADMIN_EMAILS
+    aviso: str | None = None         # Fase 5: advertencia de un admin pendiente de leer
+
+
+def mensaje_bloqueo(estudiante: Estudiante) -> str:
+    """Texto para una cuenta suspendida o baneada (Fase 5)."""
+    if estudiante.baneado:
+        return "Tu cuenta fue bloqueada por incumplir las normas de La Banca"
+    return f"Tu cuenta está suspendida hasta el {formato_fecha_hora(estudiante.suspendido_hasta)}"
 
 
 def vencimiento_sesion(config: IConfigurationProvider, ahora):
@@ -62,10 +72,14 @@ class ValidadorSesion:
         estudiante = await self._cuentas.buscar_por_id(sesion.estudiante_id)
         if estudiante is None or estudiante.estado is not EstadoCuenta.ACTIVA:
             raise NoAutenticado(MENSAJE_SIN_SESION, codigo="sin_sesion")
+        if estudiante.bloqueada(ahora):  # Fase 5: suspendida o baneada por un administrador
+            await self._cuentas.finalizar_sesion(sesion.id, EstadoSesion.CLOSED, ahora)
+            raise NoAutenticado(mensaje_bloqueo(estudiante), codigo="cuenta_bloqueada")
         if es_interaccion:
             # RF-CFG-11: la nueva duración se aplica desde la siguiente interacción
             await self._cuentas.registrar_interaccion(sesion.id, ahora, vencimiento_sesion(self._config, ahora))
-        return SesionActual(sesion.id, estudiante.id, estudiante.nickname)
+        return SesionActual(sesion.id, estudiante.id, estudiante.nickname,
+                            es_admin=es_admin(estudiante.correo_institucional), aviso=estudiante.aviso_pendiente)
 
 
 class MongoSesionRepository(IAccountRepository):
@@ -99,6 +113,13 @@ async def get_sesion_actual(request: Request, db: AsyncDatabase = Depends(get_da
     """Dependencia para la API: exige sesión activa (RNF-SEG-01)."""
     es_interaccion = request.headers.get(HEADER_AUTOMATICA) != "1"
     return await _validador(db).validar(request.cookies.get(COOKIE_SESION), es_interaccion)
+
+
+async def get_sesion_admin(sesion: SesionActual = Depends(get_sesion_actual)) -> SesionActual:
+    """Fase 5: exige que el correo de la cuenta esté en ADMIN_EMAILS."""
+    if not sesion.es_admin:
+        raise Prohibido("Esta sección es solo para administradores", codigo="solo_admin")
+    return sesion
 
 
 async def sesion_de_websocket(websocket: WebSocket, db: AsyncDatabase) -> SesionActual | None:

@@ -7,6 +7,7 @@ administradores (Fase 5). No hay grabación: el reporte guarda motivo, detalle, 
 from app.shared.domain.contracts import IClock, IVideollamadaRepository
 from app.shared.domain.entities import ReporteVideollamada
 from app.shared.domain.errors import NoEncontrado
+from app.shared.notificaciones import avisar_a_admins
 
 from .request import ReportarVideollamadaRequest, ReporteVideollamadaResponse
 
@@ -14,7 +15,8 @@ MSG_ENVIADO = "Reporte enviado. Gracias: el equipo de administradores lo revisar
 
 
 class ReportarVideollamadaHandler:
-    def __init__(self, llamadas: IVideollamadaRepository, clock: IClock) -> None:
+    def __init__(self, llamadas: IVideollamadaRepository, clock: IClock, avisos=None) -> None:
+        self._avisos = avisos  # Fase 5: correo para avisar a los administradores
         self._llamadas = llamadas
         self._clock = clock
 
@@ -26,4 +28,5 @@ class ReportarVideollamadaHandler:
         reporte_id = await self._llamadas.guardar_reporte(ReporteVideollamada(
             id="", sala_id=sala.id, reportante_id=estudiante_id, reportado_id=reportado, motivo=body.motivo,
             detalle=body.detalle, fecha=self._clock.ahora()))
+        await avisar_a_admins(self._avisos, f"Nuevo reporte de una videollamada, motivo {body.motivo.value}.")
         return ReporteVideollamadaResponse(id=reporte_id, mensaje=MSG_ENVIADO)

@@ -50,9 +50,12 @@ class ConsoleEmailSender(IEmailSender):
         self._registrar(CorreoEnviado(correo, "Cambia tu contraseña de La Banca",
                                       _cuerpo_recuperacion(enlace), enlace))
 
+    async def enviar_aviso(self, correo: str, asunto: str, cuerpo: str) -> None:
+        self._registrar(CorreoEnviado(correo, asunto, cuerpo))
+
     def _registrar(self, correo: CorreoEnviado) -> None:
         self.enviados.append(correo)
-        log.info("[correo de desarrollo] %s -> %s", correo.asunto, correo.enlace or correo.codigo)
+        log.info("[correo de desarrollo] %s -> %s", correo.asunto, correo.enlace or correo.codigo or correo.destinatario)
 
 
 MODOS_TLS = ("starttls", "ssl", "ninguno")
@@ -71,6 +74,9 @@ class SmtpEmailSender(IEmailSender):
 
     async def enviar_recuperacion(self, correo: str, enlace: str) -> None:
         await self._enviar(correo, "Cambia tu contraseña de La Banca", _cuerpo_recuperacion(enlace))
+
+    async def enviar_aviso(self, correo: str, asunto: str, cuerpo: str) -> None:
+        await self._enviar(correo, asunto, cuerpo)
 
     async def _enviar(self, destinatario: str, asunto: str, cuerpo: str) -> None:
         mensaje = EmailMessage()

@@ -20,8 +20,9 @@ MSG_CHAT_EXISTENTE = "Ya tienes un chat activo sobre esta publicación"  # RF-CH
 
 class ResponderPublicacionHandler:
     def __init__(self, publicaciones: IPublicationRepository, chats: IChatRepository, imagenes: ImageStorage,
-                 clock: IClock) -> None:
+                 clock: IClock, filtro=None) -> None:
         self._publicaciones = publicaciones
+        self._filtro = filtro  # Fase 5: filtro automático de palabras ofensivas (CU-28)
         self._chats = chats
         self._imagenes = imagenes
         self._clock = clock
@@ -65,4 +66,6 @@ class ResponderPublicacionHandler:
                 raise Conflicto(MSG_CHAT_EXISTENTE, codigo="chat_existente",
                                 chat_id=existente.id if existente else None) from None
             raise
+        if self._filtro is not None and mensaje.texto:
+            await self._filtro.revisar_mensaje(chat_id, mensaje)
         return ChatCreadoResponse(chat_id=chat_id, nickname_autor=publicacion.nickname_autor)

@@ -40,8 +40,9 @@ def documento_response(chat_id: str, mensaje_id: str, d: DocumentoAdjunto | None
 
 class EnviarMensajeHandler:
     def __init__(self, chats: IChatRepository, imagenes: ImageStorage, clock: IClock,
-                 tamano_max_audio: int = 20 * 1024 * 1024) -> None:
+                 tamano_max_audio: int = 20 * 1024 * 1024, filtro=None) -> None:
         self._chats = chats
+        self._filtro = filtro  # Fase 5: filtro automático de palabras ofensivas (CU-28)
         self._tamano_max_audio = tamano_max_audio
         self._imagenes = imagenes
         self._clock = clock
@@ -79,6 +80,9 @@ class EnviarMensajeHandler:
         if mensaje_id is None:
             await self._borrar(mensaje)
             raise NoDisponible(MSG_EXPIRADO, codigo="chat_expirado")
+        if self._filtro is not None and mensaje.texto:
+            mensaje.id = mensaje_id
+            await self._filtro.revisar_mensaje(chat.id, mensaje)
         return MensajeResponse(id=mensaje_id, es_propio=True, nickname_emisor=nickname, texto=body.texto,
                                imagen_url=url_imagen(chat.id, mensaje_id) if imagen else None,
                                sticker=body.sticker, sticker_url=url_sticker(body.sticker) if body.sticker else None,

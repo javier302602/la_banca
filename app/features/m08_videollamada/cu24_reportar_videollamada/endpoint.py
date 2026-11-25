@@ -4,6 +4,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
+from app.shared.email.sender import get_email_sender
 from app.shared.security.session import SesionActual, get_sesion_actual
 
 from .handler import ReportarVideollamadaHandler
@@ -14,7 +15,7 @@ router = APIRouter(tags=["M08 Videollamada"])
 
 
 def get_handler(db: AsyncDatabase = Depends(get_database)) -> ReportarVideollamadaHandler:
-    return ReportarVideollamadaHandler(MongoReportarVideollamadaRepository(db), get_clock())
+    return ReportarVideollamadaHandler(MongoReportarVideollamadaRepository(db), get_clock(), avisos=get_email_sender())
 
 
 @router.post("/api/videollamada/reportes", response_model=ReporteVideollamadaResponse, status_code=201)

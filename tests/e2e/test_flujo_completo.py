@@ -207,7 +207,8 @@ def test_feed_paginado_y_jobs(db):
            "imagen original borrada, copia retenida intacta")
 
         # EA-05: reportes vencidos
-        db.reports.update_many({}, {"$set": {"retentionEndsAt": ahora - timedelta(minutes=1)}})
+        # Fase 5: EA-05 solo borra reportes ya revisados por un admin
+        db.reports.update_many({}, {"$set": {"retentionEndsAt": ahora - timedelta(minutes=1), "status": "RESUELTO"}})
         r = c.get("/jobs/ea05-depurar-contenido-reportado", headers=cron).json()
         ok(r["reportes_eliminados"] == 2 and db.reports.count_documents({}) == 0
            and not any(k in almacen.objetos for k in retenidas), f"EA-05 {r}")

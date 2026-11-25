@@ -19,6 +19,7 @@ from app.features.m05_reportes.cu14_reportar_chat.handler import ReportarChatHan
 from app.features.m05_reportes.cu14_reportar_chat.request import ReporteRequest as ReporteChat
 from app.main import app
 from app.shared.domain.entities import Chat, Mensaje, Publicacion, TipoPublicacion
+from app.shared.security.session import get_sesion_admin
 from tests.fakes import (FakeChatRepository, FakeClock, FakeConfig, FakeImageStorage, FakePublicationRepository,
                          FakeReportRepository)
 
@@ -34,25 +35,44 @@ def _rutas(rutas=None) -> list[tuple[str, set[str]]]:
     return encontradas
 
 
-def test_sin_funciones_de_gestion_de_reportes():
-    """RF-REP-11 / RN-37: solo existen las rutas para crear un reporte y los formularios para hacerlo."""
-    con_reportes = [(p, m) for p, m in _rutas() if "report" in p.lower()]
+def test_reportes_solo_los_gestionan_los_administradores():
+    """RF-REP-11 / RN-37, ampliado en la Fase 5: las personas solo pueden CREAR reportes; verlos y moderarlos es
+    exclusivo de los administradores (rutas /api/admin/* con get_sesion_admin y la página /admin)."""
+    publicas = [(p, m) for p, m in _rutas() if not p.startswith(("/api/admin", "/admin"))]
+    con_reportes = [(p, m) for p, m in publicas if "report" in p.lower()]
     assert sorted(con_reportes) == sorted([
         ("/api/chats/{chat_id}/reportes", {"POST"}),
         ("/api/publicaciones/{publicacion_id}/reportes", {"POST"}),
         ("/chats/{chat_id}/reportar", {"GET"}),
         ("/publicaciones/{publicacion_id}/reportar", {"GET"}),
         ("/jobs/ea05-depurar-contenido-reportado", {"GET"}),  # purga automática, exige CRON_SECRET (RN-26)
-        ("/api/videollamada/reportes", {"POST"}),             # Fase 4: solo crear (el panel llega en la Fase 5)
+        ("/api/videollamada/reportes", {"POST"}),             # Fase 4: solo crear
     ])
-    # Ninguna ruta permite leer, modificar ni borrar reportes o su contenido conservado
+    # Ninguna ruta de personas permite leer, modificar ni borrar reportes o su contenido conservado
     assert not any(m & {"PUT", "PATCH", "DELETE"} for p, m in con_reportes)
-    assert not any(p.startswith(("/api/reportes", "/reportes", "/admin")) for p, _ in _rutas())
-    # Las rutas que entregan imágenes resuelven un mensaje de un chat o una posición de la galería de una
-    # publicación activa (SRS v2.0) o la foto de un perfil; ninguna acepta claves del área de retención
-    imagenes = sorted({p for p, _ in _rutas() if "imagen" in p or "foto" in p})
+    assert not any(p.startswith(("/api/reportes", "/reportes")) for p, _ in _rutas())
+    # Toda la API de administración exige ser administrador
+    admin = [r for r in _rutas_api() if r.path.startswith("/api/admin")]
+    assert admin and all(_usa(r.dependant, get_sesion_admin) for r in admin)
+    # Las imágenes del área de retención solo se sirven en el panel; las demás rutas de imágenes no las aceptan
+    imagenes = sorted({p for p, _ in publicas if "imagen" in p or "foto" in p})
     assert imagenes == ["/api/chats/{chat_id}/mensajes/{mensaje_id}/imagen", "/api/cuentas/me/foto",
                         "/api/perfiles/{nickname}/foto", "/api/publicaciones/{publicacion_id}/imagenes/{indice}"]
+
+
+def _rutas_api(rutas=None) -> list[APIRoute]:
+    """Las APIRoute de la app, incluidas las de los routers anidados."""
+    encontradas = []
+    for r in app.routes if rutas is None else rutas:
+        if isinstance(r, APIRoute):
+            encontradas.append(r)
+        elif hasattr(r, "original_router"):
+            encontradas += _rutas_api(r.original_router.routes)
+    return encontradas
+
+
+def _usa(dependencia, funcion) -> bool:
+    return dependencia.call is funcion or any(_usa(d, funcion) for d in dependencia.dependencies)
 
 
 def _vistas_publicacion(pubs, chats, reloj, usuario, pid):

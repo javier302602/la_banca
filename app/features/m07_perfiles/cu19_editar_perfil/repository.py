@@ -26,6 +26,9 @@ class MongoEditarPerfilRepository(IAccountRepository):
     async def actualizar_perfil(self, estudiante_id, biografia, avatar):
         await self._db.accounts.update_one({"_id": oid(estudiante_id)}, {"$set": {"bio": biografia, "avatar": avatar}})
 
+    async def quitar_aviso(self, estudiante_id):
+        await self._db.accounts.update_one({"_id": oid(estudiante_id)}, {"$set": {"pendingWarning": None}})
+
     async def actualizar_identidad(self, estudiante_id, nombre, carrera):
         await self._db.accounts.update_one({"_id": oid(estudiante_id)}, {"$set": {"fullName": nombre, "career": carrera}})
 

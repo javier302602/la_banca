@@ -6,13 +6,16 @@ from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from pymongo.asynchronous.database import AsyncDatabase
 
+from app.features.m09_admin.cu28_filtro_automatico.handler import FiltroAutomatico
+from app.features.m09_admin.cu28_filtro_automatico.repository import MongoFiltroRepository
 from app.shared.clock import get_clock
 from app.shared.config.provider import get_config, variable
 from app.shared.db.mongo import get_database
 from app.shared.domain.entities import MAX_IMAGENES_PUBLICACION, TAMANO_MAX_IMAGEN, TipoPublicacion
 from app.shared.domain.errors import ErrorValidacion
-from app.shared.storage.image_storage import get_image_storage
+from app.shared.email.sender import get_email_sender
 from app.shared.security.session import SesionActual, get_sesion_actual, get_sesion_opcional
+from app.shared.storage.image_storage import get_image_storage
 from app.shared.web.plantillas import redirigir_a_login, render
 
 from .handler import CrearPublicacionHandler
@@ -36,6 +39,7 @@ def get_handler(db: AsyncDatabase = Depends(get_database)) -> CrearPublicacionHa
         clock=get_clock(),
         imagenes=get_image_storage(),
         tamano_max_video=tamano_max_video(),
+        filtro=FiltroAutomatico(MongoFiltroRepository(db), get_config(), get_clock(), get_email_sender()),
     )
 
 

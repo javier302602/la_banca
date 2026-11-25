@@ -55,8 +55,13 @@
             <i class="bi bi-camera-video" aria-hidden="true"></i> {{ t("nav.videollamada") }}</a></li>
         </ul>
         <div class="d-flex align-items-center gap-2">
-          <a class="nav-link py-2" href="/perfil" id="nav-nickname"{% if ruta == "/perfil" %} aria-current="page"{% endif %}>
-            <i class="bi bi-person-circle" aria-hidden="true"></i> @{{ sesion.nickname }}</a>
+          {% if sesion.es_admin %}
+          <a class="nav-link py-2" href="/admin" id="nav-admin"{% if ruta == "/admin" %} aria-current="page"{% endif %}>
+            <i class="bi bi-shield-lock" aria-hidden="true"></i> {{ t("nav.admin") }}
+            <span class="badge rounded-pill contador-no-leidos d-none" id="nav-reportes"></span></a>
+          {% endif %}
+          <a class="nav-link py-2" href="/perfil" id="nav-nickname" title="{{ t('nav.mi_perfil') }}"{% if ruta == "/perfil" %} aria-current="page"{% endif %}>
+            <i class="bi bi-person-circle" aria-hidden="true"></i><span class="texto-nickname"> @{{ sesion.nickname }}</span></a>
           <button class="btn btn-outline-secondary btn-sm text-nowrap" type="button" data-cerrar-sesion
                   aria-label="{{ t('nav.cerrar_sesion') }}">
             <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="texto-cerrar"> {{ t("nav.cerrar_sesion") }}</span></button>
@@ -74,6 +79,13 @@
   </nav>
 
   <main class="container py-4 flex-grow-1">
+    {% if sesion and sesion.aviso %}
+    {# Fase 5: advertencia de un administrador; se muestra hasta que la persona la marca como leída #}
+    <div class="alert alert-warning d-flex flex-wrap gap-2 align-items-start" role="alert" id="aviso-moderacion">
+      <div class="flex-grow-1"><strong>{{ t("aviso.titulo") }}</strong> {{ sesion.aviso }}</div>
+      <button class="btn btn-outline-secondary btn-sm" type="button" data-aviso-leido>{{ t("aviso.entendido") }}</button>
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

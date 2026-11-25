@@ -24,6 +24,8 @@ from app.shared.domain.entities import (
     TipoObjetoReportado,
     TipoPublicacion,
     TipoReaccion,
+    ReporteAdmin,
+    EstadoReporte,
     UbicacionEnVivo,
     ParticipanteVideollamada,
     ReporteVideollamada,
@@ -92,6 +94,10 @@ class IEmailSender(ABC):
         """CU-18 — RF-AUT-36."""
         raise NotImplementedError
 
+    async def enviar_aviso(self, correo: str, asunto: str, cuerpo: str) -> None:
+        """Fase 5: avisos de moderación (nuevo reporte para los admins; advertencia o sanción para la persona)."""
+        raise NotImplementedError
+
 
 class ImageStorage(ABC):
     bucket: str = ""  # nombre del bucket, se guarda en messages.imageAttachment.storageBucket
@@ -139,6 +145,9 @@ class IAccountRepository(ABC):
         """Actualiza también las copias desnormalizadas (RF-AUT-26). Conflicto si ya está en uso."""
         raise NotImplementedError
     async def eliminar_no_activadas(self, registradas_antes_de: datetime) -> int: raise NotImplementedError
+    async def quitar_aviso(self, estudiante_id: str) -> None:
+        """Fase 5: la persona leyó la advertencia de un administrador."""
+        raise NotImplementedError
     async def actualizar_identidad(self, estudiante_id: str, nombre: str, carrera: str) -> None:
         """Fase 4: nombre y carrera que se muestran en la videollamada."""
         raise NotImplementedError
@@ -238,6 +247,32 @@ class IVideollamadaRepository(ABC):
         """Saca, en orden, los mensajes pendientes del buzón del estudiante."""
         raise NotImplementedError
     async def guardar_reporte(self, reporte: ReporteVideollamada) -> str: raise NotImplementedError
+
+
+class IAdminRepository(ABC):
+    """Fase 5: lo que necesita el panel de administradores."""
+
+    async def listar_reportes(self, estado: EstadoReporte | None, limite: int) -> list[ReporteAdmin]: raise NotImplementedError
+    async def contar_pendientes(self) -> int: raise NotImplementedError
+    async def buscar_reporte(self, origen: str, reporte_id: str) -> ReporteAdmin | None: raise NotImplementedError
+    async def marcar_reporte(self, origen: str, reporte_id: str, estado: EstadoReporte, accion: dict) -> None:
+        raise NotImplementedError
+    async def perfiles(self, ids: set[str]) -> dict[str, dict]:
+        """Nickname, nombre y carrera por id (para mostrar quién reportó y a quién)."""
+        raise NotImplementedError
+    async def buscar_cuenta(self, estudiante_id: str) -> Estudiante | None: raise NotImplementedError
+    async def eliminar_publicacion(self, publicacion_id: str, ahora: datetime) -> bool: raise NotImplementedError
+    async def eliminar_chat(self, chat_id: str) -> list[str]:
+        """Borra el chat y sus mensajes; devuelve las claves de sus archivos para borrarlos."""
+        raise NotImplementedError
+    async def advertir(self, estudiante_id: str, texto: str) -> None: raise NotImplementedError
+    async def suspender(self, estudiante_id: str, hasta: datetime, ahora: datetime) -> None:
+        """Marca la suspensión y cierra todas sus sesiones."""
+        raise NotImplementedError
+    async def banear(self, estudiante_id: str, ahora: datetime) -> None: raise NotImplementedError
+    async def registrar_accion(self, accion: dict) -> None: raise NotImplementedError
+    async def historial(self, limite: int) -> list[dict]: raise NotImplementedError
+    async def quitar_aviso(self, estudiante_id: str) -> None: raise NotImplementedError
 
 
 class IChatRepository(ABC):

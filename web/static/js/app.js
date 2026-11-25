@@ -356,6 +356,12 @@ const Banca = (() => {
     }).catch(() => { estado.textContent = t("camara.sin_permiso"); });
   }
 
+  document.addEventListener("click", async (evento) => {  // Fase 5: «Entendido» en la advertencia
+    if (!evento.target.closest("[data-aviso-leido]")) return;
+    try { await api("/api/cuentas/me/aviso", { metodo: "DELETE" }); } catch (e) { return; }
+    document.getElementById("aviso-moderacion").remove();
+  });
+
   document.addEventListener("click", (evento) => {
     const boton = evento.target.closest("[data-tomar-foto]");
     if (!boton) return;
@@ -420,6 +426,20 @@ const Banca = (() => {
       try { if (!campo.value) campo.value = sessionStorage.getItem(clave) || ""; } catch (e) { /* sin almacenamiento */ }
       campo.addEventListener("change", () => { try { sessionStorage.setItem(clave, campo.value.trim()); } catch (e) { /* */ } });
     });
+    // Fase 5: los administradores ven en el menú cuántos reportes esperan revisión
+    const navReportes = document.getElementById("nav-reportes");
+    if (navReportes) {
+      const contarReportes = async () => {
+        try {
+          const r = await api("/api/admin/reportes/pendientes", { automatica: true });
+          navReportes.textContent = r.pendientes;
+          navReportes.classList.toggle("d-none", !r.pendientes);
+          navReportes.setAttribute("aria-label", t("admin.pendientes", { n: r.pendientes }));
+        } catch (e) { /* informativo */ }
+      };
+      contarReportes();
+      setInterval(() => { if (document.visibilityState === "visible") contarReportes(); }, 60000);
+    }
     if (!document.getElementById("nav-no-leidos")) return;  // sin sesión no hay menú de chats
     actualizarNoLeidos();
     setInterval(() => { if (document.visibilityState === "visible") actualizarNoLeidos(); }, 30000);

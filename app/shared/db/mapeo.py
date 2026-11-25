@@ -67,6 +67,9 @@ def estudiante_a_doc(e: Estudiante) -> dict:
         "bio": e.biografia,
         "fullName": e.nombre,
         "career": e.carrera,
+        "suspendedUntil": e.suspendido_hasta,
+        "banned": e.baneado,
+        "pendingWarning": e.aviso_pendiente,
         "avatar": e.avatar,
         "photo": foto_a_doc(e.foto),
     }
@@ -93,6 +96,9 @@ def doc_a_estudiante(doc: dict) -> Estudiante:
         biografia=doc.get("bio") or "",
         nombre=doc.get("fullName") or "",
         carrera=doc.get("career") or "",
+        suspendido_hasta=doc.get("suspendedUntil"),
+        baneado=bool(doc.get("banned")),
+        aviso_pendiente=doc.get("pendingWarning"),
         avatar=doc.get("avatar"),
         foto=doc_a_foto(doc.get("photo")),
     )

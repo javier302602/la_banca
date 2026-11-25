@@ -177,7 +177,7 @@ VALIDADOR_LOGIN_ATTEMPTS = {"$jsonSchema": {
 
 COLECCIONES = ["accounts", "login_attempts", "sessions", "publications", "chats", "messages",
                "reports", "system_parameters", "reactions", "live_locations",
-               "videocall_queue", "videocall_signals", "videocall_rooms", "videocall_reports"]
+               "videocall_queue", "videocall_signals", "videocall_rooms", "videocall_reports", "admin_actions"]
 
 
 async def _asegurar_coleccion(db: AsyncDatabase, nombre: str, validador: dict | None) -> None:
@@ -255,6 +255,11 @@ async def crear_indices(db: AsyncDatabase, dominio: str | None) -> None:
 
     await db.reports.create_index([("retentionEndsAt", ASCENDING)], name="ix_reports_retention_end")
     await db.reports.create_index([("targetType", ASCENDING), ("targetId", ASCENDING)], name="ix_reports_target")
+    # Fase 5: panel de administradores (pendientes primero, por fecha) e historial de acciones
+    await db.reports.create_index([("status", ASCENDING), ("reportedAt", DESCENDING)], name="ix_reports_status")
+    await db.videocall_reports.create_index([("status", ASCENDING), ("createdAt", DESCENDING)],
+                                            name="ix_videocall_reports_status")
+    await db.admin_actions.create_index([("at", DESCENDING)], name="ix_admin_actions_at")
 
 
 async def asegurar_indices_una_vez() -> None:
