@@ -1,6 +1,7 @@
 """Audios y música adjuntos en el chat (Fase 3).
 
-Formatos: MP3, WAV, OGG, M4A, AAC y FLAC. Como los documentos, el tipo se decide por el **contenido** (la firma
+Formatos: MP3, WAV, OGG, M4A, AAC y FLAC, más WebM (Opus), que es lo que graban Chrome y Firefox en las notas
+de voz (Safari graba M4A). Como los documentos, el tipo se decide por el **contenido** (la firma
 del archivo), nunca por la extensión ni por el Content-Type que envía el navegador. El tamaño máximo se lee de
 .env (AUDIO_MAX_MB) en el endpoint y llega aquí como parámetro.
 
@@ -18,18 +19,19 @@ MIME_AUDIO = {
     "m4a": "audio/mp4",
     "aac": "audio/aac",
     "flac": "audio/flac",
+    "webm": "audio/webm",  # notas de voz grabadas en el navegador (MediaRecorder)
 }
 TIPOS_AUDIO = tuple(MIME_AUDIO)
 # Marcas «ftyp» de un MP4 de solo audio (iPhone: M4A; grabadoras Android: mp42/isom)
 _MARCAS_M4A = (b"M4A ", b"M4B ", b"mp42", b"mp41", b"isom", b"iso2")
 
 MSG_VACIO = "El audio está vacío"
-MSG_FORMATO = "Formato de audio no permitido. Usa MP3, WAV, OGG, M4A, AAC o FLAC"
+MSG_FORMATO = "Formato de audio no permitido. Usa MP3, WAV, OGG, M4A, AAC, FLAC o WebM"
 
 
 @dataclass(frozen=True)
 class AudioValidado:
-    tipo: str        # mp3 | wav | ogg | m4a | aac | flac
+    tipo: str        # mp3 | wav | ogg | m4a | aac | flac | webm
     mime_type: str
     nombre: str      # nombre saneado, con la extensión del tipo detectado
 
@@ -45,6 +47,8 @@ def detectar_tipo_audio(contenido: bytes) -> str | None:
         return "ogg"
     if cabecera.startswith(b"fLaC"):
         return "flac"
+    if cabecera.startswith(bytes.fromhex("1a45dfa3")):  # cabecera EBML (WebM)
+        return "webm"
     if cabecera[4:8] == b"ftyp" and cabecera[8:12] in _MARCAS_M4A:
         return "m4a"
     if cabecera.startswith(b"ADIF"):

@@ -46,6 +46,7 @@ def paginas(e):
         (f"/chats/{e['chat']}/reportar", "ana@unas.edu.pe", "#form-reporte"),
         ("/perfil", "ana@unas.edu.pe", "#vista-avatar[data-iniciales], #vista-avatar img"),
         ("/perfiles/beto_9", "ana@unas.edu.pe", "#perfil:not([hidden])"),
+        ("/videollamada", "ana@unas.edu.pe", "#inicio-llamada"),          # Fase 4
     ]
 
 

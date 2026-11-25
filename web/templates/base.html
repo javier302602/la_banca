@@ -51,6 +51,8 @@
           <li class="nav-item"><a class="nav-link" href="/chats" id="nav-chats"{% if ruta.startswith("/chats") %} aria-current="page"{% endif %}>
             <i class="bi bi-chat-dots" aria-hidden="true"></i> {{ t("nav.mis_chats") }}
             <span class="badge rounded-pill contador-no-leidos d-none" id="nav-no-leidos"></span></a></li>
+          <li class="nav-item"><a class="nav-link" href="/videollamada"{% if ruta == "/videollamada" %} aria-current="page"{% endif %}>
+            <i class="bi bi-camera-video" aria-hidden="true"></i> {{ t("nav.videollamada") }}</a></li>
         </ul>
         <div class="d-flex align-items-center gap-2">
           <a class="nav-link py-2" href="/perfil" id="nav-nickname"{% if ruta == "/perfil" %} aria-current="page"{% endif %}>

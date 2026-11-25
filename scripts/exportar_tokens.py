@@ -32,6 +32,7 @@ CATEGORIAS = [
     ("espacio-", "spacing", "spacing", False),
     ("radio-", "borderRadius", "borderRadius", False),
     ("punto-", "sizing", "sizing", False),
+    ("duracion-", "other", "other", False),         # animaciones cortas (Fase 4)
 ]
 DECLARACION = re.compile(r"--lb-([a-z0-9-]+):\s*([^;]+);[ \t]*(?:/\*\s*(.*?)\s*\*/)?")
 SOMBRA = re.compile(r"(-?[\d.]+(?:px)?)\s+(-?[\d.]+(?:px)?)\s+([\d.]+(?:px)?)(?:\s+(-?[\d.]+(?:px)?))?\s+(rgba?\([^)]*\)|#[0-9a-fA-F]{3,8})")

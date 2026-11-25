@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, Request
 from pymongo.asynchronous.database import AsyncDatabase
 
+from app.shared.config.carreras import carreras
 from app.shared.clock import get_clock
 from app.shared.db.mongo import get_database
 from app.shared.domain.perfiles import GRUPOS_AVATAR
@@ -32,4 +33,5 @@ async def editar_nickname(
 async def pagina_perfil(request: Request, sesion: SesionActual | None = Depends(get_sesion_opcional)):
     if sesion is None:
         return redirigir_a_login(request)
-    return render(request, "m01_acceso/editar_nickname.html", sesion, grupos_avatar=GRUPOS_AVATAR)
+    return render(request, "m01_acceso/editar_nickname.html", sesion, grupos_avatar=GRUPOS_AVATAR,
+                  carreras=carreras())

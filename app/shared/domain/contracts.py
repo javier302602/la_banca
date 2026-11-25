@@ -25,6 +25,9 @@ from app.shared.domain.entities import (
     TipoPublicacion,
     TipoReaccion,
     UbicacionEnVivo,
+    ParticipanteVideollamada,
+    ReporteVideollamada,
+    SalaVideollamada,
 )
 
 
@@ -136,6 +139,9 @@ class IAccountRepository(ABC):
         """Actualiza también las copias desnormalizadas (RF-AUT-26). Conflicto si ya está en uso."""
         raise NotImplementedError
     async def eliminar_no_activadas(self, registradas_antes_de: datetime) -> int: raise NotImplementedError
+    async def actualizar_identidad(self, estudiante_id: str, nombre: str, carrera: str) -> None:
+        """Fase 4: nombre y carrera que se muestran en la videollamada."""
+        raise NotImplementedError
     # Enlaces de un solo uso (subdocumentos activation / passwordReset)
     async def registrar_enlace(self, estudiante_id: str, proposito: PropositoEnlace, enlace: EnlaceUnUso) -> None:
         """Reemplaza el token vigente (RF-AUT-46 / RF-AUT-50) y guarda el historial de envíos."""
@@ -205,6 +211,33 @@ class IUbicacionRepository(ABC):
         raise NotImplementedError
     async def buscar(self, chat_id: str, estudiante_id: str) -> UbicacionEnVivo | None: raise NotImplementedError
     async def borrar(self, chat_id: str, estudiante_id: str) -> None: raise NotImplementedError
+
+
+class IVideollamadaRepository(ABC):
+    """Cola de espera, salas y buzón de señales de la videollamada (en Mongo: funciona con varios workers)."""
+
+    async def buscar_participante(self, estudiante_id: str) -> ParticipanteVideollamada | None:
+        """Nickname, nombre y carrera de una cuenta ACTIVA; None si no existe o no está activa."""
+        raise NotImplementedError
+    async def entrar_a_la_cola(self, yo: ParticipanteVideollamada, evitar: list[str], expira_en: datetime) -> None:
+        """Pone (o renueva) al estudiante en la cola."""
+        raise NotImplementedError
+    async def salir_de_la_cola(self, estudiante_id: str) -> bool:
+        """Atómico. True si estaba en la cola; False si ya no estaba (por ejemplo, porque otro lo tomó)."""
+        raise NotImplementedError
+    async def tomar_al_azar(self, yo_id: str, evitar: list[str], ahora: datetime) -> ParticipanteVideollamada | None:
+        """Atómico: saca de la cola a otra persona al azar (que no esté en `evitar` ni me evite) y la devuelve."""
+        raise NotImplementedError
+    async def crear_sala(self, participantes: list[str], ahora: datetime) -> SalaVideollamada: raise NotImplementedError
+    async def cerrar_sala(self, sala_id: str, ahora: datetime) -> None: raise NotImplementedError
+    async def buscar_sala(self, sala_id: str) -> SalaVideollamada | None: raise NotImplementedError
+    async def enviar(self, para: str, mensaje: dict, expira_en: datetime) -> None:
+        """Deja un mensaje en el buzón del estudiante (señal WebRTC, chat, emparejado, colgó)."""
+        raise NotImplementedError
+    async def recibir(self, estudiante_id: str) -> list[dict]:
+        """Saca, en orden, los mensajes pendientes del buzón del estudiante."""
+        raise NotImplementedError
+    async def guardar_reporte(self, reporte: ReporteVideollamada) -> str: raise NotImplementedError
 
 
 class IChatRepository(ABC):

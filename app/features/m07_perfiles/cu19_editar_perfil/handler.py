@@ -6,6 +6,7 @@ SRS v2.0, cambios 2.1–2.3 (docs/cambios_v2.md):
   vuelve a codificar sin EXIF, recortada al cuadrado central (WebP de 512 px como máximo). La foto
   anterior se borra del almacenamiento al reemplazarla o quitarla.
 - No se infiere ni se guarda el género: solo el identificador del avatar elegido.
+- Fase 4: nombre y carrera (obligatorios para entrar a la videollamada; no salen en el perfil público).
 """
 import asyncio
 
@@ -16,7 +17,7 @@ from app.shared.domain.perfiles import LADO_FOTO, TAMANO_MAX_FOTO, FotoPerfil, a
 from app.shared.domain.reglas import detectar_formato_imagen
 from app.shared.storage.image_storage import foto_cuadrada
 
-from .request import EditarPerfilRequest, MiPerfilResponse
+from .request import EditarIdentidadRequest, EditarPerfilRequest, MiPerfilResponse
 
 PREFIJO_FOTOS = "perfiles"
 MSG_FOTO_GRANDE = "La foto supera el tamaño máximo de 2 MB"
@@ -35,6 +36,11 @@ class EditarPerfilHandler:
     async def actualizar(self, estudiante_id: str, body: EditarPerfilRequest) -> MiPerfilResponse:
         await self._cuenta(estudiante_id)
         await self._cuentas.actualizar_perfil(estudiante_id, body.biografia, body.avatar)
+        return await self.ver(estudiante_id)
+
+    async def actualizar_identidad(self, estudiante_id: str, body: EditarIdentidadRequest) -> MiPerfilResponse:
+        await self._cuenta(estudiante_id)
+        await self._cuentas.actualizar_identidad(estudiante_id, body.nombre, body.carrera)
         return await self.ver(estudiante_id)
 
     async def subir_foto(self, estudiante_id: str, contenido: bytes | None) -> MiPerfilResponse:
@@ -78,4 +84,4 @@ class EditarPerfilHandler:
     def _respuesta(e: Estudiante) -> MiPerfilResponse:
         return MiPerfilResponse(nickname=e.nickname, biografia=e.biografia, avatar=e.avatar,
                                 tiene_foto=e.foto is not None, apariencia=apariencia(e.id, e.nickname, e.foto, e.avatar),
-                                fecha_ingreso=e.fecha_ingreso)
+                                fecha_ingreso=e.fecha_ingreso, nombre=e.nombre, carrera=e.carrera)

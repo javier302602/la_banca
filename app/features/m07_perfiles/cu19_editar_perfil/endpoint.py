@@ -13,7 +13,7 @@ from app.shared.storage.image_storage import get_image_storage, leer_imagen_subi
 
 from .handler import EditarPerfilHandler
 from .repository import MongoEditarPerfilRepository
-from .request import EditarPerfilRequest, MiPerfilResponse
+from .request import EditarIdentidadRequest, EditarPerfilRequest, MiPerfilResponse
 
 router = APIRouter(tags=["M07 Perfiles"])
 
@@ -33,6 +33,12 @@ async def ver_mi_perfil(sesion: SesionActual = Depends(get_sesion_actual),
 async def editar_perfil(body: EditarPerfilRequest, sesion: SesionActual = Depends(get_sesion_actual),
                         handler: EditarPerfilHandler = Depends(get_handler)) -> MiPerfilResponse:
     return await handler.actualizar(sesion.estudiante_id, body)
+
+
+@router.patch("/api/cuentas/me/identidad", response_model=MiPerfilResponse, status_code=200)
+async def editar_identidad(body: EditarIdentidadRequest, sesion: SesionActual = Depends(get_sesion_actual),
+                           handler: EditarPerfilHandler = Depends(get_handler)) -> MiPerfilResponse:
+    return await handler.actualizar_identidad(sesion.estudiante_id, body)
 
 
 @router.put("/api/cuentas/me/foto", response_model=MiPerfilResponse, status_code=200)

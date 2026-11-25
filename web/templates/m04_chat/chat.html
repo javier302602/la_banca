@@ -44,6 +44,8 @@
             <input class="entrada-oculta" type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp"
                    aria-describedby="ayuda-adjuntos"></label>
           <button class="btn btn-outline-secondary btn-sm" type="button" data-tomar-foto="imagen"><i class="bi bi-camera" aria-hidden="true"></i> {{ t("js.camara.tomar_foto") }}</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="boton-voz" aria-pressed="false" hidden>
+            <i class="bi bi-mic" aria-hidden="true"></i> <span id="texto-voz">{{ t("js.voz.grabar") }}</span></button>
           <label class="form-label mb-0 btn btn-outline-secondary btn-sm adjunto" for="audio"><i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t("chat.audio") }}
             <input class="entrada-oculta" type="file" id="audio" name="audio" aria-describedby="ayuda-adjuntos"
                    accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/flac"></label>

@@ -51,6 +51,25 @@
         </div>
       </form>
 
+      {# Fase 4: datos para la videollamada (no se muestran en el perfil público) #}
+      <form id="form-identidad" class="mb-4" novalidate>
+        <h2 class="h6">{{ t("perfil.identidad_titulo") }}</h2>
+        <p class="form-text mt-0" id="ayuda-identidad">{{ t("perfil.identidad_ayuda") }}</p>
+        <div class="mb-3">
+          <label class="form-label" for="nombre">{{ t("perfil.nombre") }}</label>
+          <input class="form-control" id="nombre" name="nombre" maxlength="80" autocomplete="name"
+                 aria-describedby="ayuda-identidad">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="carrera">{{ t("perfil.carrera") }}</label>
+          <select class="form-select" id="carrera" name="carrera" aria-describedby="ayuda-identidad">
+            <option value="">{{ t("perfil.elige_carrera") }}</option>
+            {% for carrera in carreras %}<option>{{ carrera }}</option>{% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" type="submit">{{ t("perfil.guardar_identidad") }}</button>
+      </form>
+
       <form id="form-perfil" novalidate>
         <div class="mb-3">
           <label class="form-label" for="biografia">{{ t("perfil.biografia") }}</label>

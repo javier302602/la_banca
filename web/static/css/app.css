@@ -116,13 +116,16 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-lg); line-height: var(--
   /* Tableta: el menú expandido no cabe con iconos; quedan los textos y «Cerrar sesión» solo con icono */
   .barra .navbar-nav .nav-link .bi { display: none; }
   .barra .texto-cerrar { display: none; }
-  .barra #nav-nickname { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; }
+  .barra #nav-nickname { max-width: 6rem; overflow: hidden; text-overflow: ellipsis; }
+  /* Fase 4: con «Videollamada» el menú no cabía a 768 px; se acorta el espacio entre enlaces */
+  .barra .navbar-nav .nav-link { padding-inline: var(--lb-espacio-1); }
 }
 
 @media (min-width: 1024px) {
   .barra .navbar-nav .nav-link .bi { display: inline-block; }
   .barra .texto-cerrar { display: inline; }
   .barra #nav-nickname { max-width: 12rem; }
+  .barra .navbar-nav .nav-link { padding-inline: var(--lb-espacio-2); }
   .contenedor-medio { max-width: 44rem; }
   .rejilla-feed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -328,3 +331,75 @@ a.autor:hover .nombre-autor, a.autor:focus-visible .nombre-autor { text-decorati
                    padding: var(--lb-espacio-2) var(--lb-espacio-4); border-bottom: 1px solid var(--lb-color-borde);
                    background: var(--lb-color-primario-suave); color: var(--lb-color-texto); }
 #boton-ubicacion[aria-pressed="true"] { border-color: var(--lb-color-primario); background: var(--lb-color-primario-suave); }
+
+/* === Fase 4 — Estilo visual: oscuro y limpio, títulos grandes, mucho aire ================================== */
+
+main { padding-block: var(--lb-espacio-8) var(--lb-espacio-12); }
+main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-titulo); font-weight: var(--lb-fuente-peso-extra);
+                      letter-spacing: -0.02em; margin-bottom: var(--lb-espacio-6); }
+@media (min-width: 768px) {
+  main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-titulo-grande); }
+}
+.subtitulo-pagina { font-size: var(--lb-fuente-tamano-base); color: var(--lb-color-texto-secundario);
+                    margin-top: calc(-1 * var(--lb-espacio-4)); margin-bottom: var(--lb-espacio-6); }
+
+/* Tarjetas: más redondeadas, sombra suave y elevación corta al pasar el puntero */
+.card { --bs-card-border-radius: var(--lb-radio-xxl); --bs-card-inner-border-radius: var(--lb-radio-xxl);
+        transition: box-shadow var(--lb-duracion-media) ease, transform var(--lb-duracion-media) ease; }
+.list-group { --bs-list-group-border-radius: var(--lb-radio-xxl); border-radius: var(--lb-radio-xxl); }
+
+/* Botón principal llamativo (degradado de marca, píldora) y secundarios discretos */
+.btn { border-radius: var(--lb-radio-pildora); font-weight: var(--lb-fuente-peso-semibold);
+       transition: transform var(--lb-duracion-rapida) ease, box-shadow var(--lb-duracion-rapida) ease,
+                   background-color var(--lb-duracion-rapida) ease, color var(--lb-duracion-rapida) ease; }
+.btn-primary { background-image: linear-gradient(135deg, var(--lb-color-primario), var(--lb-color-acento));
+               border: 0; box-shadow: var(--lb-sombra-tarjeta); }
+.btn-primary:hover, .btn-primary:focus-visible { transform: translateY(-1px); box-shadow: var(--lb-sombra-elevada); }
+.btn-primary:active { transform: translateY(0); }
+.btn-outline-secondary { --bs-btn-border-color: var(--lb-color-borde); --bs-btn-color: var(--lb-color-texto);
+                         --bs-btn-hover-bg: var(--lb-color-fondo); --bs-btn-hover-color: var(--lb-color-texto);
+                         --bs-btn-hover-border-color: var(--lb-color-secundario);
+                         --bs-btn-active-bg: var(--lb-color-fondo); --bs-btn-active-color: var(--lb-color-texto); }
+.btn-lg { padding: var(--lb-espacio-3) var(--lb-espacio-8); font-size: var(--lb-fuente-tamano-lg); }
+.form-control, .form-select { border-radius: var(--lb-radio-lg); background-color: var(--lb-color-fondo); }  /* el campo resalta sobre la tarjeta */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .card { transition: none; }
+  .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
+}
+
+/* --- Videollamada (Fase 4): escenario oscuro con el video remoto grande y el propio en una esquina ---------- */
+.pasos-llamada { display: grid; gap: var(--lb-espacio-6); }
+@media (min-width: 1024px) { .pasos-llamada { grid-template-columns: 3fr 2fr; align-items: start; } }
+.lista-pasos { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--lb-espacio-4); }
+.lista-pasos li { display: flex; gap: var(--lb-espacio-4); align-items: flex-start; padding: var(--lb-espacio-4);
+                  border-radius: var(--lb-radio-xxl); background: var(--lb-color-superficie); box-shadow: var(--lb-sombra-tarjeta); }
+.lista-pasos p { margin: var(--lb-espacio-1) 0 0; color: var(--lb-color-texto-secundario); }
+.numero-paso { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center;
+               font-weight: var(--lb-fuente-peso-extra); color: var(--lb-color-sobre-primario);
+               background-image: linear-gradient(135deg, var(--lb-color-primario), var(--lb-color-acento)); }
+.reglas-llamada ul { margin: 0; padding-left: var(--lb-espacio-5); display: grid; gap: var(--lb-espacio-2); }
+
+.llamada { display: grid; gap: var(--lb-espacio-4); }
+@media (min-width: 1024px) { .llamada:not([hidden]) { grid-template-columns: 1fr 20rem; align-items: start; } }
+.video-remoto { position: relative; aspect-ratio: 16 / 10; border-radius: var(--lb-radio-xxl); overflow: hidden;
+                background: var(--lb-color-fondo); box-shadow: var(--lb-sombra-elevada); }
+.video-remoto > video:first-child { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-propio { position: absolute; right: var(--lb-espacio-3); bottom: var(--lb-espacio-3); width: 28%; max-width: 12rem;
+                aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--lb-radio-lg); border: 2px solid var(--lb-color-superficie);
+                background: var(--lb-color-superficie); }
+.estado-llamada { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--lb-espacio-6);
+                  text-align: center; font-size: var(--lb-fuente-tamano-lg); font-weight: var(--lb-fuente-peso-semibold);
+                  color: var(--lb-color-texto); }
+.estado-llamada[hidden] { display: none; }
+.pareja-llamada { position: absolute; left: var(--lb-espacio-3); top: var(--lb-espacio-3); display: grid;
+                  padding: var(--lb-espacio-2) var(--lb-espacio-3); border-radius: var(--lb-radio-lg);
+                  background: var(--lb-color-superficie); color: var(--lb-color-texto); box-shadow: var(--lb-sombra-tarjeta); }
+.controles-llamada { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--lb-espacio-2);
+                     margin-top: var(--lb-espacio-4); }
+.historial-llamada { height: 14rem; overflow-y: auto; display: grid; align-content: start; gap: var(--lb-espacio-1); }
+.mensaje-llamada { margin: 0; overflow-wrap: anywhere; }
+.mensaje-llamada.propio strong { color: var(--lb-color-primario); }
+.dialogo-reporte { border: 0; border-radius: var(--lb-radio-xxl); padding: var(--lb-espacio-6); width: min(28rem, 94vw);
+                   background: var(--lb-color-superficie); color: var(--lb-color-texto); box-shadow: var(--lb-sombra-elevada); }
+.dialogo-reporte::backdrop { background: rgb(0 0 0 / .6); }

@@ -14,6 +14,7 @@ from app.shared.domain.contracts import (
     IPublicationRepository,
     IReactionRepository,
     IUbicacionRepository,
+    IVideollamadaRepository,
     IReportRepository,
 )
 from app.shared.domain.entities import (
@@ -22,6 +23,9 @@ from app.shared.domain.entities import (
     ResumenReacciones,
     TipoReaccion,
     UbicacionEnVivo,
+    ParticipanteVideollamada,
+    ReporteVideollamada,
+    SalaVideollamada,
     Chat,
     ClaveParametro,
     EnlaceUnUso,
@@ -132,6 +136,9 @@ class FakeAccountRepository(IAccountRepository):
 
     async def actualizar_foto(self, estudiante_id, foto):
         self.cuentas[estudiante_id].foto = foto
+
+    async def actualizar_identidad(self, estudiante_id, nombre, carrera):
+        self.cuentas[estudiante_id].nombre, self.cuentas[estudiante_id].carrera = nombre, carrera
 
     async def actualizar_nickname(self, estudiante_id, nickname):
         if await self.existe_por_nickname(nickname, excluir_id=estudiante_id):
@@ -318,6 +325,60 @@ class FakeUbicacionRepository(IUbicacionRepository):
         self.ubicaciones.pop((chat_id, estudiante_id), None)
 
 
+class FakeVideollamadaRepository(IVideollamadaRepository):
+    """Misma semántica que la versión Mongo: la cola, las salas y los buzones viven en diccionarios."""
+
+    def __init__(self, participantes=(), aleatorio=None) -> None:
+        import random
+
+        self.participantes = {p.estudiante_id: p for p in participantes}
+        self.cola: dict[str, tuple[ParticipanteVideollamada, list[str], datetime]] = {}
+        self.salas: dict[str, SalaVideollamada] = {}
+        self.buzones: dict[str, list[dict]] = {}
+        self.reportes: list[ReporteVideollamada] = []
+        self._azar = aleatorio or random.Random(7)
+
+    async def buscar_participante(self, estudiante_id):
+        return copy.deepcopy(self.participantes.get(estudiante_id))
+
+    async def entrar_a_la_cola(self, yo, evitar, expira_en):
+        self.cola[yo.estudiante_id] = (copy.deepcopy(yo), list(evitar), expira_en)
+
+    async def salir_de_la_cola(self, estudiante_id):
+        return self.cola.pop(estudiante_id, None) is not None
+
+    async def tomar_al_azar(self, yo_id, evitar, ahora):
+        candidatos = [i for i, (_, suyos, vence) in self.cola.items()
+                      if i != yo_id and i not in evitar and yo_id not in suyos and vence > ahora]
+        if not candidatos:
+            return None
+        return self.cola.pop(self._azar.choice(sorted(candidatos)))[0]
+
+    async def crear_sala(self, participantes, ahora):
+        sala = SalaVideollamada(nuevo_id(), list(participantes), ahora)
+        self.salas[sala.id] = sala
+        return copy.deepcopy(sala)
+
+    async def cerrar_sala(self, sala_id, ahora):
+        if sala_id in self.salas and self.salas[sala_id].fin is None:
+            self.salas[sala_id].fin = ahora
+
+    async def buscar_sala(self, sala_id):
+        return copy.deepcopy(self.salas.get(sala_id))
+
+    async def enviar(self, para, mensaje, expira_en):
+        self.buzones.setdefault(para, []).append(copy.deepcopy(mensaje))
+
+    async def recibir(self, estudiante_id):
+        return self.buzones.pop(estudiante_id, [])
+
+    async def guardar_reporte(self, reporte):
+        reporte = copy.deepcopy(reporte)
+        reporte.id = nuevo_id()
+        self.reportes.append(reporte)
+        return reporte.id
+
+
 class FakeChatRepository(IChatRepository):
     def __init__(self) -> None:
         self.chats: dict[str, Chat] = {}
@@ -439,7 +500,7 @@ def imagen(formato: str = "PNG", tamano: tuple[int, int] = (8, 8)) -> bytes:
 
 
 __all__ = [
-    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReactionRepository", "FakeUbicacionRepository", "FakeReportRepository",
+    "FakeAccountRepository", "FakePublicationRepository", "FakeChatRepository", "FakeReactionRepository", "FakeUbicacionRepository", "FakeVideollamadaRepository", "FakeReportRepository",
     "FakeParameterRepository", "FakeConfig", "FakePasswordHasher", "FakeEmailSender", "FakeImageStorage",
     "FakeClock", "SecureTokenService", "nuevo_id", "estudiante", "imagen", "TipoPublicacion", "TipoObjetoReportado",
     "EstadoChat",

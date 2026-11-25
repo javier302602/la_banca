@@ -6,7 +6,10 @@ from datetime import datetime
 
 from pydantic import BaseModel, field_validator
 
+from app.shared.config.carreras import carreras
 from app.shared.domain.perfiles import AVATARES, BIOGRAFIA_MAX, Apariencia
+
+LARGO_IDENTIDAD = 80
 
 
 class EditarPerfilRequest(BaseModel):
@@ -31,6 +34,24 @@ class EditarPerfilRequest(BaseModel):
         return valor
 
 
+class EditarIdentidadRequest(BaseModel):
+    """Fase 4: nombre (2–80 caracteres) y carrera, que debe ser una de config/carreras.json."""
+
+    nombre: str
+    carrera: str
+
+    @field_validator("nombre", "carrera")
+    @classmethod
+    def _texto(cls, valor: str, info) -> str:
+        valor = " ".join(valor.split())
+        campo = "El nombre" if info.field_name == "nombre" else "La carrera"
+        if not 2 <= len(valor) <= LARGO_IDENTIDAD:
+            raise ValueError(f"{campo} debe tener entre 2 y {LARGO_IDENTIDAD} caracteres")
+        if info.field_name == "carrera" and valor not in carreras():
+            raise ValueError("Elige una carrera de la lista")
+        return valor
+
+
 class MiPerfilResponse(BaseModel):
     nickname: str
     biografia: str
@@ -38,3 +59,5 @@ class MiPerfilResponse(BaseModel):
     tiene_foto: bool
     apariencia: Apariencia
     fecha_ingreso: datetime
+    nombre: str = ""   # solo para ti y, en la videollamada, para la otra persona
+    carrera: str = ""

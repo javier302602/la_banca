@@ -17,6 +17,10 @@ DURACION_PUBLICACION = timedelta(hours=24)            # RN-09
 RETENCION_PUBLICACION = timedelta(days=30)
 RETENCION_ARCHIVOS_PUBLICACION = RETENCION_PUBLICACION - timedelta(days=1)
 VIGENCIA_UBICACION = timedelta(minutes=2)  # una ubicación en vivo sin actualizarse se borra sola (TTL)
+# Videollamada (Fase 4): la cola y las señales viven en Mongo (varios workers); todo vence solo
+VIGENCIA_EN_COLA = timedelta(seconds=30)      # quien deja de renovar su lugar (se cayó) sale de la cola
+VIGENCIA_SENAL = timedelta(seconds=60)        # una señal no entregada se descarta
+VIGENCIA_SALA = timedelta(days=30)            # la sala (quién habló con quién) se guarda para los reportes
 INACTIVIDAD_CHAT = timedelta(hours=24)                # RN-20
 VIGENCIA_CODIGO_ACTIVACION = timedelta(minutes=10)    # código de 6 dígitos enviado al correo
 MAX_INTENTOS_CODIGO = 5                               # intentos para escribir el código antes de pedir otro
@@ -74,6 +78,13 @@ class TipoReaccion(str, Enum):
     ME_DIVIERTE = "ME_DIVIERTE"
     ME_ASOMBRA = "ME_ASOMBRA"
     ME_ENTRISTECE = "ME_ENTRISTECE"
+
+
+class MotivoReporteVideollamada(str, Enum):
+    OBSCENO = "OBSCENO"      # contenido obsceno
+    INSULTOS = "INSULTOS"
+    SPAM = "SPAM"
+    OTRO = "OTRO"
 
 
 class EstadoChat(str, Enum):
@@ -174,6 +185,9 @@ class Estudiante:
     biografia: str = ""
     avatar: str | None = None       # avatar-NN elegido; no se guarda ningún grupo ni género
     foto: FotoPerfil | None = None
+    # Fase 4: datos reales para la videollamada (no anónima). No se muestran en el perfil público.
+    nombre: str = ""
+    carrera: str = ""
 
     @property
     def fecha_ingreso(self) -> datetime:
@@ -260,6 +274,37 @@ class UbicacionEnVivo:
     precision: float  # metros
     actualizado: datetime
     expira_en: datetime
+
+
+@dataclass
+class ParticipanteVideollamada:
+    """Lo que la otra persona ve en la videollamada (no es anónima: nombre y carrera)."""
+
+    estudiante_id: str
+    nickname: str
+    nombre: str
+    carrera: str
+
+
+@dataclass
+class SalaVideollamada:
+    """Una llamada entre dos estudiantes. Solo se guarda quién y cuándo, nunca el audio ni el video."""
+
+    id: str
+    participantes: list[str]
+    inicio: datetime
+    fin: datetime | None = None
+
+
+@dataclass
+class ReporteVideollamada:
+    id: str
+    sala_id: str
+    reportante_id: str
+    reportado_id: str
+    motivo: MotivoReporteVideollamada
+    detalle: str
+    fecha: datetime
 
 
 @dataclass

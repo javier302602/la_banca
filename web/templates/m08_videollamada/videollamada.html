@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{# CU-23 — Videollamada aleatoria entre estudiantes · CU-24 — Reportar #}
+
+{% block title %}{{ t("videollamada.titulo") }}{% endblock %}
+{% block pagina %}videollamada{% endblock %}
+
+{% block content %}
+<div class="contenedor-ancho">
+  <div id="mensajes" aria-live="polite"></div>
+
+  {# Portada de la sección: cómo funciona y reglas de seguridad #}
+  <section id="inicio-llamada">
+    <h1><i class="bi bi-camera-video icono-titulo" aria-hidden="true"></i>{{ t("videollamada.titulo") }}</h1>
+    <p class="subtitulo-pagina">{{ t("videollamada.subtitulo") }}</p>
+    <div class="pasos-llamada">
+      <ol class="lista-pasos">
+        <li><span class="numero-paso" aria-hidden="true">1</span>
+          <div><strong>{{ t("videollamada.paso1_titulo") }}</strong><p>{{ t("videollamada.paso1") }}</p></div></li>
+        <li><span class="numero-paso" aria-hidden="true">2</span>
+          <div><strong>{{ t("videollamada.paso2_titulo") }}</strong><p>{{ t("videollamada.paso2") }}</p></div></li>
+        <li><span class="numero-paso" aria-hidden="true">3</span>
+          <div><strong>{{ t("videollamada.paso3_titulo") }}</strong><p>{{ t("videollamada.paso3") }}</p></div></li>
+      </ol>
+      <div class="card reglas-llamada">
+        <div class="card-body">
+          <h2 class="h5"><i class="bi bi-shield-check" aria-hidden="true"></i> {{ t("videollamada.reglas_titulo") }}</h2>
+          <ul>
+            <li>{{ t("videollamada.regla1") }}</li>
+            <li>{{ t("videollamada.regla2") }}</li>
+            <li>{{ t("videollamada.regla3") }}</li>
+            <li>{{ t("videollamada.regla4") }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% if perfil_completo %}
+    <button class="btn btn-primary btn-lg mt-4" type="button" id="empezar">
+      <i class="bi bi-camera-video" aria-hidden="true"></i> {{ t("videollamada.empezar") }}</button>
+    {% else %}
+    <div class="alert alert-info mt-4" role="status" id="falta-perfil">{{ t("videollamada.falta_perfil") }}
+      <a class="alert-link" href="/perfil">{{ t("videollamada.completar_perfil") }}</a></div>
+    {% endif %}
+  </section>
+
+  {# Llamada: video remoto grande, el propio pequeño, controles y chat de texto #}
+  <section id="llamada" class="llamada" hidden aria-labelledby="estado-llamada">
+    <div class="escenario-llamada">
+      <div class="video-remoto">
+        <video id="video-remoto" autoplay playsinline aria-label="{{ t('videollamada.video_otra') }}"></video>
+        <div class="estado-llamada" id="estado-llamada" role="status" aria-live="polite"></div>
+        <div class="pareja-llamada" id="pareja" hidden>
+          <strong id="pareja-nombre"></strong>
+          <span id="pareja-carrera"></span>
+          <span class="small" id="pareja-nickname"></span>
+        </div>
+        <video id="video-propio" class="video-propio" autoplay playsinline muted aria-label="{{ t('videollamada.video_propio') }}"></video>
+      </div>
+      <div class="controles-llamada" role="group" aria-label="{{ t('videollamada.controles') }}">
+        <button class="btn btn-outline-secondary" type="button" id="boton-microfono" aria-pressed="false">
+          <i class="bi bi-mic-mute" aria-hidden="true"></i> {{ t("videollamada.silenciar") }}</button>
+        <button class="btn btn-outline-secondary" type="button" id="boton-camara" aria-pressed="false">
+          <i class="bi bi-camera-video-off" aria-hidden="true"></i> {{ t("videollamada.apagar_camara") }}</button>
+        <button class="btn btn-primary" type="button" id="boton-siguiente">
+          <i class="bi bi-skip-forward" aria-hidden="true"></i> {{ t("videollamada.siguiente") }}</button>
+        <button class="btn btn-danger" type="button" id="boton-colgar">
+          <i class="bi bi-telephone-x" aria-hidden="true"></i> {{ t("videollamada.colgar") }}</button>
+        <button class="btn btn-outline-danger" type="button" id="boton-reportar" disabled>
+          <i class="bi bi-flag" aria-hidden="true"></i> {{ t("videollamada.reportar") }}</button>
+      </div>
+    </div>
+    <aside class="chat-llamada card" aria-labelledby="titulo-chat-llamada">
+      <div class="card-body">
+        <h2 class="h6" id="titulo-chat-llamada">{{ t("videollamada.chat") }}</h2>
+        <div class="historial-llamada" id="historial-llamada" role="log" aria-live="polite"></div>
+        <form id="form-chat-llamada" class="d-flex gap-2 mt-2" novalidate>
+          <label class="visually-hidden" for="texto-llamada">{{ t("videollamada.escribe") }}</label>
+          <input class="form-control" id="texto-llamada" maxlength="500" autocomplete="off" disabled
+                 placeholder="{{ t('videollamada.escribe') }}">
+          <button class="btn btn-outline-secondary" type="submit" disabled>{{ t("videollamada.enviar") }}</button>
+        </form>
+      </div>
+    </aside>
+  </section>
+
+  <dialog class="dialogo-reporte" id="dialogo-reporte" aria-labelledby="titulo-reporte">
+    <form id="form-reporte" method="dialog" novalidate>
+      <h2 class="h5" id="titulo-reporte">{{ t("videollamada.reporte_titulo") }}</h2>
+      <fieldset class="mb-3">
+        <legend class="form-label fs-6">{{ t("videollamada.motivo") }}</legend>
+        {% for motivo in ["OBSCENO", "INSULTOS", "SPAM", "OTRO"] %}
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="motivo" id="motivo-{{ motivo }}" value="{{ motivo }}"
+                 {% if loop.first %}checked{% endif %}>
+          <label class="form-check-label" for="motivo-{{ motivo }}">{{ t("videollamada.motivos." ~ motivo) }}</label>
+        </div>
+        {% endfor %}
+      </fieldset>
+      <label class="form-label" for="detalle-reporte">{{ t("videollamada.detalle") }}</label>
+      <textarea class="form-control" id="detalle-reporte" maxlength="500" rows="3"></textarea>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <button class="btn btn-outline-secondary" type="button" id="cancelar-reporte">{{ t("videollamada.cancelar") }}</button>
+        <button class="btn btn-danger" type="submit">{{ t("videollamada.enviar_reporte") }}</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+<span id="config-llamada" data-servidores-ice="{{ servidores_ice }}" hidden></span>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/videollamada.js"></script>{% endblock %}

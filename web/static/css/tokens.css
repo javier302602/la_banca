@@ -63,9 +63,12 @@
   --lb-fuente-tamano-lg: 1.25rem;          /* 20 px: títulos de página (móvil) */
   --lb-fuente-tamano-xl: 1.5rem;           /* 24 px: títulos de página (≥ 768 px) */
   --lb-fuente-tamano-xxl: 2rem;            /* 32 px: lema de la portada */
+  --lb-fuente-tamano-titulo: 1.75rem;      /* 28 px: títulos de página (móvil) */
+  --lb-fuente-tamano-titulo-grande: 2.5rem; /* 40 px: títulos de página (≥ 768 px) y portadas */
   --lb-fuente-peso-regular: 400;
   --lb-fuente-peso-semibold: 600;
   --lb-fuente-peso-negrita: 700;
+  --lb-fuente-peso-extra: 800;            /* títulos grandes */
   --lb-interlineado-base: 1.5;
   --lb-interlineado-ajustado: 1.25;
 
@@ -78,12 +81,14 @@
   --lb-espacio-6: 1.5rem;
   --lb-espacio-8: 2rem;
   --lb-espacio-12: 3rem;
+  --lb-espacio-16: 4rem;                   /* aire entre secciones */
 
   /* Radios */
   --lb-radio-sm: 0.25rem;
   --lb-radio-md: 0.5rem;
   --lb-radio-lg: 1rem;
   --lb-radio-xl: 1.25rem;
+  --lb-radio-xxl: 1.75rem;                 /* tarjetas destacadas y paneles de llamada */
   --lb-radio-pildora: 50rem;
 
   /* Tamaños */
@@ -91,6 +96,10 @@
   --lb-punto-tableta: 768px;
   --lb-punto-escritorio: 1024px;
   --lb-punto-objetivo-minimo: 24px;        /* WCAG 2.5.8 */
+
+  /* Animaciones (cortas; con «reducir movimiento» se quitan los desplazamientos) */
+  --lb-duracion-rapida: 150ms;
+  --lb-duracion-media: 220ms;
 }
 
 [data-bs-theme="dark"] {
@@ -109,12 +118,12 @@
   --lb-color-texto: #ecebf5;               /* 15,7:1 */
   --lb-color-texto-secundario: #b0aec4;    /* 7,7:1 sobre superficie */
   --lb-color-texto-hora: #c9c6dc;
-  --lb-color-fondo: #13121c;
-  --lb-color-superficie: #1d1c2a;
-  --lb-color-borde: #34324a;
-  --lb-color-fondo-chat: #171624;
+  --lb-color-fondo: #0b0b0f;              /* Fase 4: negro profundo */
+  --lb-color-superficie: #16161d;
+  --lb-color-borde: #2c2b3a;
+  --lb-color-fondo-chat: #101016;
   --lb-color-burbuja-propia: #342c78;      /* texto 10,4:1 */
-  --lb-color-burbuja-ajena: #262536;
+  --lb-color-burbuja-ajena: #22212d;
   --lb-color-avatar-1: #2b3f6b;             /* fondo de iniciales; texto ≥ 7,8:1 */
   --lb-color-avatar-2: #1f4a38;             /* fondo de iniciales; texto ≥ 7,8:1 */
   --lb-color-avatar-3: #5a4413;             /* fondo de iniciales; texto ≥ 7,8:1 */

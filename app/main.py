@@ -27,6 +27,8 @@ from app.features.m04_chat.cu10_responder_publicacion.endpoint import router as 
 from app.features.m04_chat.cu11_enviar_mensaje.endpoint import router as cu11_enviar_mensaje
 from app.features.m04_chat.cu12_ver_mis_chats.endpoint import router as cu12_ver_mis_chats
 from app.features.m04_chat.cu22_compartir_ubicacion.endpoint import router as cu22_compartir_ubicacion
+from app.features.m08_videollamada.cu23_videollamada.endpoint import router as cu23_videollamada
+from app.features.m08_videollamada.cu24_reportar_videollamada.endpoint import router as cu24_reportar_videollamada
 from app.features.m05_reportes.cu13_reportar_publicacion.endpoint import router as cu13_reportar_publicacion
 from app.features.m05_reportes.cu14_reportar_chat.endpoint import router as cu14_reportar_chat
 from app.features.m06_configuracion.cu15_configurar_parametros.endpoint import router as cu15_configurar_parametros
@@ -107,7 +109,7 @@ for router in [
     cu08_consultar_feed, cu09_ver_detalle_publicacion,
     cu10_responder_publicacion, cu11_enviar_mensaje, cu12_ver_mis_chats, cu22_compartir_ubicacion,
     cu13_reportar_publicacion, cu14_reportar_chat, cu15_configurar_parametros,
-    cu19_editar_perfil, cu20_ver_perfil,
+    cu19_editar_perfil, cu20_ver_perfil, cu23_videollamada, cu24_reportar_videollamada,
     ea03_limpiar_chats_expirados, ea05_depurar_contenido_reportado, ea07_eliminar_cuentas_no_activadas,
     reloj_de_pruebas,  # RNF-MAN-02: solo responde con ENTORNO=pruebas
     salud,

@@ -20,6 +20,7 @@
     const avisos = document.getElementById("mensajes-perfil");
     const formFoto = document.getElementById("form-foto");
     const formPerfil = document.getElementById("form-perfil");
+    const formIdentidad = document.getElementById("form-identidad");
     const biografia = document.getElementById("biografia");
     const entradaFoto = document.getElementById("foto");
     contador(biografia, document.getElementById("contador-biografia"), 160);
@@ -27,6 +28,8 @@
     const cargar = async () => {
       const r = await api("/api/cuentas/me/perfil");
       biografia.value = r.biografia;
+      document.getElementById("nombre").value = r.nombre;
+      document.getElementById("carrera").value = r.carrera;
       biografia.dispatchEvent(new Event("input"));
       const elegido = document.getElementById(r.avatar ? `avatar-${r.avatar}` : "avatar-ninguno");
       if (elegido) elegido.checked = true;
@@ -34,6 +37,21 @@
     };
     try { await cargar(); } catch (e) { alerta(avisos, e.message); }
     document.addEventListener("banca:nickname", () => { cargar().catch(() => {}); });
+
+    formIdentidad.addEventListener("submit", async (evento) => {  // Fase 4: nombre y carrera
+      evento.preventDefault();
+      const boton = formIdentidad.querySelector("[type=submit]");
+      ocupado(boton, true);
+      limpiarErrores(formIdentidad);
+      limpiar(avisos);
+      try {
+        await api("/api/cuentas/me/identidad", { metodo: "PATCH", cuerpo: {
+          nombre: document.getElementById("nombre").value, carrera: document.getElementById("carrera").value } });
+        alerta(avisos, t("perfil.guardado"), "success");
+      } catch (error) {
+        if (!mostrarErrores(formIdentidad, error)) alerta(avisos, error.message);
+      } finally { ocupado(boton, false); }
+    });
 
     formPerfil.addEventListener("submit", async (evento) => {
       evento.preventDefault();

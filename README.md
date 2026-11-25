@@ -115,6 +115,22 @@ Para restaurar: `gpg --decrypt <archivo>.gpg > dump.archive.gz` y `mongorestore 
 automático, el planificador de automatismos y, en el perfil `dev`, Mailpit. Guía paso a paso para alguien que no
 conoce el proyecto: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md). Variables: [.env.example](.env.example).
 
+### Levantar el entorno de desarrollo con `.env.docker`
+
+Para no mezclar la configuración de Docker con el `.env` de uvicorn local, se usa un archivo aparte (no se sube
+al repositorio: `.gitignore` excluye `.env.*`):
+
+```bash
+cp .env.example .env.docker          # una sola vez; cambia las claves marcadas con CAMBIAR
+ARCHIVO_ENV=.env.docker docker compose --env-file .env.docker up -d --build
+```
+
+`--env-file` lo usa Compose para los puertos y perfiles; `ARCHIVO_ENV` hace que el contenedor de la app lea el
+mismo archivo. Luego entra a https://localhost:8443 (certificado local: el navegador avisa una vez) y revisa los
+correos en http://localhost:8025 (Mailpit). Para apagarlo: `docker compose --env-file .env.docker down`.
+
+En PowerShell: `$env:ARCHIVO_ENV=".env.docker"; docker compose --env-file .env.docker up -d --build`.
+
 ## Despliegue en Vercel
 
 `vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons

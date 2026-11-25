@@ -59,7 +59,7 @@ def test_sin_desplazamiento_horizontal_en_ningun_ancho(navegador, servidor, esce
 
 
 @pytest.mark.parametrize("ancho,colapsado,titulo_px,formulario_max", [
-    (360, True, 20, None), (768, False, 24, 480), (1024, False, 24, 480)])
+    (360, True, 28, None), (768, False, 40, 480), (1024, False, 40, 480)])  # Fase 4: títulos grandes
 def test_menu_titulos_y_contenedores_por_ancho(navegador, servidor, usuarios, ancho, colapsado, titulo_px,
                                                formulario_max):
     contexto, p = _pagina(navegador, servidor, ancho)

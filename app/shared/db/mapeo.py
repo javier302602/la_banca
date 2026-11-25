@@ -65,6 +65,8 @@ def estudiante_a_doc(e: Estudiante) -> dict:
         "createdAt": e.fecha_registro,
         "activatedAt": e.fecha_activacion,
         "bio": e.biografia,
+        "fullName": e.nombre,
+        "career": e.carrera,
         "avatar": e.avatar,
         "photo": foto_a_doc(e.foto),
     }
@@ -89,6 +91,8 @@ def doc_a_estudiante(doc: dict) -> Estudiante:
         recuperacion=doc_a_enlace(doc.get("passwordReset")),
         fecha_activacion=doc.get("activatedAt"),
         biografia=doc.get("bio") or "",
+        nombre=doc.get("fullName") or "",
+        carrera=doc.get("career") or "",
         avatar=doc.get("avatar"),
         foto=doc_a_foto(doc.get("photo")),
     )

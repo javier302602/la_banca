@@ -87,7 +87,7 @@
     const entradaDocumento = document.getElementById("documento");
     const entradaAudio = document.getElementById("audio");
     const AUDIO_MAX_MB = Number(document.getElementById("chat-id").dataset.audioMaxMb) || 20;
-    const TIPOS_AUDIO = ["mp3", "wav", "ogg", "m4a", "aac", "flac"];
+    const TIPOS_AUDIO = ["mp3", "wav", "ogg", "m4a", "aac", "flac", "webm"];
     const adjuntoElegido = document.getElementById("adjunto-elegido");
     const vistos = new Set();
     let ultimo = null, temporizador = null, expirado = false;
@@ -341,6 +341,44 @@
         mostrarAdjunto();
       });
     }
+
+    /* ---- Nota de voz (estilo Messenger): MediaRecorder graba el micrófono; al detener queda como adjunto de
+     * audio (WebM/Opus en Chrome y Firefox, M4A en Safari) y se envía con el botón Enviar de siempre. ---- */
+    const botonVoz = document.getElementById("boton-voz");
+    const textoVoz = document.getElementById("texto-voz");
+    let grabadora = null, reloj = null;
+    botonVoz.hidden = !(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+    function terminarGrabacion() {
+      clearInterval(reloj);
+      botonVoz.setAttribute("aria-pressed", "false");
+      textoVoz.textContent = t("voz.grabar");
+    }
+
+    botonVoz.addEventListener("click", async () => {
+      if (grabadora && grabadora.state === "recording") { grabadora.stop(); return; }
+      let flujo;
+      try { flujo = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+      catch (e) { alerta(mensajes, t("voz.sin_permiso")); return; }
+      const partes = [];
+      grabadora = new MediaRecorder(flujo);
+      grabadora.addEventListener("dataavailable", (evento) => { if (evento.data.size) partes.push(evento.data); });
+      grabadora.addEventListener("stop", () => {
+        flujo.getTracks().forEach((pista) => pista.stop());
+        terminarGrabacion();
+        const tipo = grabadora.mimeType || "audio/webm";
+        const extension = tipo.includes("mp4") ? "m4a" : "webm";
+        adjunto = { tipo: "audio", archivo: new File(partes, `${t("voz.nombre")}.${extension}`, { type: tipo }) };
+        mostrarAdjunto();
+        formulario.querySelector("[type=submit]").focus();
+      });
+      grabadora.start();
+      const inicio = Date.now();
+      botonVoz.setAttribute("aria-pressed", "true");
+      const pintar = () => { textoVoz.textContent = t("voz.detener", { segundos: Math.floor((Date.now() - inicio) / 1000) }); };
+      pintar();
+      reloj = setInterval(pintar, 1000);
+    });
 
     async function datosDelFormulario() {
       const invalido = (detail) => new Banca.ErrorApi(422, { detail, errores: [{ campo: "texto", mensaje: detail }] });

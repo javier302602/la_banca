@@ -14,7 +14,7 @@ TOKENS_CSS = (RAIZ / "web/static/css/tokens.css").read_text(encoding="utf-8")
 APP_CSS = (RAIZ / "web/static/css/app.css").read_text(encoding="utf-8")
 TOKENS_JSON = json.loads((RAIZ / "docs/investigacion/tokens.json").read_text(encoding="utf-8"))
 TIPOS_TOKENS_STUDIO = {"color", "fontFamilies", "fontSizes", "fontWeights", "lineHeights", "spacing", "borderRadius",
-                       "sizing", "boxShadow"}
+                       "sizing", "boxShadow", "other"}
 
 _spec = importlib.util.spec_from_file_location("exportar_tokens", RAIZ / "scripts" / "exportar_tokens.py")
 exportar_tokens = importlib.util.module_from_spec(_spec)

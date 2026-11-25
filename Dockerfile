@@ -13,6 +13,7 @@ RUN pip install -r requirements-servidor.txt
 COPY VERSION ./
 COPY app ./app
 COPY web ./web
+COPY config ./config
 COPY scripts ./scripts
 COPY despliegue/gunicorn.conf.py ./despliegue/gunicorn.conf.py
 

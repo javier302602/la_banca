@@ -152,6 +152,8 @@ def _validador_accounts(dominio: str | None) -> dict:
             "activatedAt": {"bsonType": ["date", "null"]},
             # Perfil (SRS v2.0): biografía, avatar del catálogo y foto; nunca un dato de género
             "bio": {"bsonType": "string", "maxLength": BIOGRAFIA_MAX},
+            "fullName": {"bsonType": "string", "maxLength": 80},   # Fase 4: videollamada
+            "career": {"bsonType": "string", "maxLength": 80},
             "avatar": {"enum": [*AVATARES, None]},
             "photo": {"bsonType": ["object", "null"], "required": ["objectKey", "mimeType", "updatedAt"],
                       "properties": {"objectKey": {"bsonType": "string"}, "mimeType": {"bsonType": "string"},
@@ -174,7 +176,8 @@ VALIDADOR_LOGIN_ATTEMPTS = {"$jsonSchema": {
 }}
 
 COLECCIONES = ["accounts", "login_attempts", "sessions", "publications", "chats", "messages",
-               "reports", "system_parameters", "reactions", "live_locations"]
+               "reports", "system_parameters", "reactions", "live_locations",
+               "videocall_queue", "videocall_signals", "videocall_rooms", "videocall_reports"]
 
 
 async def _asegurar_coleccion(db: AsyncDatabase, nombre: str, validador: dict | None) -> None:
@@ -234,6 +237,14 @@ async def crear_indices(db: AsyncDatabase, dominio: str | None) -> None:
                                          name="uq_live_locations_chat_user")
     await db.live_locations.create_index([("expiresAt", ASCENDING)], expireAfterSeconds=0,
                                          name="ttl_live_locations")
+
+    # Videollamada (Fase 4): cola, buzón de señales y salas vencen solas (TTL)
+    await db.videocall_queue.create_index([("userId", ASCENDING)], unique=True, name="uq_videocall_queue_user")
+    await db.videocall_queue.create_index([("expiresAt", ASCENDING)], expireAfterSeconds=0, name="ttl_videocall_queue")
+    await db.videocall_signals.create_index([("to", ASCENDING), ("_id", ASCENDING)], name="ix_videocall_signals_to")
+    await db.videocall_signals.create_index([("expiresAt", ASCENDING)], expireAfterSeconds=0, name="ttl_videocall_signals")
+    await db.videocall_rooms.create_index([("expiresAt", ASCENDING)], expireAfterSeconds=0, name="ttl_videocall_rooms")
+    await db.videocall_reports.create_index([("createdAt", DESCENDING)], name="ix_videocall_reports_created")
 
     await db.chats.create_index([("publicationId", ASCENDING), ("responderId", ASCENDING)], unique=True,
                                 name="uq_chats_pub_responder")

@@ -43,6 +43,7 @@ def test_sin_funciones_de_gestion_de_reportes():
         ("/chats/{chat_id}/reportar", {"GET"}),
         ("/publicaciones/{publicacion_id}/reportar", {"GET"}),
         ("/jobs/ea05-depurar-contenido-reportado", {"GET"}),  # purga automática, exige CRON_SECRET (RN-26)
+        ("/api/videollamada/reportes", {"POST"}),             # Fase 4: solo crear (el panel llega en la Fase 5)
     ])
     # Ninguna ruta permite leer, modificar ni borrar reportes o su contenido conservado
     assert not any(m & {"PUT", "PATCH", "DELETE"} for p, m in con_reportes)

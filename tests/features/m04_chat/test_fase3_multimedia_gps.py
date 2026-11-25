@@ -23,6 +23,7 @@ AUDIOS = {
     "flac": b"fLaC\x00\x00\x00\x22" + b"\x00" * 40,
     "m4a": b"\x00\x00\x00\x20ftypM4A " + b"\x00" * 40,
     "aac": b"\xff\xf1\x50\x80" + b"\x00" * 40,
+    "webm": bytes.fromhex("1a45dfa3") + b"\x00" * 40,  # nota de voz grabada en el navegador
 }
 MP3_SIN_ID3 = b"\xff\xfb\x90\x64" + b"\x00" * 40
 

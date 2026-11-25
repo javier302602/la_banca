@@ -1,0 +1,14 @@
+{
+  "_instrucciones": "Lista de carreras que se ofrecen en el perfil (select). Edítala libremente: una carrera por línea, entre comillas y separadas por comas. Los cambios se aplican al reiniciar la app.",
+  "carreras": [
+    "Agronomía",
+    "Zootecnia",
+    "Ingeniería en Industrias Alimentarias",
+    "Ingeniería Forestal",
+    "Ingeniería en Informática y Sistemas",
+    "Ingeniería Ambiental",
+    "Administración",
+    "Contabilidad",
+    "Economía"
+  ]
+}

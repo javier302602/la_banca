@@ -17,7 +17,8 @@
     "mis_chats": "Mis chats",
     "cerrar_sesion": "Cerrar sesión",
     "iniciar_sesion": "Iniciar sesión",
-    "registrarse": "Registrarse"
+    "registrarse": "Registrarse",
+    "videollamada": "Videollamada"
   },
   "pie": {
     "terminos": "Términos de uso y política de privacidad",
@@ -96,7 +97,13 @@
     "sin_avatar": "Mis iniciales",
     "guardar_perfil": "Guardar perfil",
     "privacidad": "Tu correo institucional no se muestra a nadie.",
-    "ver_publico": "Ver mi perfil público"
+    "ver_publico": "Ver mi perfil público",
+    "identidad_titulo": "Datos para la videollamada",
+    "identidad_ayuda": "Tu nombre y tu carrera solo los ve la otra persona durante una videollamada. No aparecen en tu perfil público.",
+    "nombre": "Nombre y apellido",
+    "carrera": "Carrera",
+    "guardar_identidad": "Guardar nombre y carrera",
+    "elige_carrera": "Elige tu carrera"
   },
   "tipos": {
     "TODOS": "Todos",
@@ -352,7 +359,8 @@
       "ogg": "bi-file-earmark-music",
       "m4a": "bi-file-earmark-music",
       "aac": "bi-file-earmark-music",
-      "flac": "bi-file-earmark-music"
+      "flac": "bi-file-earmark-music",
+      "webm": "bi-file-earmark-music"
     },
     "reacciones": {
       "grupo": "Reacciones",
@@ -382,6 +390,26 @@
       "sin_permiso": "No diste permiso para usar tu ubicación. Puedes activarlo en la configuración del navegador.",
       "no_disponible": "Tu navegador no puede obtener la ubicación.",
       "confirmar": "Tu ubicación se mostrará en tiempo real solo a la otra persona de este chat hasta que la detengas. ¿Compartirla?"
+    },
+    "voz": {
+      "grabar": "Nota de voz",
+      "detener": "Detener ({segundos} s)",
+      "sin_permiso": "No diste permiso para usar el micrófono.",
+      "nombre": "Nota de voz"
+    },
+    "videollamada": {
+      "falta_perfil": "Para usar la videollamada agrega tu nombre y tu carrera en tu perfil (no es anónima).",
+      "silenciar": "Silenciar",
+      "activar_microfono": "Activar micrófono",
+      "apagar_camara": "Apagar cámara",
+      "encender_camara": "Encender cámara",
+      "tu": "Tú",
+      "buscando": "Buscando a otro estudiante…",
+      "conectando": "Conectando…",
+      "se_fue": "La otra persona salió. Buscando a alguien más…",
+      "fallo": "No se pudo conectar el video. Prueba con «Siguiente».",
+      "desconectado": "Se perdió la conexión con el servidor. Cuelga y vuelve a empezar.",
+      "sin_permiso": "Necesitamos permiso para usar tu cámara y tu micrófono. Revísalo en la configuración del navegador."
     }
   },
   "tema": {
@@ -410,5 +438,54 @@
     "titulo": "Perfil",
     "editar": "Editar mi perfil",
     "volver": "← Volver"
+  },
+  "videollamada": {
+    "titulo": "Videollamada",
+    "subtitulo": "Conoce a otros estudiantes de la UNAS en una videollamada al azar.",
+    "paso1_titulo": "Da permiso a tu cámara y micrófono",
+    "paso1": "El navegador te lo pedirá al empezar. Puedes silenciarte o apagar la cámara cuando quieras.",
+    "paso2_titulo": "Te conectamos con alguien al azar",
+    "paso2": "Esperas unos segundos hasta que otro estudiante con sesión iniciada también esté buscando.",
+    "paso3_titulo": "Conversa, pasa a la siguiente o cuelga",
+    "paso3": "Verás su nombre y su carrera, y ella o él verá los tuyos. También pueden escribirse por chat.",
+    "reglas_titulo": "Reglas de seguridad",
+    "regla1": "No compartas datos personales: teléfono, dirección, contraseñas ni datos bancarios.",
+    "regla2": "Puedes salir cuando quieras con «Siguiente» o «Colgar».",
+    "regla3": "Reportar es un clic: el equipo de administradores revisa cada reporte.",
+    "regla4": "Las llamadas no se graban. Solo se guarda quién habló con quién, por si hay un reporte.",
+    "empezar": "Empezar",
+    "falta_perfil": "Para usar la videollamada agrega tu nombre y tu carrera en tu perfil (no es anónima).",
+    "completar_perfil": "Completar mi perfil",
+    "video_otra": "Video de la otra persona",
+    "video_propio": "Tu video",
+    "controles": "Controles de la llamada",
+    "silenciar": "Silenciar",
+    "activar_microfono": "Activar micrófono",
+    "apagar_camara": "Apagar cámara",
+    "encender_camara": "Encender cámara",
+    "siguiente": "Siguiente",
+    "colgar": "Colgar",
+    "reportar": "Reportar",
+    "chat": "Chat de la llamada",
+    "escribe": "Escribe un mensaje",
+    "enviar": "Enviar",
+    "tu": "Tú",
+    "buscando": "Buscando a otro estudiante…",
+    "conectando": "Conectando…",
+    "se_fue": "La otra persona salió. Buscando a alguien más…",
+    "fallo": "No se pudo conectar el video. Prueba con «Siguiente».",
+    "desconectado": "Se perdió la conexión con el servidor. Cuelga y vuelve a empezar.",
+    "sin_permiso": "Necesitamos permiso para usar tu cámara y tu micrófono. Revísalo en la configuración del navegador.",
+    "reporte_titulo": "Reportar a esta persona",
+    "motivo": "Motivo",
+    "motivos": {
+      "OBSCENO": "Contenido obsceno",
+      "INSULTOS": "Insultos",
+      "SPAM": "Spam",
+      "OTRO": "Otro"
+    },
+    "detalle": "Cuéntanos qué pasó (opcional)",
+    "cancelar": "Cancelar",
+    "enviar_reporte": "Enviar reporte"
   }
 }
