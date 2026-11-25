@@ -1,149 +1,96 @@
 # La Banca
 
-Monolito modular (FastAPI + MongoDB con la API async de PyMongo + Object Storage) con Vertical Slice Architecture y MVC en la presentación.
-Cada caso de uso vive en `app/features/mXX_*/cuXX_*/` (endpoint · request · handler · repository) y cada
-automatismo programado en `app/jobs/eaXX_*/`.
+Red social de la UNAS para estudiantes con correo **@unas.edu.pe**: publicaciones de 24 h, chat, multimedia,
+ubicación en vivo, videollamada aleatoria y panel de administradores.
 
-## Ejecutar en local
+**Stack:** FastAPI (Python 3.14) · MongoDB 7 (replica set) · MinIO/S3 para archivos · plantillas Jinja + JavaScript
+sin frameworks · WebSocket (ubicación y videollamada) · WebRTC · Caddy (HTTPS) · Docker Compose.
 
-Requisitos: Python 3.14 (fijado en `.python-version`; Vercel soporta 3.12, 3.13 y 3.14) y un MongoDB **replica set** (las operaciones atómicas usan transacciones).
+## Instalar y ejecutar
 
-```bash
-# 1. MongoDB local como replica set (Docker)
-docker run -d --name la-banca-mongo -p 27017:27017 mongo:8.0 --replSet rs0 --bind_ip_all
-docker exec la-banca-mongo mongosh --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
-
-# 2. Entorno de Python
-python -m venv .venv
-.venv/Scripts/activate            # Windows (en Linux/macOS: source .venv/bin/activate)
-pip install -r requirements-dev.txt
-
-# 3. Configuración
-cp .env.example .env              # y ajusta los valores; para http://localhost usa COOKIE_SECURE=false
-#   MONGO_URI=mongodb://localhost:27017/?replicaSet=rs0&directConnection=true
-
-# 4. Servidor (carga .env)
-uvicorn app.main:app --reload --env-file .env
-```
-
-Abre <http://localhost:8000>. Con `EMAIL_SENDER=consola` los enlaces de activación y recuperación se
-escriben en el registro del servidor (`[correo de desarrollo] ... -> http://localhost:8000/activar?token=...`).
-Con `IMAGE_STORAGE=memoria` las imágenes viven en la memoria del proceso (se pierden al reiniciar).
-
-## Pruebas
-
-```bash
-pytest
-```
-
-Los tests de handlers usan fakes en memoria de los contratos y un reloj falso (`tests/fakes.py`); no
-necesitan MongoDB.
-
-Las pruebas de punta a punta (`tests/e2e/`) se excluyen por defecto y usan un MongoDB real (replica set,
-como el del paso 1; otra URI con `E2E_MONGO_URI`). Vacían la base `la_banca_e2e`:
-
-```bash
-pytest -m e2e
-```
-
-`tests/e2e/navegador/` abre la app en navegadores reales con Playwright (formularios, 360 px, axe-core, teclado
-y flujos principales). Corren en Chromium, Firefox y WebKit (RNF-COM-01), y en Chromium y WebKit también con
-emulación de Pixel 7 e iPhone 14. Instala los navegadores una vez:
-
-```bash
-pip install -r requirements-dev.txt
-python -m playwright install chromium firefox webkit
-NAVEGADORES=chromium pytest -m e2e tests/e2e/navegador   # opcional: limitar los motores
-```
-
-## Configuración técnica (CU-15)
-
-No hay pantalla ni API de administración. Los parámetros se cambian con variables de entorno
-(`.env.example`); para revisar los valores efectivos y registrarlos en `system_parameters`:
-
-```bash
-python -m app.features.m06_configuracion.cu15_configurar_parametros.endpoint --registrar
-```
-
-## Entorno de pruebas con reloj controlable (RNF-MAN-02)
-
-Con `ENTORNO=pruebas` la app usa un reloj que se puede adelantar para comprobar los plazos de 24 h y 72 h sin
-esperarlos. Úsalo con **un solo worker**: el desfase vive en la memoria del proceso.
-
-```bash
-curl -X POST -H "Authorization: Bearer $CRON_SECRET" -H "Content-Type: application/json" \
-     -d '{"horas": 24}' http://localhost:8000/pruebas/reloj/avanzar     # también: GET /pruebas/reloj, POST /pruebas/reloj/reiniciar
-```
-
-En cualquier otro entorno esas rutas responden 404.
-
-## Diseño: tokens, capturas e investigación
-
-- `web/static/css/tokens.css` es la fuente de colores, tipografía, espaciado y puntos de quiebre (360/768/1024).
-  `python scripts/exportar_tokens.py` genera `docs/investigacion/tokens.json` para Tokens Studio (Figma).
-- `python scripts/tomar_capturas.py --mongo-uri "<replica set>"` captura las 15 páginas en los tres anchos.
-- `docs/investigacion/`: evaluación heurística y Gestalt (01), WCAG 2.2 e i18n (02) y diseño responsivo (03).
-- Textos de la interfaz: `web/i18n/es-PE.json` (único idioma activo).
-
-## Respaldos (Entregable 2 §8.1)
-
-Con Docker Compose (v2.0): `scripts/backup.sh` y `scripts/restore.sh` respaldan y restauran la base **y** los
-archivos de MinIO en un solo paquete fechado; `restore.sh` también acepta los volcados de la v1. Ver
-[docs/DESPLIEGUE.md §9](docs/DESPLIEGUE.md#9-respaldos-y-migraciones). Lo que sigue es el respaldo de la v1
-(MongoDB Atlas + Vercel), que sigue disponible.
-
-`scripts/respaldo_mongodb.py` ejecuta `mongodump --gzip --archive` y elimina los respaldos de más de 7 días
-(PA-37, RNF-PRI-02; la retención no puede superar 7 días). Requiere MongoDB Database Tools en el PATH:
-
-```bash
-MONGO_URI="mongodb+srv://..." python scripts/respaldo_mongodb.py --destino /ruta/respaldos
-```
-
-`.github/workflows/backup.yml` lo ejecuta a diario (03:00 UTC−5) y sube el volcado **cifrado** (GPG, AES-256) como
-artifact con retención de 7 días. Se activa al crear estos secrets del repositorio:
-
-- `MONGO_URI`: cadena de conexión de producción. Sin ella, el workflow termina sin hacer nada.
-- `BACKUP_PASSPHRASE`: frase de cifrado. Es obligatoria, porque el volcado contiene datos personales y los artifacts
-  los descarga cualquiera con acceso de lectura al repositorio. Guárdala fuera de GitHub: sin ella no se puede
-  restaurar.
-
-Para restaurar: `gpg --decrypt <archivo>.gpg > dump.archive.gz` y `mongorestore --gzip --archive=dump.archive.gz --uri ...`.
-
-## Despliegue en un servidor propio (Docker Compose)
-
-`docker compose up -d` levanta la app (gunicorn + uvicorn), MongoDB 7 (replica set), MinIO, Caddy con HTTPS
-automático, el planificador de automatismos y, en el perfil `dev`, Mailpit. Guía paso a paso para alguien que no
-conoce el proyecto: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md). Variables: [.env.example](.env.example).
-
-### Levantar el entorno de desarrollo con `.env.docker`
-
-Para no mezclar la configuración de Docker con el `.env` de uvicorn local, se usa un archivo aparte (no se sube
-al repositorio: `.gitignore` excluye `.env.*`):
+**Con Docker (recomendado).** Levanta app, MongoDB, MinIO, Caddy, Mailpit y las tareas programadas:
 
 ```bash
 cp .env.example .env.docker          # una sola vez; cambia las claves marcadas con CAMBIAR
 ARCHIVO_ENV=.env.docker docker compose --env-file .env.docker up -d --build
 ```
 
-`--env-file` lo usa Compose para los puertos y perfiles; `ARCHIVO_ENV` hace que el contenedor de la app lea el
-mismo archivo. Luego entra a https://localhost:8443 (certificado local: el navegador avisa una vez) y revisa los
-correos en http://localhost:8025 (Mailpit). Para apagarlo: `docker compose --env-file .env.docker down`.
-
 En PowerShell: `$env:ARCHIVO_ENV=".env.docker"; docker compose --env-file .env.docker up -d --build`.
+Entra a **<https://localhost:8443>** (certificado local: el navegador avisa una vez). Los códigos de activación
+llegan a **<http://localhost:8025>** (Mailpit). Apagar: `docker compose --env-file .env.docker down`.
+`.env.docker` y `.env` no se suben al repositorio. Guía para un servidor real: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
 
-## Despliegue en Vercel
+**Sin Docker (solo para desarrollar).**
 
-`vercel.json` reescribe todas las rutas (páginas y `/api/...`) hacia `api/index.py` y programa los crons
-de EA-03, EA-05 y EA-07. Define en Vercel las variables de `.env.example`, con `ENTORNO=produccion`, `IMAGE_STORAGE=s3`,
-`EMAIL_SENDER=smtp` y un `CRON_SECRET` aleatorio.
+```bash
+docker run -d --name la-banca-mongo -p 27017:27017 mongo:8.0 --replSet rs0 --bind_ip_all
+docker exec la-banca-mongo mongosh --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
+python -m venv .venv && .venv/Scripts/activate      # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env   # MONGO_URI=mongodb://localhost:27017/?replicaSet=rs0&directConnection=true, COOKIE_SECURE=false
+uvicorn app.main:app --reload --env-file .env       # http://localhost:8000
+```
 
-La política de privacidad necesita además tres datos del texto legal aprobado. Con `ENTORNO=produccion`
-la app **no arranca** si falta alguno (RN-31, RNF-LEG-01–03):
+**Pruebas:** `pytest` (unitarias, sin base) · `pytest -m e2e` (MongoDB real) ·
+`pytest -m e2e tests/e2e/navegador --timeout=120` (Chromium, Firefox y WebKit; antes:
+`python -m playwright install chromium firefox webkit`). Más detalles en [docs/OPERACION.md](docs/OPERACION.md).
 
-| Variable | Contenido | Ejemplo |
-|---|---|---|
-| `TERMINOS_VERSION` | Versión del texto aprobado; se muestra en la política y se registra en cada aceptación (RF-AUT-17) | `1.0` |
-| `TERMINOS_FECHA` | Fecha de esa versión | `2026-11-01` |
-| `CANAL_ARCO` | Canal oficial para ejercer los derechos ARCO (Ley N.° 29733); reemplaza `{{CANAL_ARCO}}` en `web/terminos/terminos.txt` | `datospersonales@unas.edu.pe` |
+## Variables del `.env`
 
-Al cambiar el texto de `web/terminos/terminos.txt`, sube `TERMINOS_VERSION` y `TERMINOS_FECHA`.
+Todas están explicadas en [.env.example](.env.example). Nada sensible va en el código.
+
+| Grupo | Variables | Para qué |
+| --- | --- | --- |
+| Entorno | `ENTORNO`, `APP_BASE_URL`, `COOKIE_SECURE`, `COMPOSE_PROFILES`, `SITIO`, `PUERTO_HTTP(S)` | desarrollo/producción, dirección pública, HTTPS |
+| Base de datos | `MONGO_URI`, `MONGO_DB` | MongoDB (replica set) |
+| Archivos | `IMAGE_STORAGE`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY`, `STORAGE_ENDPOINT` | imágenes, video, audios y documentos en MinIO/S3 |
+| Correo | `EMAIL_SENDER`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_TLS`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | código de activación, recuperación y avisos de moderación |
+| Cuentas | `DOMINIO_INSTITUCIONAL` | solo correos `@unas.edu.pe` |
+| Multimedia | `PUBLICACION_VIDEO_MAX_MB`, `AUDIO_MAX_MB` | tamaños máximos |
+| Videollamada | `WEBRTC_STUN_URLS`, `WEBRTC_TURN_URL`, `WEBRTC_TURN_USUARIO`, `WEBRTC_TURN_CLAVE` | STUN (Google por omisión) y TURN opcional (coturn) |
+| Administración | `ADMIN_EMAILS` | correos de los administradores, separados por comas |
+| Tareas | `CRON_SECRET`, `INTERVALO_TAREAS` | limpiezas programadas |
+| Reglas | `CFG_MAX_PUBLICACIONES_ACTIVAS`, `CFG_DIAS_RETENCION_REPORTES`, `CFG_HORAS_INACTIVIDAD_SESION`, … | parámetros del sistema |
+| Legal | `TERMINOS_VERSION`, `TERMINOS_FECHA`, `CANAL_ARCO` | obligatorios en producción |
+
+Listas editables sin tocar código (se aplican al reiniciar): [config/carreras.json](config/carreras.json) y
+[config/palabras_ofensivas.json](config/palabras_ofensivas.json).
+
+## Estructura de carpetas
+
+Vertical Slice Architecture: cada caso de uso tiene su carpeta con `endpoint.py` (ruta) · `request.py` (modelos) ·
+`handler.py` (lógica) · `repository.py` (MongoDB).
+
+```text
+app/
+  features/
+    m01_acceso/          registro, código de activación, sesión, recuperar contraseña, nickname
+    m02_publicaciones/   crear (imágenes y video), mis publicaciones, cerrar, reacciones (cu21)
+    m03_feed/            feed «Ahora» y detalle de publicación
+    m04_chat/            responder, enviar mensaje (imagen, audio, documento, sticker), mis chats, ubicación en vivo (cu22)
+    m05_reportes/        reportar publicación y chat
+    m06_configuracion/   parámetros técnicos
+    m07_perfiles/        perfil (foto, avatar, nombre y carrera) y perfil público
+    m08_videollamada/    videollamada aleatoria (cu23) y reportar videollamada (cu24)
+    m09_admin/           panel (cu25), moderar (cu26), historial (cu27), filtro automático (cu28)
+  jobs/                  tareas programadas: limpiar chats y archivos (ea03), reportes (ea05), cuentas sin activar (ea07)
+  shared/                base común: config, base de datos, dominio (entidades y contratos), correo, sesión, almacenamiento
+web/  templates/ (HTML por módulo) · static/js/ (un archivo por pantalla) · static/css/ (tokens.css + app.css) · i18n/
+config/  listas editables · despliegue/  Caddy y gunicorn · scripts/  respaldos, migraciones, datos de demo · tests/
+```
+
+## Cómo fluye cada módulo
+
+Todos siguen el mismo camino: **página (HTML + JS) → API (`endpoint.py`) → lógica (`handler.py`) →
+`repository.py` → MongoDB** (y MinIO para archivos).
+
+| Módulo | Flujo |
+| --- | --- |
+| Acceso | registro → valida `@unas.edu.pe` → cuenta PENDIENTE + código de 6 dígitos por correo (10 min, 5 intentos) → `/activar` → ACTIVA → inicio de sesión (cookie). Cuentas suspendidas o baneadas no entran. |
+| Publicaciones | publicar (texto, hasta 3 imágenes, 1 video) → `publications` con vencimiento a 24 h → el feed solo muestra las vigentes; las vencidas se ocultan y MongoDB las borra a los 30 días (TTL). Reacciones en `reactions`. |
+| Chat | responder una publicación crea el chat → mensajes (texto, imagen, audio, nota de voz, documento, sticker) → la otra persona los recibe cada 1 s con «visto». |
+| Ubicación | permiso del navegador → `watchPosition` → WebSocket `/ws/chats/{id}/ubicacion` → `live_locations` (sin historial, vence a los 2 min) → la otra persona la ve. |
+| Videollamada | permiso de cámara y micrófono → WebSocket `/ws/videollamada` → cola en `videocall_queue` → emparejamiento al azar → señales por `videocall_signals` → audio y video directo entre navegadores (WebRTC). No se graba. |
+| Reportes | botón Reportar (publicación, chat o videollamada) o filtro automático de palabras → `reports` / `videocall_reports` como PENDIENTE → correo a los admins. |
+| Administración | `/admin` (solo `ADMIN_EMAILS`) → lista todos los reportes → eliminar contenido, advertir, suspender, banear o descartar → `admin_actions` (historial). |
+| Tareas | el servicio `tareas` llama cada hora a `/jobs/*`: borra chats expirados y archivos vencidos, reportes ya revisados y cuentas sin activar. |

@@ -56,8 +56,8 @@
         </ul>
         <div class="d-flex align-items-center gap-2">
           {% if sesion.es_admin %}
-          <a class="nav-link py-2" href="/admin" id="nav-admin"{% if ruta == "/admin" %} aria-current="page"{% endif %}>
-            <i class="bi bi-shield-lock" aria-hidden="true"></i> {{ t("nav.admin") }}
+          <a class="nav-link py-2" href="/admin" id="nav-admin" title="{{ t('nav.admin') }}"{% if ruta == "/admin" %} aria-current="page"{% endif %}>
+            <i class="bi bi-shield-lock" aria-hidden="true"></i><span class="texto-admin"> {{ t("nav.admin") }}</span>
             <span class="badge rounded-pill contador-no-leidos d-none" id="nav-reportes"></span></a>
           {% endif %}
           <a class="nav-link py-2" href="/perfil" id="nav-nickname" title="{{ t('nav.mi_perfil') }}"{% if ruta == "/perfil" %} aria-current="page"{% endif %}>

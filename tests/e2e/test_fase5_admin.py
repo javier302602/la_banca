@@ -44,6 +44,12 @@ def test_panel_de_administradores(db, monkeypatch):
         assert any(c.destinatario == "adm_jefa@unas.edu.pe" and "Nuevo reporte" in c.asunto
                    for c in correos.enviados[enviados:])  # aviso por correo a los admins
         chat = beto.post(f"/api/publicaciones/{pid}/respuestas", data={"texto": "Hola"}).json()["chat_id"]
+        # Respuesta a una publicación (CU-10) con una palabra ofensiva: pasa por el filtro y además se reporta
+        pid2 = ana.post("/api/publicaciones", json={"tipo": "NECESITO", "titulo": "Tutor", "descripcion": "Cálculo"}).json()["id"]
+        respuesta = beto.post(f"/api/publicaciones/{pid2}/respuestas", data={"texto": "Qué estúpida pregunta"})
+        assert respuesta.status_code == 201  # el filtro no bloquea
+        chat_respuesta = respuesta.json()["chat_id"]
+        assert ana.post(f"/api/chats/{chat_respuesta}/reportes", json={"codigo_motivo": "HARASSMENT"}).status_code == 201
         assert ana.post(f"/api/chats/{chat}/mensajes", data={"texto": "Eres un IDIOTA"}).status_code == 201  # no se bloquea
         with ana.websocket_connect(RUTA_LLAMADA, headers=ORIGEN) as wa, beto.websocket_connect(RUTA_LLAMADA, headers=ORIGEN) as wb:
             wa.send_json({"tipo": "buscar"})
@@ -53,13 +59,29 @@ def test_panel_de_administradores(db, monkeypatch):
             assert beto.post("/api/videollamada/reportes", json={"sala_id": sala, "motivo": "INSULTOS"}).status_code == 201
 
         # 2) Solo los admins ven el panel
-        assert ana.get("/api/admin/reportes").status_code == 403
+        for ruta in ("/api/admin/reportes", "/api/admin/reportes/pendientes", "/api/admin/historial"):
+            assert ana.get(ruta).status_code == 403, ruta
         assert ana.get("/admin", follow_redirects=False).headers["location"] == "/feed"
         assert "Admin" in jefa.get("/feed").text and "Admin" not in ana.get("/feed").text
         panel = jefa.get("/api/admin/reportes").json()
-        assert panel["pendientes"] == 3
-        por_tipo = {r["tipo"]: r for r in panel["reportes"]}
-        assert set(por_tipo) == {"PUBLICACION", "CHAT", "VIDEOLLAMADA"}
+        assert panel["pendientes"] == 5
+        assert {r["tipo"] for r in panel["reportes"]} == {"PUBLICACION", "CHAT", "VIDEOLLAMADA"}
+        de_respuesta = [r for r in panel["reportes"] if r["objeto_id"] == chat_respuesta]
+        assert sorted(r["automatico"] for r in de_respuesta) == [False, True]  # filtro + reporte de Ana
+        automatico = next(r for r in de_respuesta if r["automatico"])
+        assert "estupida" in automatico["detalle"] and automatico["reportado"]["nickname"] == "adm_beto"
+        assert automatico["contenido"]["mensajes"][0]["text"] == "Qué estúpida pregunta"
+        assert next(r for r in de_respuesta if not r["automatico"])["reportante"]["nickname"] == "adm_ana"
+
+        # Una cuenta que NO es admin no puede moderar: 403 y el reporte queda igual
+        r = ana.post(f"/api/admin/reportes/{automatico['origen']}/{automatico['id']}/acciones", json={"accion": "DESCARTAR"})
+        assert r.status_code == 403 and r.json()["codigo"] == "solo_admin"
+        assert ana.post(f"/api/admin/reportes/{automatico['origen']}/{automatico['id']}/acciones",
+                        json={"accion": "BANEAR"}).status_code == 403
+        assert db.reports.find_one({"_id": ObjectId(automatico["id"])}).get("status") == "PENDIENTE"
+        for r in de_respuesta:  # se descartan para seguir con el resto de la prueba
+            assert jefa.post(f"/api/admin/reportes/{r['origen']}/{r['id']}/acciones", json={"accion": "DESCARTAR"}).status_code == 200
+        por_tipo = {r["tipo"]: r for r in panel["reportes"] if r["objeto_id"] != chat_respuesta}
         assert por_tipo["CHAT"]["automatico"] and por_tipo["CHAT"]["reportante"] is None
         assert "idiota" in por_tipo["CHAT"]["detalle"] and por_tipo["CHAT"]["contenido"]["mensajes"][0]["text"] == "Eres un IDIOTA"
         llamada = por_tipo["VIDEOLLAMADA"]

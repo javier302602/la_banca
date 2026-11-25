@@ -422,4 +422,11 @@ main h1, main h1.h4 { font-size: var(--lb-fuente-tamano-titulo); font-weight: va
 @media (min-width: 768px) and (max-width: 1199.98px) {
   .barra:has(#nav-admin) #nav-nickname .texto-nickname { position: absolute; width: 1px; height: 1px; overflow: hidden;
                                                           clip: rect(0 0 0 0); white-space: nowrap; }
+  /* y los enlaces sin ícono, como en tableta: deja sitio al contador de reportes (aunque tenga 3 cifras) */
+  .barra:has(#nav-admin) .navbar-nav .nav-link .bi { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  /* en tableta «Admin» queda con ícono y contador; el texto sigue para lectores de pantalla y como tooltip */
+  .barra #nav-admin .texto-admin { position: absolute; width: 1px; height: 1px; overflow: hidden;
+                                   clip: rect(0 0 0 0); white-space: nowrap; }
 }
